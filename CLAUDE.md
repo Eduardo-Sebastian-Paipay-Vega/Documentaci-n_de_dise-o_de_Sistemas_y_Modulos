@@ -36,21 +36,26 @@ cada diagrama representa horas de trabajo intelectual. La sincronización autom�
 # 1. Ir al directorio del repo
 cd /sessions/epic-clever-bell/mnt/Documentación__/
 
-# 2. Ver qué cambió (con índice temporal)
-GIT_INDEX_FILE=/tmp/git_idx git status --short
+# 2. Copiar el índice real a /tmp (bypass del lock de Windows)
+cp .git/index /tmp/git_idx_real
 
-# 3. Stagear todo (con índice temporal para evitar lock)
-GIT_INDEX_FILE=/tmp/git_idx git add -A
+# 3. Stagear todo con el índice temporal
+GIT_INDEX_FILE=/tmp/git_idx_real git add -A
 
 # 4. Commit con mensaje descriptivo en español (formato Conventional Commits)
-GIT_INDEX_FILE=/tmp/git_idx git commit -m "feat(fase-X): descripción clara de qué se hizo"
+GIT_INDEX_FILE=/tmp/git_idx_real git commit -m "feat(fase-X): descripción clara de qué se hizo"
 
-# 5. Push a GitHub (no requiere índice — usa el token del remote URL)
+# 5. Push a GitHub (no requiere índice — token ya está en el remote URL)
 git push origin main
 ```
 
-**El token ya está configurado en el remote URL.** No se necesita ninguna ventana CMD.
-Cada push va directo a GitHub desde bash, silencioso y automático.
+**Una sola línea equivalente:**
+```bash
+cd /sessions/epic-clever-bell/mnt/Documentación__/ && cp .git/index /tmp/gi && GIT_INDEX_FILE=/tmp/gi git add -A && GIT_INDEX_FILE=/tmp/gi git commit -m "MENSAJE" && git push origin main
+```
+
+**El token ya está configurado en el remote URL.** Sin ventanas CMD, sin interacción manual.
+Cada push va directo a GitHub desde bash, completamente automático y silencioso.
 
 ### Formato de mensajes de commit
 
@@ -463,4 +468,19 @@ bash [skills-dir]/github-autopush/scripts/git-autopush.sh \
    de calidad y profundidad técnica.
 
 2. **No borrar fases aunque estén vacías** — La estructura de carpetas define la metodología.
-   Si una fase no tiene contenido, dejar al menos un archivo 
+   Si una fase no tiene contenido, dejar al menos un archivo `README.md` con la descripción
+   de qué irá ahí.
+
+3. **Idioma consistente** — Todo en español. Si Claude recibe instrucciones en español,
+   responder en español y documentar en español.
+
+4. **Versionado semántico de documentos** — Usar versiones X.Y donde X es mayor (cambio
+   estructural) e Y es menor (adición o corrección de contenido).
+
+5. **El historial de Git es permanente** — Los commits quedan en el historial para siempre.
+   Mensajes descriptivos y precisos facilitan entender la evolución del proyecto.
+
+---
+
+*CLAUDE.md generado y mantenido automáticamente. Última actualización: 2026-05-13*
+*Repositorio: https://github.com/Eduardo-Sebastian-Paipay-Vega/Documentaci-n_de_dise-o_de_Sistemas_y_Modulos*
