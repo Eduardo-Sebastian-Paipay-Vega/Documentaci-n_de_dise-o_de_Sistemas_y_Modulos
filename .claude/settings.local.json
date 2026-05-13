@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem \"C:\\\\botas\\\\Documentación__\")",
+      "Bash(Select-Object Name, LastWriteTime)",
+      "Bash(gh --version)",
+      "Bash(git --version)",
+      "Bash(cmdkey /delete:git:https://github.com)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
