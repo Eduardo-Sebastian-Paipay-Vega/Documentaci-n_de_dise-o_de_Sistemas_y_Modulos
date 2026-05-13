@@ -1,0 +1,13 @@
+@echo off
+cd /d "C:\botas\Documentación__"
+echo Eliminando lock file...
+del /f ".git\index.lock" 2>nul
+echo Ejecutando git add...
+git add -A
+echo Haciendo commit...
+git commit -m "feat(repo): agregar CLAUDE.md maestro + skill github-autopush instalado"
+echo Haciendo push a GitHub...
+git push origin main
+echo.
+echo === LISTO ===
+pause
