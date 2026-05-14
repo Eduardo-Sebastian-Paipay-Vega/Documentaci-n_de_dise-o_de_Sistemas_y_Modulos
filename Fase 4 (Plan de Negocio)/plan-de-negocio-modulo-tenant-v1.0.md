@@ -444,6 +444,220 @@ Organización compleja de 50 a 300+ empleados: cooperativas agroindustriales, in
 
 ---
 
+### 4.2 — Mapa de Stakeholders, Actores del Sistema y Roles
+
+> Esta sección identifica a todos los actores que interactúan con el sistema, ya sea como
+> usuarios directos, beneficiarios indirectos o reguladores externos. Sirve como base para
+> el diseño de roles, permisos y experiencias diferenciadas en las Fases 5 y 6.
+
+---
+
+#### 4.2.1 Clasificación de Stakeholders
+
+Los stakeholders del sistema se dividen en tres categorías principales:
+
+```
+STAKEHOLDERS DEL SISTEMA MULTI-TENANT
+│
+├── INTERNOS DEL TENANT (usuarios directos del sistema)
+│   ├── Dueño / Owner
+│   ├── Administrador
+│   ├── Supervisores / Coordinadores
+│   ├── Operadores / Trabajadores
+│   └── Auditores internos
+│
+├── EXTERNOS AL TENANT (relacionados al negocio del cliente)
+│   ├── Clientes finales del tenant (portal de cliente, si aplica)
+│   ├── Proveedores (gestión de compras)
+│   └── Socios / Partners del tenant
+│
+└── REGULADORES / CONTEXTO (no usan el sistema, pero condicionan su diseño)
+    ├── SUNAT (facturación electrónica)
+    ├── INDECOPI / Ley 29733 (privacidad de datos)
+    ├── Entidades bancarias (pasarelas de pago)
+    └── Entes auditores externos (contadores, revisores)
+```
+
+---
+
+#### 4.2.2 Ficha de Stakeholders Internos del Tenant
+
+Estos son los actores que tienen cuenta y acceso activo dentro del sistema.
+
+---
+
+**STAKEHOLDER 1 — DUEÑO / OWNER DEL TENANT**
+
+| Campo | Descripción |
+|-------|-------------|
+| **Quién es** | Persona natural o jurídica que contrató el plan SaaS. Máxima autoridad del tenant. |
+| **Motivación** | Ver el estado general del negocio, controlar costos, administrar usuarios y el plan contratado. |
+| **Uso típico** | Ingresa 2-3 veces por semana para revisar indicadores, aprobar decisiones estratégicas y gestionar facturación. |
+| **Dolor principal** | No tener visibilidad real del negocio sin depender de reportes manuales de otros. |
+| **Expectativa del sistema** | Panel ejecutivo limpio, KPIs clave en portada, acceso total sin restricciones, control de usuarios y billing. |
+| **Nivel técnico** | Variable: puede ser un empresario con nivel digital básico o un gerente técnico. El sistema debe adaptarse a ambos. |
+
+---
+
+**STAKEHOLDER 2 — ADMINISTRADOR DEL TENANT**
+
+| Campo | Descripción |
+|-------|-------------|
+| **Quién es** | Empleado de confianza del dueño. Opera el sistema diariamente. Puede ser gerente, jefe de operaciones o encargado general. |
+| **Motivación** | Gestionar todas las áreas operativas del negocio con información centralizada y procesos ordenados. |
+| **Uso típico** | Uso intensivo diario: crea usuarios, aprueba operaciones, genera reportes, supervisa módulos. |
+| **Dolor principal** | Actualmente usa múltiples herramientas desconectadas (Excel, WhatsApp, cuadernos). |
+| **Expectativa del sistema** | Acceso a todos los módulos operativos, cola de aprobaciones visible al inicio del día, reportes exportables. |
+| **Nivel técnico** | Medio. Maneja herramientas digitales básicas, aprende rápido si la interfaz es intuitiva. |
+
+---
+
+**STAKEHOLDER 3 — SUPERVISOR / COORDINADOR DE ÁREA**
+
+| Campo | Descripción |
+|-------|-------------|
+| **Quién es** | Jefe de un área específica: ventas, logística, producción, RRHH, finanzas, según el rubro del tenant. |
+| **Motivación** | Gestionar a su equipo, ver el desempeño de su área y coordinar actividades. |
+| **Uso típico** | Diario moderado: revisa su área, aprueba o rechaza solicitudes de su equipo, genera reportes de área. |
+| **Dolor principal** | Falta de visibilidad de lo que hace su equipo en tiempo real. |
+| **Expectativa del sistema** | Vista de su área con KPIs propios, lista de tareas del equipo, aprobaciones de su nivel. |
+| **Nivel técnico** | Medio. Familiarizado con herramientas de gestión básicas. |
+
+---
+
+**STAKEHOLDER 4 — OPERADOR / TRABAJADOR**
+
+| Campo | Descripción |
+|-------|-------------|
+| **Quién es** | Empleado operativo: vendedor, cajero, almacenero, asistente, voluntario, auxiliar. |
+| **Motivación** | Completar sus tareas del día de forma rápida y sin errores. No le interesa la visión global del negocio. |
+| **Uso típico** | Uso frecuente pero acotado: registra ventas, mueve inventario, marca asistencias, sube documentos. |
+| **Dolor principal** | Interfaces complejas que lo ralentizan. Preferiría hacer su tarea en 3 pasos. |
+| **Expectativa del sistema** | Flujos simples, acceso solo a lo que necesita, feedback inmediato de sus acciones. |
+| **Nivel técnico** | Básico. Puede ser su primera experiencia con software de gestión empresarial. |
+
+---
+
+**STAKEHOLDER 5 — AUDITOR INTERNO**
+
+| Campo | Descripción |
+|-------|-------------|
+| **Quién es** | Contador, revisor de cumplimiento o asesor externo con acceso de solo lectura a la bitácora y reportes financieros. |
+| **Motivación** | Verificar que las operaciones del negocio cumplan con normativas internas y legales. |
+| **Uso típico** | Eventual: auditorías periódicas, revisiones de fin de mes o ante incidentes. |
+| **Dolor principal** | No tener un registro trazable y exportable de quién hizo qué y cuándo. |
+| **Expectativa del sistema** | Bitácora completa e inmutable, reportes exportables en PDF/Excel, filtros por fecha/usuario/módulo. |
+| **Nivel técnico** | Medio-alto. Habituado a trabajar con datos y reportes. |
+
+---
+
+#### 4.2.3 Stakeholders Externos al Tenant
+
+Estos actores no usan el sistema directamente pero interactúan con él de forma indirecta.
+
+| Stakeholder | Relación con el sistema | Implicancia de diseño |
+|-------------|------------------------|-----------------------|
+| **Clientes finales del tenant** | Pueden recibir notificaciones, facturas o acceder a un portal básico de seguimiento de pedidos | Vistas públicas mínimas, no requieren cuenta completa |
+| **Proveedores del tenant** | El tenant los gestiona dentro del módulo de compras/inventario | No tienen acceso directo; son gestionados como entidades del sistema |
+| **Contadores / Asesores externos** | Necesitan exportar datos contables del sistema | Acceso de auditor externo con permisos de solo lectura por periodo |
+
+---
+
+#### 4.2.4 Stakeholders Regulatorios y de Contexto
+
+| Stakeholder | Rol en el sistema |
+|-------------|-----------------|
+| **SUNAT** | El módulo de facturación debe integrarse con el sistema de facturación electrónica. Sus validaciones condicionan el diseño del módulo de ventas y comprobantes. |
+| **Ley N° 29733 (Datos Personales - Perú)** | Los datos de clientes, empleados y usuarios deben ser gestionados con consentimiento. Obliga a incluir política de privacidad, soft-delete y auditoría de accesos a datos personales. |
+| **INDECOPI** | Regula publicidad y contratos de servicio. Los términos del plan SaaS deben estar claros en la interfaz de billing. |
+| **Entidades bancarias / Pasarelas de pago** | Yape, PagoEfectivo, Izipay, Culqi (pasarelas peruanas) deben integrarse para el cobro de suscripciones del sistema. |
+| **Certificadoras OSE (SUNAT)** | Nubefact, Holística u otra OSE certificada actúa como intermediario para la emisión de comprobantes electrónicos. |
+
+---
+
+#### 4.2.5 Roles del Sistema y Matriz de Acceso Base
+
+> Esta tabla define los roles estándar del sistema multi-tenant y qué nivel de acceso tiene
+> cada uno. Es una definición BASE que puede extenderse y configurarse por tenant en la
+> sección de Configuración → Usuarios y Roles.
+
+**Jerarquía de roles (de mayor a menor privilegio):**
+
+| # | Rol | Jerarquía | Tipo de usuario |
+|---|-----|-----------|----------------|
+| 1 | **Owner / Super Admin** | 0 (máximo) | Dueño del tenant |
+| 2 | **Administrador** | 10 | Gerente / encargado general |
+| 3 | **Supervisor / Coordinador** | 20 | Jefe de área |
+| 4 | **Operador Senior** | 30 | Empleado con funciones ampliadas (RRHH, finanzas) |
+| 5 | **Operador Estándar** | 50 | Empleado operativo (ventas, almacén, campo) |
+| 6 | **Auditor** | 90 | Solo lectura de bitácora y reportes |
+| 7 | **Cliente / Portal** | 99 | Acceso externo mínimo (portal de cliente) |
+
+---
+
+**Matriz de acceso por módulo (base — configurable por tenant):**
+
+| Módulo / Función | Owner | Admin | Supervisor | Op. Senior | Op. Estándar | Auditor | Cliente |
+|-----------------|:-----:|:-----:|:----------:|:----------:|:------------:|:-------:|:-------:|
+| **Dashboard ejecutivo** | ✅ | ✅ | 🟡 parcial | — | — | — | — |
+| **Gestión de usuarios** | ✅ | ✅ | — | — | — | — | — |
+| **Billing / Plan** | ✅ | — | — | — | — | — | — |
+| **Configuración del tenant** | ✅ | ✅ | — | — | — | — | — |
+| **Módulos operativos** (ventas, inventario, etc.) | ✅ | ✅ | ✅ su área | ✅ su área | 🟡 parcial | 👁 lectura | — |
+| **Finanzas / Caja** | ✅ | ✅ | 👁 lectura | ✅ | — | 👁 lectura | — |
+| **RRHH / Personal** | ✅ | ✅ | 🟡 su equipo | ✅ | — | 👁 lectura | — |
+| **Reportes generales** | ✅ | ✅ | 🟡 su área | 🟡 su área | — | 👁 lectura | — |
+| **Bitácora / Auditoría** | ✅ | ✅ | — | — | — | ✅ | — |
+| **Portal de cliente** | — | — | — | — | — | — | ✅ |
+| **Módulo clínico / sensible** | ✅ | ✅ | 🔒 con permiso explícito | 🔒 con permiso explícito | — | 👁 log de acceso | — |
+
+**Leyenda:**
+```
+✅  Acceso completo (crear, leer, editar, eliminar)
+🟡  Acceso parcial (solo su área, o solo algunas acciones)
+👁  Solo lectura
+🔒  Acceso restringido que requiere permiso explícito del Owner/Admin
+—   Sin acceso (módulo no visible)
+```
+
+---
+
+#### 4.2.6 Principios de Diseño de Roles
+
+1. **Principio de mínimo privilegio**: Cada rol recibe solo el acceso necesario para
+   cumplir su función. Si un operador de ventas no necesita ver finanzas, no las ve.
+
+2. **Configurabilidad por tenant**: La matriz base puede ser modificada por el Owner o
+   Administrador desde Configuración → Roles. Un tenant puede crear roles personalizados
+   dentro de los límites de su plan.
+
+3. **Herencia de permisos**: Un rol de jerarquía más alta hereda los permisos de los
+   roles inferiores más sus permisos adicionales.
+
+4. **Separación de billing y operaciones**: El Owner es el único que accede a billing.
+   El Administrador gestiona todo lo operativo pero no puede modificar el plan ni ver
+   la facturación del sistema.
+
+5. **Datos sensibles siempre auditados**: Cualquier acceso a módulos marcados como
+   sensibles (datos médicos, datos personales, documentos financieros críticos) genera
+   un registro automático en la bitácora, independientemente del rol.
+
+---
+
+#### 4.2.7 Roles Según Plan Contratado
+
+La cantidad de roles disponibles y la capacidad de personalización varía según el plan:
+
+| Capacidad | Plan Básico | Plan Estándar | Plan Plus |
+|-----------|:-----------:|:-------------:|:---------:|
+| Roles predefinidos disponibles | 2 (Owner + Operador) | 4 (todos excepto Auditor) | 7 (todos) |
+| Creación de roles personalizados | No | Sí (hasta 3) | Sí (ilimitados) |
+| Asignación de permisos granulares | No | Parcial | Completo |
+| Roles por sede diferenciados | No | No | Sí |
+| Auditor / acceso de solo lectura | No | No | Sí |
+
+---
+
 ## 5. ESTRUCTURA DE COSTOS DE DESARROLLO
 
 ### 5.1 Equipo de Desarrollo — Proyecto MVP a v1.0
@@ -537,182 +751,4 @@ Organización compleja de 50 a 300+ empleados: cooperativas agroindustriales, in
 | Costos operativos del año | S/. 82,000 | S/. 132,000 | S/. 156,000 |
 | **Resultado del año** | **-S/. 14,000** | **+S/. 66,000** | **+S/. 228,000** |
 
-*Año 1 negativo por inversión inicial amortizada. El sistema empieza a recuperar inversión en el Año 2.*
-
-### 6.3 Punto de Equilibrio
-
-- **Costo operativo mensual**: S/. 11,000
-- **Ingreso promedio ponderado por cliente**: S/. 215/mes (mix de planes)
-- **Clientes para break-even**: ⌈11,000 / 215⌉ = **52 clientes activos**
-- **Mes estimado de break-even**: Mes 18-20 desde lanzamiento comercial
-
-### 6.4 Métricas SaaS Objetivo
-
-| Métrica | Mes 6 | Mes 12 | Mes 24 | Mes 36 |
-|---------|-------|--------|--------|--------|
-| MRR | S/. 4,200 | S/. 9,000 | S/. 19,500 | S/. 34,200 |
-| Churn mensual promedio | < 4% | < 3% | < 2.5% | < 2% |
-| CAC (costo adquisición) | S/. 380 | S/. 320 | S/. 250 | S/. 200 |
-| LTV promedio | S/. 3,800 | S/. 5,200 | S/. 7,100 | S/. 9,400 |
-| LTV / CAC | 10x | 16x | 28x | 47x |
-| NPS | > 25 | > 40 | > 55 | > 65 |
-
----
-
-## 7. PLAN DE IMPLEMENTACIÓN
-
-### 7.1 Fases de Desarrollo y Lanzamiento
-
-**FASE 0 — Preparación (Semanas 1-3)**
-- Configuración del entorno de desarrollo (repositorio, CI/CD, infraestructura base)
-- Diseño de la arquitectura multi-tenant (Fase 5 — BD)
-- Wireframes y guía de estilos (Fase 6 — UX)
-- Hito: Entorno técnico listo, diseño aprobado
-
-**FASE 1 — MVP / Must Have (Semanas 4-14)**
-- Sprint 1 (S4-S5): Autenticación, gestión de tenants, roles y permisos
-- Sprint 2 (S6-S7): Catálogo de productos e inventario básico
-- Sprint 3 (S8-S9): Módulo de ventas y caja diaria
-- Sprint 4 (S10-S11): Facturación electrónica SUNAT
-- Sprint 5 (S12-S13): Reportes básicos y dashboard inicial
-- Sprint 6 (S14): QA integral del MVP, correcciones y estabilización
-- Hito: **Beta privada — Plan Básico funcional** → 5 clientes piloto
-
-**FASE 2 — Versión 1.0 / Should Have (Semanas 15-24)**
-- Sprint 7-8: Módulo de compras, proveedores y cuentas por pagar
-- Sprint 9-10: Recursos humanos y planilla básica
-- Sprint 11: Contabilidad básica (PCGE peruano)
-- Sprint 12: Dashboard avanzado, reportes ejecutivos, exportación
-- Hito: **Lanzamiento comercial v1.0** — Planes Básico y Estándar disponibles
-
-**FASE 3 — Versión 1.5 / Plus (Semanas 25-36)**
-- Sprint 13-14: Multi-tenant / multi-sede
-- Sprint 15: BI y dashboards personalizables
-- Sprint 16: Gestión de proyectos y contratos
-- Sprint 17: API REST completa e integraciones nativas
-- Sprint 18: Módulo de auditoría, activos fijos, personalización
-- Hito: **Lanzamiento Plan Plus y versión Enterprise**
-
-### 7.2 Cronograma Gantt Resumido
-
-```
-ACTIVIDAD                         | M1 | M2 | M3 | M4 | M5 | M6 | M7 | M8 | M9 |M10 |M11 |M12 |
-----------------------------------|----|----|----|----|----|----|----|----|----|----|----|----|
-Arquitectura + Diseño BD (Fase 5) |████|████|    |    |    |    |    |    |    |    |    |    |
-Diseño UX/UI (Fase 6)             |████|████|████|    |    |    |    |    |    |    |    |    |
-Dev — Autenticación y tenants     |    |████|████|    |    |    |    |    |    |    |    |    |
-Dev — Inventario y ventas         |    |    |████|████|    |    |    |    |    |    |    |    |
-Dev — Facturación SUNAT           |    |    |    |████|████|    |    |    |    |    |    |    |
-Dev — Reportes y dashboard básico |    |    |    |    |████|████|    |    |    |    |    |    |
-QA MVP + Beta privada             |    |    |    |    |    |████|████|    |    |    |    |    |
-Dev — Compras + RRHH + Planilla   |    |    |    |    |    |    |████|████|    |    |    |    |
-Dev — Contabilidad + Reportes adv |    |    |    |    |    |    |    |████|████|    |    |    |
-QA v1.0 + Lanzamiento comercial   |    |    |    |    |    |    |    |    |████|████|    |    |
-Dev — Multi-tenant + BI + API     |    |    |    |    |    |    |    |    |    |████|████|    |
-QA v1.5 + Lanzamiento Plan Plus   |    |    |    |    |    |    |    |    |    |    |████|████|
-```
-
----
-
-## 8. ANÁLISIS DE RIESGOS
-
-### 8.1 Matriz de Riesgos del Proyecto
-
-| ID | Riesgo | Categ. | Prob. | Impacto | Nivel | Mitigación |
-|----|--------|--------|-------|---------|-------|-----------|
-| R-01 | Retraso en desarrollo por estimación incorrecta de Story Points | Técnico | Media | Alto | **Alto** | Buffer del 20% en cronograma; metodología ágil con sprints de 2 semanas permite ajuste continuo |
-| R-02 | Baja adopción inicial por resistencia cultural al cambio digital | Mercado | Alta | Alto | **Crítico** | Programa de early adopters con precio especial + acompañamiento intensivo de 60 días |
-| R-03 | Fallo de integración con SUNAT (facturación electrónica) | Técnico | Media | Alto | **Alto** | Usar proveedor OSE certificado (Nubefact, Holística) en lugar de integración directa |
-| R-04 | Competidor con mayor recurso lanza producto similar | Mercado | Baja | Medio | **Moderado** | Acelerar construcción de base de clientes y switching costs en primeros 12 meses |
-| R-05 | Falta de financiamiento para completar desarrollo | Financiero | Media | Crítico | **Crítico** | Lanzar MVP con inversión mínima viable (S/. 65K); generar ingresos desde mes 8 para autofinanciar el resto |
-| R-06 | Problemas de seguridad / fuga de datos de un tenant | Técnico | Baja | Crítico | **Alto** | Arquitectura de aislamiento estricto por tenant desde el diseño; auditorías de seguridad trimestrales |
-| R-07 | Pérdida de miembro clave del equipo de desarrollo | Operacional | Media | Alto | **Alto** | Documentación técnica exhaustiva; código revisado por pares; no depender de un solo desarrollador |
-| R-08 | Regulación peruana de datos (Ley 29733) incumplida | Legal | Baja | Alto | **Moderado** | Contratar asesoría legal especializada en privacidad de datos desde el diseño del sistema |
-
-### 8.2 Plan de Contingencia — Riesgos Críticos
-
-**R-02 (Baja adopción):**
-Si al mes 12 el número de clientes es < 20 (menos del 50% del objetivo base), activar: (1) reducción temporal de precios del 30% por 3 meses, (2) programa de "embajadores" con beneficio por referido, (3) rediseño de estrategia de canal con alianza con cámaras de comercio regionales.
-
-**R-05 (Falta de financiamiento):**
-Estrategia de bootstrapping: (1) contratar equipo mínimo (1 backend + 1 frontend), (2) lanzar MVP en 4 meses con 6 módulos básicos, (3) los primeros 10 clientes piloto financian el desarrollo de la siguiente fase con prepago anual con descuento del 40%.
-
----
-
-## 9. ESTRATEGIA DE GO-TO-MARKET
-
-### 9.1 Canales de Adquisición
-
-| Canal | Segmento objetivo | Inversión mensual | CAC estimado | Conversión |
-|-------|------------------|------------------|-------------|-----------|
-| Referidos (boca a boca) | Todos | S/. 0 | S/. 80 | 25% |
-| Alianza Cámara de Comercio Ayacucho | A y B | S/. 200 | S/. 150 | 12% |
-| Google Ads (búsqueda local) | B y C | S/. 500 | S/. 320 | 8% |
-| Demos presenciales y webinars | B y C | S/. 300 | S/. 250 | 18% |
-| Contenido y SEO (blog técnico) | A y B | S/. 200 | S/. 180 | 6% |
-| Facebook / Instagram Ads | A | S/. 300 | S/. 200 | 5% |
-
-### 9.2 Estrategia de Precios de Lanzamiento
-
-Durante los primeros **6 meses** de operación comercial:
-- **Early adopters (primeros 10 clientes)**: 50% de descuento durante 6 meses a cambio de feedback estructurado y testimonios
-- **Trial gratuito**: 30 días en Plan Básico sin tarjeta de crédito
-- **Descuento anual**: 2 meses gratis en todos los planes (ya incluido en el precio anual)
-
----
-
-## 10. INDICADORES DE ÉXITO (KPIs)
-
-| KPI | Definición | Meta M6 | Meta M12 | Meta M24 |
-|----|-----------|---------|---------|---------|
-| Clientes activos | Total de tenants con suscripción vigente | 15 | 43 | 91 |
-| MRR | Ingreso mensual recurrente total | S/. 3,200 | S/. 9,000 | S/. 19,500 |
-| Churn mensual | % clientes que cancelan por mes | < 4% | < 3% | < 2% |
-| NPS | Net Promoter Score (encuesta mensual) | > 30 | > 45 | > 60 |
-| CAC | Costo promedio por cliente adquirido | < S/. 400 | < S/. 320 | < S/. 250 |
-| LTV / CAC | Ratio de salud financiera del negocio | > 8x | > 12x | > 25x |
-| Uptime promedio | Disponibilidad del sistema | > 99.0% | > 99.5% | > 99.9% |
-| Tiempo de resolución soporte | Promedio de tiempo de cierre de tickets | < 36h | < 24h | < 12h |
-| % clientes en plan anual | Estabilidad de ingresos recurrentes | > 20% | > 30% | > 40% |
-| Módulos activos promedio por tenant | Profundidad de uso del sistema | 4.2 | 5.8 | 7.1 |
-
----
-
-## 11. SOSTENIBILIDAD Y ESCALABILIDAD
-
-### 11.1 Sostenibilidad Financiera
-
-El modelo SaaS con ingresos recurrentes garantiza predictibilidad financiera. Con 52 clientes activos (break-even) distribuidos en los tres planes, el sistema cubre todos sus costos operativos mensuales sin depender de ventas únicas o proyectos esporádicos. La escalabilidad de la infraestructura cloud permite crecer en número de clientes sin inversiones proporcionales en infraestructura.
-
-### 11.2 Hoja de Ruta Geográfica
-
-| Fase | Periodo | Mercado | Acción principal |
-|------|---------|---------|-----------------|
-| 1 | 0-12 meses | Ayacucho | Validación de producto + primeros 43 clientes |
-| 2 | 12-24 meses | Sur del Perú (Cusco, Puno, Apurímac) | Expansión regional con equipo de ventas propio |
-| 3 | 24-36 meses | Lima PYME + Perú nacional | Oficina comercial en Lima + equipo de soporte ampliado |
-| 4 | 36+ meses | Bolivia, Ecuador | Adaptación normativa + alianzas locales |
-
-### 11.3 Evolución del Producto
-
-- **2026**: Integración nativa con SUNAT, Banco de la Nación, AFP principales
-- **2027**: Módulo de inteligencia artificial para predicción de demanda y análisis financiero automatizado
-- **2028**: Marketplace de integraciones (plugins de terceros) + versión mobile nativa
-
----
-
-## 12. CONCLUSIÓN ESTRATÉGICA
-
-El módulo de software multi-tenant descrito en este plan representa una oportunidad de mercado real y poco atendida en el sur del Perú. La validación en Fase 1 confirmó el problema, la Fase 2 definió por qué esta solución puede ser superior a lo existente, y la Fase 3 especificó con precisión qué construir.
-
-Los tres planes comerciales — **Básico (S/. 120), Estándar (S/. 280) y Plus (S/. 580)** — están calibrados para capturar tres segmentos distintos sin canibalización, con una progresión de valor clara y verificable en cada escalón. Los precios son competitivos frente al mercado regional, justificados por el valor real que entrega el sistema y sostenibles para cubrir los costos del negocio.
-
-La viabilidad financiera del proyecto es alta bajo el escenario base: con una inversión inicial de S/. 95,000-120,000, el sistema puede alcanzar su punto de equilibrio en el mes 18-20 y generar ROI positivo sostenido a partir del año 2. La clave de éxito está en la ejecución disciplinada del lanzamiento y en construir una base inicial de 20-30 clientes comprometidos durante los primeros 6 meses de operación comercial.
-
----
-
-*Plan de Negocio — Módulo de Software Multi-Tenant*
-*Fase 4 del Proyecto de Documentación de Diseño de Sistemas*
-*Versión 1.0 — Generado: 2026-05-13*
-*Autor: Eduardo Sebastian Paipay Vega — UNSCH*
-*Repositorio: https://github.com/Eduardo-Sebastian-Paipay-Vega/Documentaci-n_de_dise-o_de_Sistemas_y_Modulos*
+*Año 1 negativo por inve

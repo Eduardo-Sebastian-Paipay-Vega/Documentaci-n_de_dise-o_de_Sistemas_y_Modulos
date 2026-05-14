@@ -151,6 +151,74 @@ Extrae y memoriza COMPLETAMENTE:
 > Si ya existe: no lo recrearás. Solo lo mencionarás en la sección de objetos reutilizados.
 > Si no existe y es necesario: lo crearás usando las convenciones establecidas.
 
+### PASO 1.5 — Leer Stakeholders y Roles de la Fase 4 (Sección 4.2)
+
+> Esta sección conecta directamente los actores del negocio (definidos en el Plan de Negocio,
+> sección 4.2) con los objetos de la base de datos. Antes de escribir SQL debes tener claro
+> QUIÉNES son los usuarios del sistema y QUÉ datos necesitan, para no crear estructuras huérfanas.
+
+#### Mapa de Stakeholders → Tablas de la BD_Maestra
+
+Los actores definidos en Fase 4 §4.2 ya tienen representación en la BD_Maestra. Verifica que
+existen y comprendelos antes de extender:
+
+| Stakeholder (Fase 4) | Tabla de BD relacionada | Schema | Notas de diseño |
+|---------------------|------------------------|--------|----------------|
+| **Owner / Super Admin** | `public.tenants` (es el tenant mismo) + `public.profiles` + `public.roles` (jerarquía 0) | public | El owner se identifica por el campo `owner_id` en `tenants` |
+| **Administrador** | `public.profiles` + `public.roles` (jerarquía 10) | public | Rol `admin` preexistente en `cat_roles` |
+| **Supervisor / Coordinador** | `public.profiles` + `public.roles` (jerarquía 20) | public | Roles `coordinador_ong`, `rrhh_manager`, etc. |
+| **Operador Senior** | `public.profiles` + roles de jerarquía 30-40 | public | Roles de área: `financiero`, `rrhh_manager` |
+| **Operador Estándar** | `public.profiles` + roles de jerarquía 50-90 | public | `voluntario`, `docente`, `medico_clinico` |
+| **Auditor** | `public.profiles` + `public.roles` (jerarquía 99) | public | Rol `auditor` — acceso de solo lectura a `auditoria.*` |
+| **Cliente / Portal externo** | No tiene tabla de usuario completo; pendiente diseño de portal | — | Si se implementa, iría en un schema nuevo `portal` |
+
+#### Tablas de la BD_Maestra relevantes para el modelo de roles
+
+Al construir el segundo piso, debes leer y entender las siguientes tablas del PRIMER PISO
+antes de agregar cualquier objeto relacionado con permisos, roles o acceso:
+
+```
+PRIMER PISO — Objetos relacionados con IAM y Roles (NO modificar, solo reutilizar):
+  public.tenants              → El tenant (organización que contrató el SaaS)
+  public.profiles             → Los usuarios (vinculados a auth.users de Supabase)
+  public.roles                → Catálogo de roles con su jerarquía numérica
+  public.permisos             → Permisos granulares por módulo/acción
+  public.user_roles           → Asignación de roles a usuarios (M:M)
+  public.role_permissions     → Asignación de permisos a roles
+  public.sedes                → Sedes del tenant (los accesos pueden ser por sede)
+  ace.access_links            → Vínculos de acceso dinámico (ACE Engine)
+  ace.memberships             → Membresías que determinan contexto de acceso
+  ace.role_module_access      → Control de qué módulos puede ver cada rol
+  public.plan_entitlements    → Qué módulos están habilitados por plan contratado
+```
+
+#### Reglas de extensión para el modelo de stakeholders/roles
+
+Al crear tablas del SEGUNDO PISO que requieran vínculo con usuarios o roles, seguir este patrón:
+
+```sql
+-- PATRÓN: referencia a usuario y rol en tablas nuevas
+-- NO crear nuevas tablas de usuarios/roles; referenciar las existentes
+
+created_by   uuid  REFERENCES public.profiles(id)
+assigned_to  uuid  REFERENCES public.profiles(id)
+role_id      uuid  REFERENCES public.roles(id)      -- si el dato pertenece a un rol específico
+tenant_id    uuid  REFERENCES public.tenants(id)    -- obligatorio en TODA tabla de datos
+```
+
+#### Gap identificado en el modelo de roles (oportunidad para el segundo piso)
+
+Al revisar la BD_Maestra y la Sección 4.2, se identifica el siguiente GAP que el segundo
+piso PUEDE (no debe, evalúa según RF) cubrir:
+
+| Gap | Impacto | Solución posible en segundo piso |
+|-----|---------|----------------------------------|
+| Portal externo para clientes finales del tenant | Stakeholder "Cliente/Portal" no tiene tabla de acceso | Nuevo schema `portal` con `portal_users` y RLS restringida |
+| Roles personalizados por tenant | La BD_Maestra tiene catálogo base, pero no permite configuración por tenant sin tocar la tabla global | Nueva tabla `tenant_custom_roles` en schema `public` que extiende sin modificar `public.roles` |
+| Capacidades por plan en roles | `plan_entitlements` existe pero puede no cubrir la granularidad de roles por plan descrita en §4.2.7 | Extender `plan_entitlements` con columna `min_role_hierarchy` para bloquear funciones a roles de bajo nivel en planes básicos |
+
+---
+
 ### PASO 2 — Leer AGEN_3 output (Fase 3 — la más importante para este prompt)
 
 Extrae y registra:
@@ -631,116 +699,4 @@ COMMENT ON TRIGGER tr_[nombre] ON [schema].[tabla] IS
 -- NUNCA se eliminan políticas RLS existentes sin análisis.
 -- ============================================================
 
--- [RF-XXX] — Política: [nombre descriptivo]
--- Tabla: [schema].[tabla]
--- Aplica a: [rol de DB o authenticated]
--- Operaciones: SELECT / INSERT / UPDATE / DELETE
--- Rollback: DROP POLICY IF EXISTS [nombre] ON [schema].[tabla];
-
-ALTER TABLE [schema].[tabla] ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "pol_[tabla]_[operacion]_[descripcion]"
-  ON [schema].[tabla]
-  FOR [SELECT|INSERT|UPDATE|DELETE|ALL]
-  TO authenticated
-  USING (
-    tenant_id = fn_current_tenant_id()
-    -- RF-XXX: condición adicional por requisito de acceso
-    AND [condicion_adicional]
-  )
-  WITH CHECK (
-    tenant_id = fn_current_tenant_id()
-  );
-
-
--- ============================================================
--- SECCIÓN 7: GRANTS Y PERMISOS
--- ============================================================
--- Otorgar permisos sobre funciones y vistas nuevas a los
--- roles de base de datos ya existentes.
--- ============================================================
-
--- Funciones: EXECUTE
-GRANT EXECUTE ON FUNCTION [schema].fn_[nombre](uuid, [tipos])
-  TO authenticated;
-
--- Vistas: SELECT
-GRANT SELECT ON [schema].vw_[nombre]
-  TO authenticated;
-
-
--- ============================================================
--- SECCIÓN 8: DATOS SEMILLA (SEED) PARA CATÁLOGOS NUEVOS
--- ============================================================
--- Si se crearon valores nuevos de catálogo requeridos por RF,
--- se insertan aquí con INSERT ... ON CONFLICT DO NOTHING.
--- ============================================================
-
--- [RF-XXX]: Seed de [nombre del catálogo]
-INSERT INTO public.cat_[nombre] (id, description)
-VALUES
-  ('[valor_1]', '[Descripción]'),
-  ('[valor_2]', '[Descripción]')
-ON CONFLICT (id) DO NOTHING;
-
-
--- ============================================================
--- SECCIÓN 9: COMENTARIOS DE DOCUMENTACIÓN EN BD
--- ============================================================
--- COMMENT ON para tablas existentes que ahora tienen
--- trazabilidad con RF/CU (si aún no tienen comentario).
--- ============================================================
-
-COMMENT ON TABLE [schema].[tabla] IS
-  '[Descripción funcional de la tabla]
-   RF relacionados: RF-XXX, RF-YYY
-   CU relacionados: CU-XXX, CU-YYY
-   Plan: [nivel en que se usa]';
-
-COMMENT ON COLUMN [schema].[tabla].[columna] IS
-  'RF-XXX: [descripción del significado de negocio de esta columna]';
-
-
--- ============================================================
--- SECCIÓN 10: REGISTRO DE DECISIONES DE DISEÑO
--- ============================================================
--- Documenta las decisiones arquitectónicas tomadas en este
--- script: qué se reutilizó del primer piso, qué se extendió,
--- qué se creó nuevo, y POR QUÉ se tomó cada decisión.
--- También documenta los RF que se decidió implementar en la
--- capa de aplicación (no en BD) y la justificación.
--- ============================================================
-
-/*
-============================================================
-REGISTRO DE DECISIONES DE DISEÑO — SEGUNDO PISO
-============================================================
-
-OBJETOS REUTILIZADOS DEL PRIMER PISO (sin modificación)
-──────────────────────────────────────────────────────────
-DEC-R-001
-  Objeto       : public.tenants
-  RF que lo usa: RF-XXX, RF-YYY
-  Decisión     : Reutilizar sin modificación. La tabla ya contiene
-                 plan_id y status_financial_id que son suficientes
-                 para los requisitos de aislamiento multi-tenant.
-
-DEC-R-002
-  Objeto       : public.fn_current_tenant_id()
-  RF que lo usa: Todos los RF con aislamiento multi-tenant
-  Decisión     : Reutilizar en todas las políticas RLS nuevas del
-                 segundo piso. Garantiza consistencia del patrón.
-
-
-OBJETOS EXTENDIDOS DEL PRIMER PISO (ALTER TABLE / nueva política)
-──────────────────────────────────────────────────────────────────
-DEC-E-001
-  Objeto       : [schema].[tabla] — columna [nombre_columna]
-  RF que lo usa: RF-XXX
-  Decisión     : Agregar columna con ALTER TABLE ADD COLUMN IF NOT EXISTS.
-                 La tabla ya existía; la columna nueva es aditiva y
-                 no rompe queries existentes (valor default definido).
-
-DEC-E-002
-  Objeto       : [schema].[tabla] — política RLS [nombre]
-  RF que lo usa: RF-Y
+-- [RF-XXX] �
