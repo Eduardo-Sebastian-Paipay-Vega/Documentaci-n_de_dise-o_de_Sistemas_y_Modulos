@@ -2,1015 +2,886 @@
 
 > **Proyecto**: Comerci — Sistema Inteligente de Gestión Financiera para MYPEs LATAM
 > **Fase**: 5 — Base de Datos
-> **Versión**: 2.0
+> **Versión**: 3.0
 > **Fecha**: 2026-05-18
 > **Autor**: Eduardo Sebastian Paipay Vega
 
 ---
 
-## 🎯 Propósito de Esta Fase
+## TABLA DE CONTENIDOS
 
-Definir la estructura completa de datos de Comerci: entidades, relaciones, tipos de campo, scripts DDL, índices de performance, estrategia de encriptación y política de backup. Este documento es la fuente de verdad que guía a los ingenieros backend desde el primer día de desarrollo.
-
----
-
-## 1. MOTOR DE BASE DE DATOS Y JUSTIFICACIÓN
-
-**Motor elegido: PostgreSQL 16**
-
-| Criterio | PostgreSQL | MySQL | MongoDB |
-|---------|-----------|-------|--------|
-| Soporte JSONB (datos variables de bancos) | ✅ Nativo | ⚠️ Limitado | ✅ Nativo |
-| Transacciones ACID para dinero | ✅ Completo | ✅ Completo | ⚠️ Parcial |
-| Extensiones cifrado (pgcrypto) | ✅ | ❌ | ❌ |
-| Adopción en fintechs LATAM (Nubank, Belvo) | ✅ Estándar | ⚠️ Menor | ❌ |
-| Soporte de rangos de fechas (predicciones) | ✅ TSRANGE | ❌ | ❌ |
-| Row-Level Security (multi-tenant) | ✅ Nativo | ❌ | ❌ |
-| Full-text search en español | ✅ ts_vector | ⚠️ Limitado | ✅ |
-
-**Bases de datos complementarias:**
-- **Redis 7** — Caché de dashboards y sesiones activas (TTL 5 minutos para saldos)
-- **TimescaleDB** (extensión de PostgreSQL) — Series temporales para predicciones ML
-- **S3 / Cloudflare R2** — Almacenamiento de reportes PDF generados
+1. [Posicionamiento Arquitectónico](#1-posicionamiento-arquitectónico)
+2. [Convenciones Globales de la BD Maestra](#2-convenciones-globales-de-la-bd-maestra)
+3. [Decisiones de Integración](#3-decisiones-de-integración)
+4. [Registro del Módulo Comerci](#4-registro-del-módulo-comerci)
+5. [Diccionario de Datos — Schema `comerci`](#5-diccionario-de-datos--schema-comerci)
+6. [Script DDL Completo](#6-script-ddl-completo)
+7. [Row-Level Security (RLS)](#7-row-level-security-rls)
+8. [Índices y Optimizaciones](#8-índices-y-optimizaciones)
+9. [Funciones y Procedimientos Almacenados](#9-funciones-y-procedimientos-almacenados)
+10. [Datos Semilla (Seed Data)](#10-datos-semilla-seed-data)
+11. [Cifrado de Tokens Bancarios](#11-cifrado-de-tokens-bancarios)
+12. [Pipeline ML — Tablas de Soporte](#12-pipeline-ml--tablas-de-soporte)
+13. [Política de Respaldos](#13-política-de-respaldos)
+14. [Diagrama Entidad-Relación](#14-diagrama-entidad-relación)
+15. [Trazabilidad RF ↔ Tablas](#15-trazabilidad-rf--tablas)
 
 ---
 
-## 2. DIAGRAMA ENTIDAD-RELACIÓN (ERD)
+## 1. POSICIONAMIENTO ARQUITECTÓNICO
+
+### 1.1 Comerci no es un sistema aislado
+
+**Comerci se implementa como un módulo de la BD Maestra (Democra ONG Platform)**, no como una base de datos independiente. Esto significa que Comerci no reinventa la autenticación, el multi-tenancy, el billing ni el sistema de permisos — todo eso ya existe en el schema `public` de la BD Maestra.
+
+La arquitectura es la siguiente:
 
 ```
-┌──────────────────┐       ┌──────────────────────┐
-│      USERS       │       │     BUSINESSES        │
-├──────────────────┤       ├──────────────────────┤
-│ id (PK)          │──────▶│ id (PK)              │
-│ email            │ 1   N │ user_id (FK)         │
-│ phone            │       │ name                 │
-│ full_name        │       │ ruc                  │
-│ password_hash    │       │ sector               │
-│ phone_verified   │       │ monthly_income_est   │
-│ email_verified   │       │ employee_count       │
-│ created_at       │       │ country              │
-│ last_login_at    │       │ city                 │
-│ deleted_at       │       │ created_at           │
-└──────────────────┘       │ is_active            │
-                           └──────────────────────┘
-                                     │ 1
-                                     │
-                              ┌──────▼───────────────────────────────┐
-                              │               ACCOUNTS                │
-                              ├──────────────────────────────────────┤
-                              │ id (PK)                               │
-                              │ business_id (FK)                      │
-                              │ type  [bank|yape|plin|cash|other]     │
-                              │ name                                  │
-                              │ balance_cents (INT, sin decimales)    │
-                              │ currency [PEN|USD|COP|MXN]           │
-                              │ integration_token_enc (AES-256)       │
-                              │ provider_code                         │
-                              │ last_synced_at                        │
-                              │ sync_status [ok|error|pending]        │
-                              │ is_active                             │
-                              └──────────────────────────────────────┘
-                                            │ 1
-                                            │ N
-                    ┌───────────────────────▼────────────────────────────┐
-                    │                   TRANSACTIONS                      │
-                    ├────────────────────────────────────────────────────┤
-                    │ id (PK)                                             │
-                    │ account_id (FK)                                     │
-                    │ business_id (FK)  [desnormalizado para performance] │
-                    │ external_id       [ID del banco/Yape para dedup]    │
-                    │ amount_cents (INT) [positivo=ingreso, negativo=gasto]│
-                    │ description_raw                                     │
-                    │ description_clean                                   │
-                    │ category_id (FK)                                    │
-                    │ category_confidence (DECIMAL 0-1)                   │
-                    │ category_source [auto|manual|corrected]             │
-                    │ transaction_date (DATE)                             │
-                    │ posted_at (TIMESTAMPTZ)                             │
-                    │ metadata (JSONB)  [datos extra del banco]           │
-                    └────────────────────────────────────────────────────┘
-                                │                        │
-                                │ N                      │ N
-              ┌─────────────────▼──────┐    ┌───────────▼──────────────┐
-              │       CATEGORIES       │    │        LIABILITIES        │
-              ├────────────────────────┤    │      (Pasivos/Deudas)     │
-              │ id (PK)                │    ├──────────────────────────┤
-              │ code                   │    │ id (PK)                  │
-              │ name_es                │    │ business_id (FK)         │
-              │ name_pt                │    │ creditor_name            │
-              │ icon                   │    │ amount_cents             │
-              │ color_hex              │    │ currency                 │
-              │ type [income|expense]  │    │ due_date                 │
-              │ is_system (BOOL)       │    │ description              │
-              └────────────────────────┘    │ status [active|paid]     │
-                                            └──────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                        PREDICTIONS                                   │
-├─────────────────────────────────────────────────────────────────────┤
-│ id (PK)                                                             │
-│ business_id (FK)                                                    │
-│ prediction_date (DATE)   [snapshot de referencia]                  │
-│ horizon_days (INT)       [7, 14 o 30]                              │
-│ predicted_balance_cents                                             │
-│ predicted_income_cents                                              │
-│ predicted_expense_cents                                             │
-│ breakeven_day (DATE NULLABLE)                                       │
-│ confidence_score (DECIMAL 0-1)                                      │
-│ model_version                                                       │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                           ALERTS                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│ id (PK)                                                             │
-│ business_id (FK)                                                    │
-│ type [breakeven|anomaly|payroll|recommendation|opportunity]         │
-│ severity [info|warning|critical]                                    │
-│ title, body                                                         │
-│ data (JSONB)                                                        │
-│ is_read, is_dismissed, action_taken                                 │
-│ expires_at (NULLABLE)                                               │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                        SUBSCRIPTIONS                                 │
-├─────────────────────────────────────────────────────────────────────┤
-│ id (PK)                                                             │
-│ business_id (FK) [UNIQUE — 1 sub por negocio]                      │
-│ plan [free|basic|pro|enterprise]                                    │
-│ status [active|cancelled|past_due|trialing]                         │
-│ price_cents_monthly, currency                                       │
-│ current_period_start, current_period_end                            │
-│ payment_provider, payment_provider_id (encrypted)                  │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                      DAILY_SNAPSHOTS                                 │
-│              (Materialización diaria para ML)                        │
-├─────────────────────────────────────────────────────────────────────┤
-│ id (PK)                                                             │
-│ business_id (FK)                                                    │
-│ snapshot_date (DATE)                                                │
-│ total_balance_cents, total_income_cents, total_expense_cents        │
-│ expense_by_category (JSONB) {"MERCH":50000, "PAYROLL":120000, ...} │
-│ daily_burn_rate_cents, liabilities_total_cents                      │
-│ UNIQUE(business_id, snapshot_date)                                  │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                      BUSINESS_MEMBERS                                │
-├─────────────────────────────────────────────────────────────────────┤
-│ id (PK)                                                             │
-│ business_id (FK), user_id (FK)                                      │
-│ role [owner|accountant|manager]                                     │
-│ invited_at, accepted_at                                             │
-│ UNIQUE(business_id, user_id)                                        │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│                      AUDIT_LOG                                       │
-│              (Cumplimiento — nunca se elimina)                       │
-├─────────────────────────────────────────────────────────────────────┤
-│ id (PK)                                                             │
-│ user_id (FK, NULLABLE), business_id (FK, NULLABLE)                 │
-│ action, entity_type, entity_id                                      │
-│ ip_address (INET), user_agent                                       │
-│ metadata (JSONB), created_at                                        │
-│ PARTITION BY RANGE (created_at) — particionado mensual             │
-└─────────────────────────────────────────────────────────────────────┘
+PostgreSQL 16 (Supabase)
+│
+├── public.*          ← IAM, multi-tenancy, billing, auditoría, ACE
+│   ├── auth.users    ← Supabase Auth (identidad global)
+│   ├── profiles      ← Datos maestros de usuario por tenant
+│   ├── tenants       ← Organizaciones cliente (MYPEs = tenants de Comerci)
+│   ├── roles         ← Roles configurables por tenant
+│   ├── subscriptions ← Contratos y billing de Comerci
+│   ├── audit_logs    ← Bitácora forense inmutable
+│   └── system_modules← Registro de módulos activos
+│
+└── comerci.*         ← ESTE MÓDULO — lógica específica de Comerci
+    ├── businesses     ← Empresa MYPE del tenant (perfil financiero extendido)
+    ├── accounts       ← Cuentas bancarias / efectivo / Yape (Belvo)
+    ├── categories     ← Categorías de gastos e ingresos
+    ├── transactions   ← Movimientos financieros clasificados
+    ├── liabilities    ← Deudas por cobrar / pagar
+    ├── predictions    ← Proyecciones de flujo de caja (ML)
+    ├── alerts         ← Alertas inteligentes generadas
+    └── daily_snapshots← Snapshot diario del estado financiero
 ```
 
----
+### 1.2 Principio de responsabilidad única
 
-## 3. DICCIONARIO DE DATOS
-
-### Tabla: `users`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK — uuid_generate_v4() |
-| `email` | CITEXT | NO | Email único, case-insensitive |
-| `phone` | VARCHAR(20) | SÍ | Teléfono con prefijo de país (+51...) |
-| `full_name` | VARCHAR(200) | NO | Nombre completo del dueño |
-| `password_hash` | VARCHAR(255) | SÍ | bcrypt cost=12. NULL si usa OAuth |
-| `phone_verified` | BOOLEAN | NO | Default FALSE |
-| `email_verified` | BOOLEAN | NO | Default FALSE |
-| `preferred_lang` | CHAR(2) | NO | 'es' o 'pt'. Default 'es' |
-| `created_at` | TIMESTAMPTZ | NO | DEFAULT NOW() |
-| `last_login_at` | TIMESTAMPTZ | SÍ | Timestamp del último acceso |
-| `deleted_at` | TIMESTAMPTZ | SÍ | Soft delete. NULL = activo |
-
-### Tabla: `businesses`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `user_id` | UUID | NO | FK → users.id |
-| `name` | VARCHAR(200) | NO | Nombre del negocio |
-| `ruc` | VARCHAR(20) | SÍ | RUC/RUT/RFC según país |
-| `sector` | VARCHAR(50) | SÍ | retail, food, services, transport, other |
-| `monthly_income_est` | INTEGER | SÍ | Estimado en centavos (onboarding) |
-| `employee_count` | SMALLINT | SÍ | Cantidad aproximada de empleados |
-| `country` | CHAR(2) | NO | ISO 3166-1: PE, CO, MX |
-| `city` | VARCHAR(100) | SÍ | Ciudad del negocio |
-| `timezone` | VARCHAR(50) | NO | Default 'America/Lima' |
-| `is_active` | BOOLEAN | NO | Default TRUE |
-| `created_at` | TIMESTAMPTZ | NO | DEFAULT NOW() |
-
-### Tabla: `accounts`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `business_id` | UUID | NO | FK → businesses.id |
-| `type` | VARCHAR(20) | NO | Enum: bank, yape, plin, cash, other |
-| `name` | VARCHAR(100) | NO | Ej: "BCP Principal", "Yape Personal" |
-| `balance_cents` | INTEGER | NO | Saldo en centavos. Evita problemas de punto flotante |
-| `currency` | CHAR(3) | NO | ISO 4217: PEN, USD, COP, MXN |
-| `integration_token_enc` | TEXT | SÍ | Token OAuth cifrado con AES-256-GCM |
-| `provider_code` | VARCHAR(50) | SÍ | Ej: belvo_bcp, belvo_bbva, manual_cash |
-| `last_synced_at` | TIMESTAMPTZ | SÍ | Última sincronización exitosa |
-| `sync_status` | VARCHAR(20) | NO | Enum: ok, error, pending, disconnected |
-| `sync_error_msg` | TEXT | SÍ | Mensaje de error si sync_status = error |
-| `is_active` | BOOLEAN | NO | Default TRUE |
-| `created_at` | TIMESTAMPTZ | NO | DEFAULT NOW() |
-
-### Tabla: `transactions`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `account_id` | UUID | NO | FK → accounts.id |
-| `business_id` | UUID | NO | FK desnormalizado para queries rápidos |
-| `external_id` | VARCHAR(255) | SÍ | ID del proveedor bancario (deduplicación) |
-| `amount_cents` | INTEGER | NO | Positivo = ingreso. Negativo = gasto |
-| `description_raw` | TEXT | NO | Descripción original del banco/Yape |
-| `description_clean` | TEXT | SÍ | Versión normalizada por NLP |
-| `category_id` | UUID | SÍ | FK → categories.id |
-| `category_confidence` | DECIMAL(4,3) | SÍ | 0.000 a 1.000 |
-| `category_source` | VARCHAR(20) | NO | Enum: auto, manual, corrected |
-| `transaction_date` | DATE | NO | Fecha contable |
-| `posted_at` | TIMESTAMPTZ | SÍ | Confirmación del banco |
-| `metadata` | JSONB | SÍ | Datos adicionales del proveedor |
-| `is_excluded` | BOOLEAN | NO | Default FALSE. El usuario la excluye |
-| `created_at` | TIMESTAMPTZ | NO | DEFAULT NOW() |
-
-### Tabla: `categories`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `code` | VARCHAR(50) | NO | MERCH, PAYROLL, TRANSPORT, UTILITIES, MARKETING... |
-| `name_es` | VARCHAR(100) | NO | Nombre en español |
-| `name_pt` | VARCHAR(100) | SÍ | Nombre en portugués (expansión Brasil) |
-| `icon` | VARCHAR(10) | SÍ | Emoji o código de ícono |
-| `color_hex` | CHAR(7) | SÍ | Ej: #FF5733 |
-| `type` | VARCHAR(10) | NO | Enum: income, expense |
-| `is_system` | BOOLEAN | NO | TRUE = global. FALSE = custom del negocio |
-| `business_id` | UUID | SÍ | NULL si is_system=TRUE |
-
-### Tabla: `liabilities`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `business_id` | UUID | NO | FK → businesses.id |
-| `creditor_name` | VARCHAR(200) | NO | Proveedor, banco o familiar acreedor |
-| `amount_cents` | INTEGER | NO | Monto total adeudado en centavos |
-| `currency` | CHAR(3) | NO | Moneda de la deuda |
-| `due_date` | DATE | SÍ | Vencimiento. NULL = sin fecha |
-| `description` | TEXT | SÍ | Detalle opcional |
-| `status` | VARCHAR(20) | NO | Enum: active, partial, paid |
-| `paid_at` | TIMESTAMPTZ | SÍ | Fecha de cancelación total |
-
-### Tabla: `predictions`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `business_id` | UUID | NO | FK → businesses.id |
-| `prediction_date` | DATE | NO | Fecha del snapshot base |
-| `horizon_days` | SMALLINT | NO | 7, 14 o 30 días |
-| `predicted_balance_cents` | INTEGER | NO | Saldo proyectado al final del horizonte |
-| `predicted_income_cents` | INTEGER | NO | Ingresos esperados en el período |
-| `predicted_expense_cents` | INTEGER | NO | Gastos esperados en el período |
-| `breakeven_day` | DATE | SÍ | Día donde el balance llega a cero |
-| `confidence_score` | DECIMAL(4,3) | NO | Confianza del modelo (0-1) |
-| `model_version` | VARCHAR(20) | NO | Ej: 'v1.2.0-latam' |
-| `generated_at` | TIMESTAMPTZ | NO | DEFAULT NOW() |
-
-### Tabla: `daily_snapshots`
-
-| Campo | Tipo | Nullable | Descripción |
-|-------|------|----------|-------------|
-| `id` | UUID | NO | PK |
-| `business_id` | UUID | NO | FK → businesses.id |
-| `snapshot_date` | DATE | NO | Fecha del snapshot |
-| `total_balance_cents` | INTEGER | NO | Saldo neto total |
-| `total_income_cents` | INTEGER | NO | Ingresos del día |
-| `total_expense_cents` | INTEGER | NO | Gastos del día |
-| `expense_by_category` | JSONB | NO | {"MERCH": 50000, "PAYROLL": 120000} |
-| `daily_burn_rate_cents` | INTEGER | NO | Promedio móvil 7 días del gasto |
-| `liabilities_total_cents` | INTEGER | NO | Total de deudas activas |
-| `transactions_count` | SMALLINT | NO | Número de transacciones del día |
+| Responsabilidad | Resuelto en | NO duplicar en |
+|----------------|------------|----------------|
+| Autenticación (JWT, OAuth) | `auth.users` (Supabase) | `comerci.*` |
+| Perfil de usuario | `public.profiles` | `comerci.*` |
+| Aislamiento multi-tenant | `public.tenants` + RLS | `comerci.*` |
+| Control de acceso / roles | `public.roles`, `public.user_roles_sedes` | `comerci.*` |
+| Suscripciones y billing | `public.subscription_contracts` | `comerci.*` |
+| Sesiones, dispositivos | `public.sessions`, `public.devices` | `comerci.*` |
+| Bitácora de auditoría | `public.audit_logs` | `comerci.*` |
+| Membresías contextuales | `public.memberships` (ACE) | `comerci.*` |
 
 ---
 
-## 4. MODELO RELACIONAL — DIAGRAMA MERMAID
+## 2. CONVENCIONES GLOBALES DE LA BD MAESTRA
 
-```mermaid
-erDiagram
-    USERS {
-        uuid id PK
-        string email
-        string full_name
-        string password_hash
-        bool email_verified
-        timestamptz deleted_at
-    }
-    BUSINESSES {
-        uuid id PK
-        uuid user_id FK
-        string name
-        string sector
-        string country
-        bool is_active
-    }
-    ACCOUNTS {
-        uuid id PK
-        uuid business_id FK
-        string type
-        int balance_cents
-        string currency
-        string sync_status
-    }
-    TRANSACTIONS {
-        uuid id PK
-        uuid account_id FK
-        uuid business_id FK
-        int amount_cents
-        uuid category_id FK
-        string category_source
-        date transaction_date
-        jsonb metadata
-    }
-    CATEGORIES {
-        uuid id PK
-        string code
-        string name_es
-        string type
-        bool is_system
-    }
-    LIABILITIES {
-        uuid id PK
-        uuid business_id FK
-        string creditor_name
-        int amount_cents
-        date due_date
-        string status
-    }
-    PREDICTIONS {
-        uuid id PK
-        uuid business_id FK
-        date prediction_date
-        int horizon_days
-        int predicted_balance_cents
-        date breakeven_day
-        decimal confidence_score
-    }
-    ALERTS {
-        uuid id PK
-        uuid business_id FK
-        string type
-        string severity
-        bool is_read
-        jsonb data
-    }
-    SUBSCRIPTIONS {
-        uuid id PK
-        uuid business_id FK
-        string plan
-        string status
-        date current_period_end
-    }
-    DAILY_SNAPSHOTS {
-        uuid id PK
-        uuid business_id FK
-        date snapshot_date
-        int total_balance_cents
-        jsonb expense_by_category
-    }
-    BUSINESS_MEMBERS {
-        uuid id PK
-        uuid business_id FK
-        uuid user_id FK
-        string role
-    }
+Todas las tablas de `comerci.*` siguen **exactamente** las mismas convenciones que el resto de la BD Maestra:
 
-    USERS ||--o{ BUSINESSES : "owns"
-    BUSINESSES ||--o{ ACCOUNTS : "has"
-    BUSINESSES ||--o{ TRANSACTIONS : "generates"
-    BUSINESSES ||--o{ LIABILITIES : "owes"
-    BUSINESSES ||--o{ PREDICTIONS : "has"
-    BUSINESSES ||--o{ ALERTS : "receives"
-    BUSINESSES ||--|| SUBSCRIPTIONS : "subscribes"
-    BUSINESSES ||--o{ DAILY_SNAPSHOTS : "materializes"
-    BUSINESSES ||--o{ BUSINESS_MEMBERS : "includes"
-    ACCOUNTS ||--o{ TRANSACTIONS : "records"
-    CATEGORIES ||--o{ TRANSACTIONS : "classifies"
-    USERS ||--o{ BUSINESS_MEMBERS : "joins"
-```
-
----
-
-## 5. SCRIPTS DDL COMPLETOS
+### 2.1 Columnas obligatorias en toda tabla de datos
 
 ```sql
--- ============================================================
--- COMERCI — DDL v2.0
--- Motor: PostgreSQL 16
--- Extensiones: uuid-ossp, pgcrypto, citext
--- ============================================================
+-- Identificador primario
+id              uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "citext";
+-- Multi-tenancy (SIEMPRE presente, SIEMPRE NOT NULL)
+tenant_id       uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
 
--- ============================================================
--- users
--- ============================================================
-CREATE TABLE users (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email           CITEXT NOT NULL,
-    phone           VARCHAR(20),
-    full_name       VARCHAR(200) NOT NULL,
-    password_hash   VARCHAR(255),
-    phone_verified  BOOLEAN NOT NULL DEFAULT FALSE,
-    email_verified  BOOLEAN NOT NULL DEFAULT FALSE,
-    preferred_lang  CHAR(2) NOT NULL DEFAULT 'es',
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    last_login_at   TIMESTAMPTZ,
-    deleted_at      TIMESTAMPTZ,
+-- Timestamps gestionados automáticamente
+created_at      timestamptz NOT NULL DEFAULT now(),
+updated_at      timestamptz NOT NULL DEFAULT now(),
 
-    CONSTRAINT users_email_unique UNIQUE (email),
-    CONSTRAINT users_lang_check CHECK (preferred_lang IN ('es','pt','en'))
-);
+-- Trazabilidad de usuario
+created_by      uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+updated_by      uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
 
--- ============================================================
--- businesses
--- ============================================================
-CREATE TABLE businesses (
-    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name                VARCHAR(200) NOT NULL,
-    ruc                 VARCHAR(20),
-    sector              VARCHAR(50) CHECK (sector IN ('retail','food','services','transport','agriculture','other')),
-    monthly_income_est  INTEGER CHECK (monthly_income_est >= 0),
-    employee_count      SMALLINT CHECK (employee_count >= 0),
-    country             CHAR(2) NOT NULL DEFAULT 'PE',
-    city                VARCHAR(100),
-    timezone            VARCHAR(50) NOT NULL DEFAULT 'America/Lima',
-    is_active           BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT businesses_country_check CHECK (country IN ('PE','CO','MX','EC','BO','CL','AR'))
-);
-
--- ============================================================
--- accounts
--- ============================================================
-CREATE TABLE accounts (
-    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id             UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    type                    VARCHAR(20) NOT NULL CHECK (type IN ('bank','yape','plin','cash','other')),
-    name                    VARCHAR(100) NOT NULL,
-    balance_cents           INTEGER NOT NULL DEFAULT 0,
-    currency                CHAR(3) NOT NULL DEFAULT 'PEN',
-    integration_token_enc   TEXT,
-    provider_code           VARCHAR(50),
-    last_synced_at          TIMESTAMPTZ,
-    sync_status             VARCHAR(20) NOT NULL DEFAULT 'pending'
-                            CHECK (sync_status IN ('ok','error','pending','disconnected')),
-    sync_error_msg          TEXT,
-    is_active               BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- ============================================================
--- categories (sistema + custom)
--- ============================================================
-CREATE TABLE categories (
-    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code        VARCHAR(50) NOT NULL,
-    name_es     VARCHAR(100) NOT NULL,
-    name_pt     VARCHAR(100),
-    icon        VARCHAR(10),
-    color_hex   CHAR(7),
-    type        VARCHAR(10) NOT NULL CHECK (type IN ('income','expense')),
-    is_system   BOOLEAN NOT NULL DEFAULT TRUE,
-    business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT categories_system_no_business CHECK (
-        (is_system = TRUE AND business_id IS NULL) OR
-        (is_system = FALSE AND business_id IS NOT NULL)
-    )
-);
-
--- Seed: categorías del sistema
-INSERT INTO categories (code, name_es, icon, color_hex, type, is_system) VALUES
-    ('MERCH',     'Compras de mercadería',     '🛒', '#FF6B6B', 'expense', TRUE),
-    ('PAYROLL',   'Nómina y salarios',          '👥', '#4ECDC4', 'expense', TRUE),
-    ('UTILITIES', 'Servicios (luz, agua, tel)', '⚡', '#45B7D1', 'expense', TRUE),
-    ('TRANSPORT', 'Transporte y logística',     '🚗', '#96CEB4', 'expense', TRUE),
-    ('RENT',      'Alquiler de local',          '🏪', '#FFEAA7', 'expense', TRUE),
-    ('MARKETING', 'Marketing y publicidad',     '📣', '#DDA0DD', 'expense', TRUE),
-    ('ADMIN',     'Gastos administrativos',     '💼', '#B0C4DE', 'expense', TRUE),
-    ('TAXES',     'Impuestos y tasas',          '🧾', '#F0E68C', 'expense', TRUE),
-    ('FINANCE',   'Gastos financieros',         '🏦', '#CD853F', 'expense', TRUE),
-    ('OTHER_EXP', 'Otros gastos',               '❓', '#D3D3D3', 'expense', TRUE),
-    ('SALES',     'Ventas y cobranzas',         '💰', '#32CD32', 'income',  TRUE),
-    ('CREDIT',    'Préstamos recibidos',        '📥', '#87CEEB', 'income',  TRUE),
-    ('OTHER_INC', 'Otros ingresos',             '➕', '#98FB98', 'income',  TRUE);
-
--- ============================================================
--- transactions
--- ============================================================
-CREATE TABLE transactions (
-    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    account_id          UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-    business_id         UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    external_id         VARCHAR(255),
-    amount_cents        INTEGER NOT NULL,
-    description_raw     TEXT NOT NULL,
-    description_clean   TEXT,
-    category_id         UUID REFERENCES categories(id),
-    category_confidence DECIMAL(4,3) CHECK (category_confidence BETWEEN 0 AND 1),
-    category_source     VARCHAR(20) NOT NULL DEFAULT 'auto'
-                        CHECK (category_source IN ('auto','manual','corrected')),
-    transaction_date    DATE NOT NULL,
-    posted_at           TIMESTAMPTZ,
-    metadata            JSONB DEFAULT '{}',
-    is_excluded         BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT transactions_external_unique UNIQUE (account_id, external_id)
-);
-
--- ============================================================
--- liabilities (pasivos / deudas)
--- ============================================================
-CREATE TABLE liabilities (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id     UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    creditor_name   VARCHAR(200) NOT NULL,
-    amount_cents    INTEGER NOT NULL CHECK (amount_cents > 0),
-    currency        CHAR(3) NOT NULL DEFAULT 'PEN',
-    due_date        DATE,
-    description     TEXT,
-    status          VARCHAR(20) NOT NULL DEFAULT 'active'
-                    CHECK (status IN ('active','partial','paid')),
-    paid_at         TIMESTAMPTZ,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- ============================================================
--- predictions
--- ============================================================
-CREATE TABLE predictions (
-    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id             UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    prediction_date         DATE NOT NULL,
-    horizon_days            SMALLINT NOT NULL CHECK (horizon_days IN (7,14,30)),
-    predicted_balance_cents INTEGER NOT NULL,
-    predicted_income_cents  INTEGER NOT NULL,
-    predicted_expense_cents INTEGER NOT NULL,
-    breakeven_day           DATE,
-    confidence_score        DECIMAL(4,3) NOT NULL CHECK (confidence_score BETWEEN 0 AND 1),
-    model_version           VARCHAR(20) NOT NULL DEFAULT 'v1.0.0',
-    generated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT predictions_unique UNIQUE (business_id, prediction_date, horizon_days)
-);
-
--- ============================================================
--- alerts
--- ============================================================
-CREATE TABLE alerts (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id     UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    type            VARCHAR(30) NOT NULL
-                    CHECK (type IN ('breakeven','anomaly','payroll','recommendation','opportunity','sync_error')),
-    severity        VARCHAR(10) NOT NULL CHECK (severity IN ('info','warning','critical')),
-    title           VARCHAR(200) NOT NULL,
-    body            TEXT NOT NULL,
-    data            JSONB DEFAULT '{}',
-    is_read         BOOLEAN NOT NULL DEFAULT FALSE,
-    is_dismissed    BOOLEAN NOT NULL DEFAULT FALSE,
-    action_taken    BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    expires_at      TIMESTAMPTZ
-);
-
--- ============================================================
--- subscriptions
--- ============================================================
-CREATE TABLE subscriptions (
-    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id             UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    plan                    VARCHAR(20) NOT NULL DEFAULT 'free'
-                            CHECK (plan IN ('free','basic','pro','enterprise')),
-    status                  VARCHAR(20) NOT NULL DEFAULT 'trialing'
-                            CHECK (status IN ('active','cancelled','past_due','trialing')),
-    price_cents_monthly     INTEGER NOT NULL DEFAULT 0,
-    currency                CHAR(3) NOT NULL DEFAULT 'PEN',
-    current_period_start    DATE NOT NULL DEFAULT CURRENT_DATE,
-    current_period_end      DATE NOT NULL DEFAULT CURRENT_DATE + INTERVAL '14 days',
-    cancel_at_period_end    BOOLEAN NOT NULL DEFAULT FALSE,
-    payment_provider        VARCHAR(20) CHECK (payment_provider IN ('stripe','culqi','izipay','manual')),
-    payment_provider_id     TEXT,
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT subscriptions_one_per_business UNIQUE (business_id)
-);
-
--- ============================================================
--- business_members
--- ============================================================
-CREATE TABLE business_members (
-    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role        VARCHAR(20) NOT NULL DEFAULT 'manager'
-                CHECK (role IN ('owner','accountant','manager')),
-    invited_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    accepted_at TIMESTAMPTZ,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT business_members_unique UNIQUE (business_id, user_id)
-);
-
--- ============================================================
--- daily_snapshots (materialización para ML)
--- ============================================================
-CREATE TABLE daily_snapshots (
-    id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id             UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    snapshot_date           DATE NOT NULL,
-    total_balance_cents     INTEGER NOT NULL DEFAULT 0,
-    total_income_cents      INTEGER NOT NULL DEFAULT 0,
-    total_expense_cents     INTEGER NOT NULL DEFAULT 0,
-    expense_by_category     JSONB NOT NULL DEFAULT '{}',
-    active_accounts_count   SMALLINT NOT NULL DEFAULT 0,
-    transactions_count      SMALLINT NOT NULL DEFAULT 0,
-    daily_burn_rate_cents   INTEGER NOT NULL DEFAULT 0,
-    liabilities_total_cents INTEGER NOT NULL DEFAULT 0,
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    CONSTRAINT daily_snapshots_unique UNIQUE (business_id, snapshot_date)
-);
-
--- ============================================================
--- audit_log (particionado mensual)
--- ============================================================
-CREATE TABLE audit_log (
-    id          UUID NOT NULL DEFAULT uuid_generate_v4(),
-    user_id     UUID REFERENCES users(id) ON DELETE SET NULL,
-    business_id UUID REFERENCES businesses(id) ON DELETE SET NULL,
-    action      VARCHAR(100) NOT NULL,
-    entity_type VARCHAR(50),
-    entity_id   VARCHAR(255),
-    ip_address  INET,
-    user_agent  TEXT,
-    metadata    JSONB DEFAULT '{}',
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-) PARTITION BY RANGE (created_at);
-
-CREATE TABLE audit_log_2026_05 PARTITION OF audit_log
-    FOR VALUES FROM ('2026-05-01') TO ('2026-06-01');
-CREATE TABLE audit_log_2026_06 PARTITION OF audit_log
-    FOR VALUES FROM ('2026-06-01') TO ('2026-07-01');
-CREATE TABLE audit_log_2026_07 PARTITION OF audit_log
-    FOR VALUES FROM ('2026-07-01') TO ('2026-08-01');
+-- Soft-delete (en tablas donde aplica)
+is_deleted      boolean     NOT NULL DEFAULT false,
+deleted_at      timestamptz,
+deleted_by      uuid        REFERENCES auth.users(id) ON DELETE SET NULL
 ```
 
----
+### 2.2 Funciones globales disponibles (ya definidas en public)
 
-## 6. ÍNDICES DE PERFORMANCE
+| Función | Propósito |
+|---------|-----------|
+| `fn_set_updated_at()` | Trigger que actualiza `updated_at = now()` en cada UPDATE |
+| `fn_current_tenant_id()` | Retorna el `tenant_id` del usuario autenticado actual (para RLS) |
+| `fn_trigger_audit_universal()` | Trigger que inserta en `public.audit_logs` automáticamente |
+| `fn_has_permission(perm text)` | Verifica si el usuario actual tiene un permiso específico |
+| `fn_is_tenant_admin()` | Retorna true si el usuario tiene jerarquía admin en su tenant |
+
+### 2.3 Trigger de updated_at (se aplica a todas las tablas comerci)
 
 ```sql
--- Dashboard: cuentas activas de un negocio
-CREATE INDEX idx_accounts_business_active
-    ON accounts(business_id) WHERE is_active = TRUE;
-
--- Query más común: transacciones por negocio + fecha
-CREATE INDEX idx_transactions_business_date
-    ON transactions(business_id, transaction_date DESC);
-
--- Transacciones por cuenta (sync incremental)
-CREATE INDEX idx_transactions_account_posted
-    ON transactions(account_id, posted_at DESC);
-
--- Filtro de categoría + negocio (reportes)
-CREATE INDEX idx_transactions_business_category
-    ON transactions(business_id, category_id, transaction_date DESC);
-
--- Excluyendo transacciones marcadas como no contables
-CREATE INDEX idx_transactions_not_excluded
-    ON transactions(business_id, transaction_date DESC)
-    WHERE is_excluded = FALSE;
-
--- Badge de alertas no leídas
-CREATE INDEX idx_alerts_business_unread
-    ON alerts(business_id, created_at DESC)
-    WHERE is_read = FALSE AND is_dismissed = FALSE;
-
--- Alertas críticas (pantalla principal)
-CREATE INDEX idx_alerts_critical_unread
-    ON alerts(business_id, created_at DESC)
-    WHERE severity = 'critical' AND is_read = FALSE;
-
--- Predicciones vigentes
-CREATE INDEX idx_predictions_business_date
-    ON predictions(business_id, prediction_date DESC);
-
--- Daily snapshots para ML (series temporales)
-CREATE INDEX idx_snapshots_business_date
-    ON daily_snapshots(business_id, snapshot_date DESC);
-
--- Deduplicación de transacciones bancarias
-CREATE INDEX idx_transactions_external
-    ON transactions(account_id, external_id)
-    WHERE external_id IS NOT NULL;
-
--- Deudas activas con fecha de vencimiento
-CREATE INDEX idx_liabilities_business_active
-    ON liabilities(business_id, due_date ASC)
-    WHERE status = 'active';
-
--- Login por email
-CREATE INDEX idx_users_email ON users(email);
-
--- Audit log por usuario
-CREATE INDEX idx_audit_user ON audit_log(user_id, created_at DESC);
-
--- Búsqueda JSONB en gastos por categoría
-CREATE INDEX idx_snapshots_categories
-    ON daily_snapshots USING GIN(expense_by_category);
-
--- Búsqueda JSONB en metadata de transacciones
-CREATE INDEX idx_transactions_metadata
-    ON transactions USING GIN(metadata);
+-- Para cada tabla del schema comerci, crear este trigger:
+CREATE TRIGGER tr_set_updated_at_<tabla>
+  BEFORE UPDATE ON comerci.<tabla>
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 ```
+
+### 2.4 Valores monetarios
+
+Todos los montos en `comerci.*` se almacenan como **`INTEGER` en céntimos de PEN** (soles peruanos × 100). Esto elimina errores de punto flotante.
+
+- S/ 1.50 → 150 (cents)
+- S/ 100.00 → 10000 (cents)
+- S/ -250.75 → -25075 (cents, negativo = egreso)
+
+Para monedas extranjeras se almacena el monto original + el tipo de cambio al momento del registro.
 
 ---
 
-## 7. VISTAS Y FUNCIONES UTILITARIAS
+## 3. DECISIONES DE INTEGRACIÓN
+
+### 3.1 Qué eliminamos vs. la versión v2.0 standalone
+
+La versión anterior (v2.0) de esta Fase 5 fue diseñada como schema independiente. Al integrarse con la BD Maestra, se elimina todo lo que ya existe en `public.*`:
+
+| Tabla eliminada (v2.0) | Reemplazada por |
+|------------------------|----------------|
+| `users` | `public.profiles` + `auth.users` |
+| `business_members` | `public.memberships` (ACE) + `public.user_roles_sedes` |
+| `subscriptions` | `public.subscription_contracts` + `public.entitlements` |
+| `audit_log` | `public.audit_logs` |
+
+### 3.2 Relación tenant ↔ business
+
+En Comerci, **un tenant = una MYPE**. Cuando una empresa se registra en Comerci:
+
+1. Se crea un registro en `public.tenants` (con `industry_type_id = 'retail'`)
+2. La función `fn_bootstrap_tenant()` crea el tenant, sede principal y rol Owner
+3. Se crea un registro en `comerci.businesses` que extiende el tenant con datos financieros específicos (sector, régimen tributario, datos Belvo)
+
+La relación es `1:1` entre `public.tenants.id` y `comerci.businesses.tenant_id` (UNIQUE en `tenant_id`).
+
+### 3.3 Roles de Comerci dentro de la BD Maestra
+
+Los roles de Comerci se registran vía `public.roles` (isomórficos con el sistema de roles de la plataforma):
+
+| Rol | hierarchy_level | Descripción |
+|-----|----------------|-------------|
+| `Propietario` | 0 | Acceso completo, puede invitar miembros |
+| `Contador` | 50 | Lectura completa + puede clasificar transacciones |
+| `Empleado` | 80 | Solo lectura del dashboard y alertas |
+
+Los permisos específicos de Comerci se registran en `public.cat_permissions` con módulo `comerci`.
+
+---
+
+## 4. REGISTRO DEL MÓDULO COMERCI
+
+### 4.1 Inserción en system_modules
 
 ```sql
--- ============================================================
--- VISTA: balance consolidado por negocio
--- ============================================================
-CREATE OR REPLACE VIEW v_business_balance AS
-SELECT
-    b.id                                            AS business_id,
-    b.name                                          AS business_name,
-    COALESCE(SUM(a.balance_cents), 0)               AS total_balance_cents,
-    COALESCE(SUM(l.amount_cents), 0)                AS total_liabilities_cents,
-    COALESCE(SUM(a.balance_cents), 0) -
-        COALESCE(SUM(l.amount_cents), 0)            AS net_balance_cents,
-    COUNT(DISTINCT a.id)                            AS active_accounts,
-    MAX(a.last_synced_at)                           AS last_sync_at
-FROM businesses b
-LEFT JOIN accounts a ON a.business_id = b.id AND a.is_active = TRUE
-LEFT JOIN LATERAL (
-    SELECT SUM(amount_cents) AS amount_cents
-    FROM liabilities li
-    WHERE li.business_id = b.id AND li.status = 'active'
-) l ON TRUE
-WHERE b.is_active = TRUE
-GROUP BY b.id, b.name;
-
--- ============================================================
--- FUNCIÓN: calcular burn rate diario
--- ============================================================
-CREATE OR REPLACE FUNCTION calculate_burn_rate(
-    p_business_id UUID,
-    p_days        INT DEFAULT 30
-)
-RETURNS INTEGER AS $$
-DECLARE v_burn INTEGER;
-BEGIN
-    SELECT COALESCE(ABS(AVG(daily_total))::INTEGER, 0)
-    INTO v_burn
-    FROM (
-        SELECT transaction_date, SUM(amount_cents) AS daily_total
-        FROM transactions
-        WHERE
-            business_id = p_business_id
-            AND amount_cents < 0
-            AND is_excluded = FALSE
-            AND transaction_date >= CURRENT_DATE - (p_days || ' days')::INTERVAL
-        GROUP BY transaction_date
-    ) t;
-    RETURN v_burn;
-END;
-$$ LANGUAGE plpgsql STABLE;
-
--- ============================================================
--- FUNCIÓN: días hasta quiebra
--- ============================================================
-CREATE OR REPLACE FUNCTION days_until_breakeven(p_business_id UUID)
-RETURNS INTEGER AS $$
-DECLARE
-    v_balance        INTEGER;
-    v_burn_rate      INTEGER;
-    v_daily_income   INTEGER;
-    v_net_daily_burn INTEGER;
-BEGIN
-    SELECT net_balance_cents INTO v_balance
-    FROM v_business_balance WHERE business_id = p_business_id;
-
-    v_burn_rate := calculate_burn_rate(p_business_id, 30);
-
-    SELECT COALESCE(AVG(daily_income), 0)::INTEGER INTO v_daily_income
-    FROM (
-        SELECT transaction_date, SUM(amount_cents) AS daily_income
-        FROM transactions
-        WHERE business_id = p_business_id
-          AND amount_cents > 0
-          AND is_excluded = FALSE
-          AND transaction_date >= CURRENT_DATE - INTERVAL '30 days'
-        GROUP BY transaction_date
-    ) d;
-
-    v_net_daily_burn := v_burn_rate - v_daily_income;
-
-    IF v_net_daily_burn <= 0 OR v_balance <= 0 THEN
-        RETURN NULL;  -- NULL = sin quiebra proyectada
-    END IF;
-
-    RETURN FLOOR(v_balance::NUMERIC / v_net_daily_burn);
-END;
-$$ LANGUAGE plpgsql STABLE;
+-- Registrar Comerci como módulo de la plataforma
+INSERT INTO public.system_modules (codigo, nombre, schema_name, current_version, is_core, is_transversal)
+VALUES (
+  'comerci',
+  'Comerci — Gestión Financiera para MYPEs',
+  'comerci',
+  '1.0.0',
+  false,
+  false
+);
 ```
 
----
-
-## 8. ESTRATEGIA DE ENCRIPTACIÓN
-
-| Campo | Sensibilidad | Estrategia |
-|-------|-------------|-----------|
-| `users.password_hash` | Alta | bcrypt cost=12. Nunca reversible |
-| `accounts.integration_token_enc` | Crítica | AES-256-GCM en application layer |
-| `subscriptions.payment_provider_id` | Alta | AES-256-GCM en application layer |
-| `users.phone` | Media | Texto plano. Enmascarado en logs |
-| `transactions.metadata` | Baja | Sin cifrar |
-| `audit_log.*` | N/A | Sin cifrar. Es registro de auditoría |
-
-**Ejemplo de implementación AES-256-GCM (Node.js):**
-
-```javascript
-const crypto = require('crypto');
-const ALGORITHM = 'aes-256-gcm';
-const KEY = Buffer.from(process.env.ENCRYPTION_KEY, 'hex'); // 32 bytes
-
-function encrypt(plaintext) {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
-    const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
-    const tag = cipher.getAuthTag();
-    // Formato: iv:tag:ciphertext (todo en base64)
-    return `${iv.toString('base64')}:${tag.toString('base64')}:${encrypted.toString('base64')}`;
-}
-
-function decrypt(stored) {
-    const [ivB64, tagB64, cipherB64] = stored.split(':');
-    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, Buffer.from(ivB64, 'base64'));
-    decipher.setAuthTag(Buffer.from(tagB64, 'base64'));
-    return Buffer.concat([
-        decipher.update(Buffer.from(cipherB64, 'base64')),
-        decipher.final()
-    ]).toString('utf8');
-}
-```
-
----
-
-## 9. ROW-LEVEL SECURITY (Aislamiento multi-tenant)
+### 4.2 Tipo de industria Comerci
 
 ```sql
--- Habilitar RLS en todas las tablas sensibles
-ALTER TABLE accounts     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE alerts       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE predictions  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE liabilities  ENABLE ROW LEVEL SECURITY;
+-- Asegurar que el tipo de industria 'retail' existe (aplica a MYPEs comerciales)
+INSERT INTO public.cat_industry_types (id, description, created_at)
+VALUES ('retail', 'Comercio y Retail (MYPEs)', now())
+ON CONFLICT (id) DO NOTHING;
 
--- Política: usuario solo accede a datos de sus negocios
-CREATE POLICY business_isolation ON transactions
-    USING (business_id IN (
-        SELECT b.id FROM businesses b
-        WHERE b.user_id = current_setting('app.current_user_id')::UUID
-        UNION
-        SELECT bm.business_id FROM business_members bm
-        WHERE bm.user_id = current_setting('app.current_user_id')::UUID
-          AND bm.accepted_at IS NOT NULL
-    ));
-
--- La API establece el contexto en cada request:
--- SET LOCAL app.current_user_id = 'uuid-del-usuario-autenticado';
+-- Agregar tipo específico para emprendedores informales
+INSERT INTO public.cat_industry_types (id, description, created_at)
+VALUES ('mype', 'Micro y Pequeña Empresa (MYPE)', now())
+ON CONFLICT (id) DO NOTHING;
 ```
 
----
-
-## 10. ESTRATEGIA DE MIGRACIÓN DE ESQUEMA
-
-El versionado se gestiona con **Flyway** o **node-pg-migrate**:
-
-```
-migrations/
-  V1__initial_schema.sql          ← DDL base (este documento)
-  V2__categories_seed.sql         ← Datos iniciales
-  V3__sms_notifications.sql       ← Notificaciones SMS
-  V4__payroll_tracking.sql        ← Módulo nómina (Fase 2)
-  V5__credit_scoring.sql          ← Score crediticio (Fase 3)
-```
-
-**Regla de oro**: Nunca modificar una migración ya ejecutada en producción. Siempre crear una nueva.
-
----
-
-## 11. POLÍTICA DE BACKUP Y RECUPERACIÓN
-
-### Estrategia 3-2-1
-
-| Tipo | Frecuencia | Retención | Herramienta |
-|------|-----------|-----------|------------|
-| Full backup | Diario 02:00 AM Lima | 30 días | pg_dump → S3 |
-| WAL archiving | Continuo | 7 días | pgWAL → S3 |
-| Snapshot instancia | Semanal | 12 semanas | AWS RDS Snapshot |
-| Replica de lectura | Tiempo real | Permanente | PostgreSQL streaming |
-
-| Métrica | Target |
-|---------|--------|
-| **RPO** (pérdida máxima de datos) | < 1 hora |
-| **RTO** (tiempo máximo de restauración) | < 4 horas |
-
----
-
-## 12. DATOS DE SEED PARA DESARROLLO
+### 4.3 Permisos específicos de Comerci en cat_permissions
 
 ```sql
--- Usuario demo
-INSERT INTO users (id, email, full_name, email_verified) VALUES
-    ('11111111-1111-1111-1111-111111111111', 'demo@comerci.pe', 'José García Demo', TRUE);
-
--- Negocio demo
-INSERT INTO businesses (id, user_id, name, sector, country, monthly_income_est, employee_count) VALUES
-    ('22222222-2222-2222-2222-222222222222',
-     '11111111-1111-1111-1111-111111111111',
-     'Bodega Don José', 'retail', 'PE', 500000, 3);
-
--- Cuenta: caja
-INSERT INTO accounts (id, business_id, type, name, balance_cents, currency) VALUES
-    ('33333333-3333-3333-3333-333333333333',
-     '22222222-2222-2222-2222-222222222222',
-     'cash', 'Caja Principal', 125000, 'PEN');
-
--- Suscripción free (período de prueba 14 días)
-INSERT INTO subscriptions (business_id, plan, status, current_period_end) VALUES
-    ('22222222-2222-2222-2222-222222222222', 'free', 'trialing', CURRENT_DATE + 14);
+INSERT INTO public.cat_permissions (id, description, module) VALUES
+  -- Cuentas
+  ('comerci.accounts.read',       'Ver cuentas bancarias y saldos',              'comerci'),
+  ('comerci.accounts.manage',     'Conectar/desconectar cuentas (Belvo)',         'comerci'),
+  -- Transacciones
+  ('comerci.transactions.read',   'Ver movimientos financieros',                 'comerci'),
+  ('comerci.transactions.classify','Reclasificar categoría de transacciones',    'comerci'),
+  ('comerci.transactions.write',  'Ingresar movimientos manuales',               'comerci'),
+  -- Análisis
+  ('comerci.predictions.read',    'Ver predicciones de flujo de caja',           'comerci'),
+  ('comerci.reports.read',        'Generar y ver reportes financieros',          'comerci'),
+  -- Alertas
+  ('comerci.alerts.read',         'Ver alertas activas',                         'comerci'),
+  ('comerci.alerts.manage',       'Marcar alertas como leídas / snooze',         'comerci'),
+  -- Deudas
+  ('comerci.liabilities.read',    'Ver cuentas por cobrar/pagar',               'comerci'),
+  ('comerci.liabilities.manage',  'Crear y gestionar deudas',                   'comerci'),
+  -- Administración
+  ('comerci.settings.manage',     'Configurar datos del negocio',               'comerci'),
+  ('comerci.members.manage',      'Invitar y gestionar miembros del equipo',    'comerci')
+ON CONFLICT (id) DO NOTHING;
 ```
 
 ---
 
-## 13. CHECKLIST DE IMPLEMENTACIÓN
+## 5. DICCIONARIO DE DATOS — Schema `comerci`
 
-```
-[✅] Motor: PostgreSQL 16 justificado
-[✅] 11 tablas DDL con constraints y tipos correctos
-[✅] 13 categorías del sistema (seed data)
-[✅] 15 índices de performance definidos
-[✅] Vista v_business_balance
-[✅] Funciones: calculate_burn_rate, days_until_breakeven
-[✅] Encriptación AES-256-GCM documentada e implementada
-[✅] Row-Level Security multi-tenant
-[✅] Política de backup 3-2-1 con RTO/RPO
-[✅] Estrategia de migración con Flyway
-[✅] Audit log con particionado mensual
-[✅] Seed data para desarrollo
+### 5.1 `comerci.businesses` — Perfil financiero de la MYPE
+
+Extiende `public.tenants` con datos específicos del negocio MYPE. Relación 1:1 con el tenant.
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | Identificador único |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants`, UNIQUE | 1:1 con el tenant |
+| `business_name` | `text` | — | NOT NULL | Nombre comercial del negocio |
+| `ruc` | `text` | NULL | UNIQUE (cuando no es NULL) | RUC peruano (11 dígitos) |
+| `sector` | `text` | NULL | CHECK lista | Sector económico: `retail`, `food`, `services`, `manufacturing`, `agriculture`, `other` |
+| `tax_regime` | `text` | NULL | CHECK lista | Régimen tributario: `RUS`, `RER`, `MYPE_TRIBUTARIO`, `GENERAL`, `INFORMAL` |
+| `currency_code` | `text` | `'PEN'` | NOT NULL, FK `public.cat_monedas` | Moneda principal de operación |
+| `monthly_revenue_avg_cents` | `integer` | NULL | — | Promedio mensual de ingresos en céntimos (para personalización ML) |
+| `employee_count` | `smallint` | NULL | CHECK (≥0) | Número aproximado de empleados |
+| `belvo_link_id` | `text` | NULL | — | ID del link de Belvo (referencia externa cifrada) |
+| `belvo_link_status` | `text` | `'disconnected'` | NOT NULL, CHECK lista | Estado: `disconnected`, `connected`, `token_expired`, `error` |
+| `belvo_last_sync_at` | `timestamptz` | NULL | — | Última sincronización exitosa con Belvo |
+| `onboarding_completed_at` | `timestamptz` | NULL | — | Fecha en que el usuario completó el onboarding (4 pasos) |
+| `is_deleted` | `boolean` | `false` | NOT NULL | Soft-delete |
+| `deleted_at` | `timestamptz` | NULL | — | — |
+| `deleted_by` | `uuid` | NULL | FK `auth.users` | — |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `updated_at` | `timestamptz` | `now()` | NOT NULL, trigger | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | — |
+| `updated_by` | `uuid` | NULL | FK `auth.users` | — |
+
+> **Nota de seguridad:** `belvo_link_id` se almacena cifrado con AES-256-GCM a nivel de aplicación antes de persistir en la base de datos. Ver §11.
+
+---
+
+### 5.2 `comerci.accounts` — Cuentas financieras
+
+Una empresa puede tener múltiples cuentas: bancarias (via Belvo), efectivo, Yape/Plin (vía BCP en Belvo).
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | Aislamiento multi-tenant |
+| `business_id` | `uuid` | — | NOT NULL, FK `comerci.businesses` | Negocio propietario |
+| `name` | `text` | — | NOT NULL | Nombre descriptivo: "BCP Ahorros", "Efectivo Caja", "Yape Ventas" |
+| `account_type` | `text` | — | NOT NULL, CHECK lista | `bank`, `cash`, `digital_wallet`, `credit_card` |
+| `provider` | `text` | NULL | — | `bcp`, `bbva`, `interbank`, `scotiabank`, `yape`, `plin`, `cash`, `other` |
+| `currency_code` | `text` | `'PEN'` | NOT NULL, FK `public.cat_monedas` | Moneda de la cuenta |
+| `balance_cents` | `integer` | `0` | NOT NULL | Saldo actual en céntimos (calculado, no fuente de verdad) |
+| `balance_updated_at` | `timestamptz` | NULL | — | Última vez que se recalculó el saldo |
+| `belvo_account_id` | `text` | NULL | — | ID de cuenta en Belvo (cifrado en app layer) |
+| `is_active` | `boolean` | `true` | NOT NULL | La cuenta está activa y se usa en cálculos |
+| `is_hidden` | `boolean` | `false` | NOT NULL | Oculta del dashboard pero sigue activa |
+| `display_order` | `smallint` | `0` | NOT NULL | Orden visual en la UI |
+| `is_deleted` | `boolean` | `false` | NOT NULL | Soft-delete |
+| `deleted_at` | `timestamptz` | NULL | — | — |
+| `deleted_by` | `uuid` | NULL | FK `auth.users` | — |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `updated_at` | `timestamptz` | `now()` | NOT NULL, trigger | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | — |
+| `updated_by` | `uuid` | NULL | FK `auth.users` | — |
+
+---
+
+### 5.3 `comerci.categories` — Categorías de clasificación
+
+Catálogo configurable por tenant para clasificar ingresos y egresos.
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | Permite personalización por MYPE |
+| `code` | `text` | — | NOT NULL, UNIQUE(tenant_id, code) | Código interno: `MERCH`, `PAYROLL`, `SALES`, etc. |
+| `name` | `text` | — | NOT NULL | Nombre legible: "Mercadería", "Planilla", "Ventas" |
+| `category_type` | `text` | — | NOT NULL, CHECK(`expense`, `income`, `transfer`) | Tipo de flujo |
+| `icon` | `text` | NULL | — | Nombre del ícono en la librería del app |
+| `color_hex` | `text` | NULL | CHECK(formato hex) | Color de UI (ej. `#EF4444`) |
+| `is_system` | `boolean` | `false` | NOT NULL | Las categorías del sistema no se pueden eliminar |
+| `parent_id` | `uuid` | NULL | FK `comerci.categories` (self-ref) | Para subcategorías (max 2 niveles) |
+| `display_order` | `smallint` | `0` | NOT NULL | Orden en la UI |
+| `keywords` | `text[]` | `{}` | — | Palabras clave para clasificación ML automática |
+| `is_deleted` | `boolean` | `false` | NOT NULL | Soft-delete |
+| `deleted_at` | `timestamptz` | NULL | — | — |
+| `deleted_by` | `uuid` | NULL | FK `auth.users` | — |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `updated_at` | `timestamptz` | `now()` | NOT NULL, trigger | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | — |
+| `updated_by` | `uuid` | NULL | FK `auth.users` | — |
+
+> **Categorías del sistema (is_system=true):** Se insertan via seed en `fn_bootstrap_comerci_tenant()` y aplican a todos los tenants nuevos de Comerci. Ver §10.
+
+---
+
+### 5.4 `comerci.transactions` — Movimientos financieros
+
+Tabla central del sistema. Contiene todos los movimientos financieros, ya sean sincronizados vía Belvo o ingresados manualmente.
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | Aislamiento multi-tenant |
+| `account_id` | `uuid` | — | NOT NULL, FK `comerci.accounts` | Cuenta origen del movimiento |
+| `category_id` | `uuid` | NULL | FK `comerci.categories` | Categoría clasificada (NULL = sin clasificar) |
+| `amount_cents` | `integer` | — | NOT NULL | Monto en céntimos. Positivo = ingreso, Negativo = egreso |
+| `currency_code` | `text` | `'PEN'` | NOT NULL, FK `public.cat_monedas` | Moneda del movimiento |
+| `exchange_rate` | `numeric(10,6)` | `1.000000` | NOT NULL, CHECK(>0) | Tipo de cambio a PEN al momento del registro |
+| `amount_pen_cents` | `integer` | — | NOT NULL | Equivalente en soles (amount_cents × exchange_rate) |
+| `description` | `text` | — | NOT NULL | Descripción del movimiento (texto libre o de Belvo) |
+| `transaction_date` | `date` | — | NOT NULL | Fecha del movimiento (no del registro en sistema) |
+| `value_date` | `date` | NULL | — | Fecha de valor bancaria (puede diferir de transaction_date) |
+| `reference` | `text` | NULL | — | Referencia bancaria / número de operación |
+| `external_id` | `text` | NULL | UNIQUE(account_id, external_id) | ID externo de Belvo — evita duplicados |
+| `source` | `text` | `'manual'` | NOT NULL, CHECK lista | Origen: `manual`, `belvo_bank`, `belvo_wallet`, `csv_import` |
+| `classification_source` | `text` | `'unclassified'` | NOT NULL, CHECK lista | `unclassified`, `rules_engine`, `ml_model`, `user_manual` |
+| `classification_confidence` | `numeric(4,3)` | NULL | CHECK(0–1) | Confianza del clasificador (0.000–1.000) |
+| `notes` | `text` | NULL | — | Notas adicionales del usuario |
+| `attachments` | `jsonb` | `[]` | NOT NULL | URLs de comprobantes subidos a Storage: `[{url, filename, uploaded_at}]` |
+| `is_reconciled` | `boolean` | `false` | NOT NULL | El movimiento fue conciliado manualmente |
+| `is_excluded` | `boolean` | `false` | NOT NULL | Excluido de análisis (ej. transferencia entre propias cuentas) |
+| `metadata` | `jsonb` | `{}` | NOT NULL | Datos extra de Belvo u otras fuentes |
+| `is_deleted` | `boolean` | `false` | NOT NULL | Soft-delete |
+| `deleted_at` | `timestamptz` | NULL | — | — |
+| `deleted_by` | `uuid` | NULL | FK `auth.users` | — |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `updated_at` | `timestamptz` | `now()` | NOT NULL, trigger | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | — |
+| `updated_by` | `uuid` | NULL | FK `auth.users` | — |
+
+> **Constraint de deduplicación:** `UNIQUE(account_id, external_id)` garantiza que el mismo movimiento bancario de Belvo no se duplique, incluso si el worker de sincronización corre múltiples veces.
+
+---
+
+### 5.5 `comerci.liabilities` — Deudas por cobrar y pagar
+
+Gestión de cuentas por cobrar (clientes) y cuentas por pagar (proveedores).
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | — |
+| `business_id` | `uuid` | — | NOT NULL, FK `comerci.businesses` | — |
+| `liability_type` | `text` | — | NOT NULL, CHECK(`payable`, `receivable`) | Tipo: por pagar (deuda) o por cobrar (crédito a cliente) |
+| `counterparty_name` | `text` | — | NOT NULL | Nombre del acreedor o deudor |
+| `counterparty_ruc` | `text` | NULL | — | RUC del tercero (opcional) |
+| `description` | `text` | — | NOT NULL | Descripción del concepto |
+| `original_amount_cents` | `integer` | — | NOT NULL, CHECK(>0) | Monto original de la deuda en céntimos |
+| `paid_amount_cents` | `integer` | `0` | NOT NULL, CHECK(≥0) | Monto ya pagado/cobrado en céntimos |
+| `currency_code` | `text` | `'PEN'` | NOT NULL, FK `public.cat_monedas` | — |
+| `due_date` | `date` | — | NOT NULL | Fecha de vencimiento |
+| `status` | `text` | `'pending'` | NOT NULL, CHECK lista | `pending`, `partial`, `paid`, `overdue`, `cancelled` |
+| `linked_transaction_id` | `uuid` | NULL | FK `comerci.transactions` ON DELETE SET NULL | Transacción asociada al pago |
+| `notes` | `text` | NULL | — | — |
+| `is_deleted` | `boolean` | `false` | NOT NULL | Soft-delete |
+| `deleted_at` | `timestamptz` | NULL | — | — |
+| `deleted_by` | `uuid` | NULL | FK `auth.users` | — |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `updated_at` | `timestamptz` | `now()` | NOT NULL, trigger | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | — |
+| `updated_by` | `uuid` | NULL | FK `auth.users` | — |
+
+---
+
+### 5.6 `comerci.predictions` — Proyecciones de flujo de caja
+
+Almacena las predicciones generadas por el motor ML (Holt-Winters + sklearn).
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | — |
+| `business_id` | `uuid` | — | NOT NULL, FK `comerci.businesses` | — |
+| `prediction_date` | `date` | — | NOT NULL | Fecha para la que se proyecta el flujo |
+| `generated_at` | `timestamptz` | `now()` | NOT NULL | Cuándo se generó esta predicción |
+| `horizon_days` | `smallint` | — | NOT NULL, CHECK(1–90) | Horizonte de predicción: 14 o 30 días |
+| `model_version` | `text` | — | NOT NULL | Versión del modelo: `rules_v1`, `sklearn_v1`, `holtwinters_v1` |
+| `predicted_income_cents` | `integer` | — | NOT NULL | Ingreso proyectado en céntimos |
+| `predicted_expense_cents` | `integer` | — | NOT NULL | Egreso proyectado (valor positivo, representa salida) |
+| `predicted_balance_cents` | `integer` | — | NOT NULL | Saldo proyectado = balance actual + income - expense |
+| `confidence_score` | `numeric(4,3)` | — | NOT NULL, CHECK(0–1) | Confianza del modelo |
+| `lower_bound_cents` | `integer` | NULL | — | Límite inferior del intervalo de confianza al 80% |
+| `upper_bound_cents` | `integer` | NULL | — | Límite superior del intervalo de confianza al 80% |
+| `breakeven_warning` | `boolean` | `false` | NOT NULL | True si el balance proyectado cae por debajo de cero |
+| `days_to_zero` | `smallint` | NULL | — | Días estimados hasta saldo cero (NULL si no aplica) |
+| `metadata` | `jsonb` | `{}` | NOT NULL | Parámetros del modelo, features usados, etc. |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | Usuario o worker que generó la predicción |
+
+> **No se aplica soft-delete en esta tabla.** Las predicciones son registros históricos; se mantienen para análisis de accuracy del modelo. Se eliminan físicamente vía retención (DELETE WHERE generated_at < NOW() - INTERVAL '90 days').
+
+---
+
+### 5.7 `comerci.alerts` — Alertas inteligentes
+
+Alertas generadas automáticamente por el motor de reglas (post-sincronización Belvo) o por el ML.
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | — |
+| `business_id` | `uuid` | — | NOT NULL, FK `comerci.businesses` | — |
+| `alert_type` | `text` | — | NOT NULL, CHECK lista | `low_balance`, `high_burn_rate`, `unusual_expense`, `payment_due`, `cash_flow_risk`, `category_spike`, `ml_anomaly` |
+| `severity` | `text` | — | NOT NULL, CHECK(`low`,`medium`,`high`,`critical`) | Nivel de urgencia |
+| `title` | `text` | — | NOT NULL | Título corto para la UI (máx 80 chars) |
+| `body` | `text` | — | NOT NULL | Descripción completa de la alerta |
+| `action_label` | `text` | NULL | — | Texto del CTA (ej. "Ver transacciones") |
+| `action_payload` | `jsonb` | NULL | — | Datos para el CTA (ej. `{screen: "transactions", filter: "expense"}`) |
+| `related_transaction_id` | `uuid` | NULL | FK `comerci.transactions` ON DELETE SET NULL | Transacción que disparó la alerta |
+| `related_liability_id` | `uuid` | NULL | FK `comerci.liabilities` ON DELETE SET NULL | Deuda relacionada |
+| `status` | `text` | `'active'` | NOT NULL, CHECK lista | `active`, `read`, `snoozed`, `dismissed`, `expired` |
+| `snoozed_until` | `timestamptz` | NULL | — | Fecha hasta la que está postergada |
+| `read_at` | `timestamptz` | NULL | — | Cuándo fue marcada como leída |
+| `dismissed_at` | `timestamptz` | NULL | — | Cuándo fue descartada |
+| `expires_at` | `timestamptz` | NULL | — | Expiración automática (ej. alertas de saldo bajo se expiran cuando el saldo sube) |
+| `dedup_key` | `text` | NULL | UNIQUE(business_id, dedup_key) | Evita alertas duplicadas por la misma causa |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `updated_at` | `timestamptz` | `now()` | NOT NULL, trigger | — |
+
+> **Deduplicación:** Antes de insertar una alerta, el alert-worker verifica si ya existe una alerta activa con el mismo `dedup_key`. Si existe, no inserta duplicado.
+
+---
+
+### 5.8 `comerci.daily_snapshots` — Snapshots diarios de estado financiero
+
+Registros del estado financiero consolidado al cierre de cada día. Alimentan el motor ML y el análisis histórico de tendencias.
+
+| Columna | Tipo | Default | Constraints | Descripción |
+|---------|------|---------|-------------|-------------|
+| `id` | `uuid` | `gen_random_uuid()` | PK | — |
+| `tenant_id` | `uuid` | — | NOT NULL, FK `public.tenants` | — |
+| `business_id` | `uuid` | — | NOT NULL, FK `comerci.businesses` | — |
+| `snapshot_date` | `date` | — | NOT NULL, UNIQUE(business_id, snapshot_date) | Fecha del snapshot (un solo registro por día por negocio) |
+| `total_balance_cents` | `integer` | — | NOT NULL | Suma de saldos de todas las cuentas activas en céntimos |
+| `total_income_cents` | `integer` | `0` | NOT NULL | Total ingresos del día |
+| `total_expense_cents` | `integer` | `0` | NOT NULL | Total egresos del día (valor positivo) |
+| `net_flow_cents` | `integer` | — | NOT NULL | income - expense (puede ser negativo) |
+| `account_count` | `smallint` | — | NOT NULL | Número de cuentas activas al momento del snapshot |
+| `transaction_count` | `smallint` | `0` | NOT NULL | Transacciones procesadas ese día |
+| `pending_liabilities_cents` | `integer` | `0` | NOT NULL | Total deudas pendientes (por pagar + por cobrar) |
+| `burn_rate_7d_cents` | `integer` | NULL | — | Tasa de quema promedio últimos 7 días (en céntimos/día) |
+| `metadata` | `jsonb` | `{}` | NOT NULL | Datos adicionales (breakdown por cuenta, por categoría) |
+| `created_at` | `timestamptz` | `now()` | NOT NULL | — |
+| `created_by` | `uuid` | NULL | FK `auth.users` | Worker que generó el snapshot |
+
+---
+
+## 6. SCRIPT DDL COMPLETO
+
+```sql
+-- =============================================================================
+-- COMERCI — SCHEMA DDL v3.0
+-- Módulo del SaaS Democra ONG Platform
+-- Motor: PostgreSQL 16 (Supabase)
+-- Autor: Eduardo Sebastian Paipay Vega
+-- Fecha: 2026-05-18
+-- =============================================================================
+
+-- Crear schema
+CREATE SCHEMA IF NOT EXISTS comerci;
+
+-- Comentario del schema
+COMMENT ON SCHEMA comerci IS
+  'Módulo Comerci — Gestión financiera inteligente para MYPEs LATAM. '
+  'Depende de: public.tenants, public.profiles, auth.users, public.cat_monedas. '
+  'Versión 3.0 — Integrado con BD Maestra Democra Platform.';
+
+-- =============================================================================
+-- 1. TABLA: comerci.businesses
+-- =============================================================================
+CREATE TABLE comerci.businesses (
+  id                          uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id                   uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  business_name               text        NOT NULL,
+  ruc                         text,
+  sector                      text        CHECK (sector IN ('retail','food','services','manufacturing','agriculture','other')),
+  tax_regime                  text        CHECK (tax_regime IN ('RUS','RER','MYPE_TRIBUTARIO','GENERAL','INFORMAL')),
+  currency_code               text        NOT NULL DEFAULT 'PEN' REFERENCES public.cat_monedas(codigo),
+  monthly_revenue_avg_cents   integer,
+  employee_count              smallint    CHECK (employee_count >= 0),
+  belvo_link_id               text,
+  belvo_link_status           text        NOT NULL DEFAULT 'disconnected'
+                                          CHECK (belvo_link_status IN ('disconnected','connected','token_expired','error')),
+  belvo_last_sync_at          timestamptz,
+  onboarding_completed_at     timestamptz,
+  -- Soft-delete
+  is_deleted                  boolean     NOT NULL DEFAULT false,
+  deleted_at                  timestamptz,
+  deleted_by                  uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Trazabilidad
+  created_at                  timestamptz NOT NULL DEFAULT now(),
+  updated_at                  timestamptz NOT NULL DEFAULT now(),
+  created_by                  uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  updated_by                  uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Constraints
+  CONSTRAINT uq_businesses_tenant UNIQUE (tenant_id),
+  CONSTRAINT uq_businesses_ruc    UNIQUE (ruc)
+);
+
+COMMENT ON TABLE comerci.businesses IS
+  '1:1 con public.tenants. Extiende el tenant con datos financieros específicos de la MYPE.';
+
+CREATE TRIGGER tr_set_updated_at_businesses
+  BEFORE UPDATE ON comerci.businesses
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- =============================================================================
+-- 2. TABLA: comerci.accounts
+-- =============================================================================
+CREATE TABLE comerci.accounts (
+  id                  uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id           uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  business_id         uuid        NOT NULL REFERENCES comerci.businesses(id) ON DELETE CASCADE,
+  name                text        NOT NULL,
+  account_type        text        NOT NULL
+                      CHECK (account_type IN ('bank','cash','digital_wallet','credit_card')),
+  provider            text,
+  currency_code       text        NOT NULL DEFAULT 'PEN' REFERENCES public.cat_monedas(codigo),
+  balance_cents       integer     NOT NULL DEFAULT 0,
+  balance_updated_at  timestamptz,
+  belvo_account_id    text,
+  is_active           boolean     NOT NULL DEFAULT true,
+  is_hidden           boolean     NOT NULL DEFAULT false,
+  display_order       smallint    NOT NULL DEFAULT 0,
+  -- Soft-delete
+  is_deleted          boolean     NOT NULL DEFAULT false,
+  deleted_at          timestamptz,
+  deleted_by          uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Trazabilidad
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  updated_at          timestamptz NOT NULL DEFAULT now(),
+  created_by          uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  updated_by          uuid        REFERENCES auth.users(id) ON DELETE SET NULL
+);
+
+COMMENT ON TABLE comerci.accounts IS
+  'Cuentas bancarias, efectivo y billeteras digitales de la MYPE. '
+  'Fuentes: manual, Belvo Open Banking, sincronización Yape/Plin vía BCP.';
+
+CREATE TRIGGER tr_set_updated_at_accounts
+  BEFORE UPDATE ON comerci.accounts
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- =============================================================================
+-- 3. TABLA: comerci.categories
+-- =============================================================================
+CREATE TABLE comerci.categories (
+  id              uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id       uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  code            text        NOT NULL,
+  name            text        NOT NULL,
+  category_type   text        NOT NULL CHECK (category_type IN ('expense','income','transfer')),
+  icon            text,
+  color_hex       text        CHECK (color_hex ~ '^#[0-9A-Fa-f]{6}$'),
+  is_system       boolean     NOT NULL DEFAULT false,
+  parent_id       uuid        REFERENCES comerci.categories(id) ON DELETE SET NULL,
+  display_order   smallint    NOT NULL DEFAULT 0,
+  keywords        text[]      NOT NULL DEFAULT '{}',
+  -- Soft-delete
+  is_deleted      boolean     NOT NULL DEFAULT false,
+  deleted_at      timestamptz,
+  deleted_by      uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Trazabilidad
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  created_by      uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  updated_by      uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Constraints
+  CONSTRAINT uq_categories_tenant_code UNIQUE (tenant_id, code),
+  CONSTRAINT chk_categories_no_self_parent CHECK (parent_id IS DISTINCT FROM id)
+);
+
+COMMENT ON TABLE comerci.categories IS
+  'Categorías de clasificación de transacciones. '
+  'Las categorías is_system=true son globales y se crean en fn_bootstrap_comerci_tenant(). '
+  'Cada tenant puede agregar sus propias categorías personalizadas.';
+
+CREATE TRIGGER tr_set_updated_at_categories
+  BEFORE UPDATE ON comerci.categories
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- =============================================================================
+-- 4. TABLA: comerci.transactions
+-- =============================================================================
+CREATE TABLE comerci.transactions (
+  id                          uuid            NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id                   uuid            NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  account_id                  uuid            NOT NULL REFERENCES comerci.accounts(id) ON DELETE RESTRICT,
+  category_id                 uuid            REFERENCES comerci.categories(id) ON DELETE SET NULL,
+  amount_cents                integer         NOT NULL,
+  currency_code               text            NOT NULL DEFAULT 'PEN' REFERENCES public.cat_monedas(codigo),
+  exchange_rate               numeric(10,6)   NOT NULL DEFAULT 1.000000 CHECK (exchange_rate > 0),
+  amount_pen_cents            integer         NOT NULL,
+  description                 text            NOT NULL,
+  transaction_date            date            NOT NULL,
+  value_date                  date,
+  reference                   text,
+  external_id                 text,
+  source                      text            NOT NULL DEFAULT 'manual'
+                              CHECK (source IN ('manual','belvo_bank','belvo_wallet','csv_import')),
+  classification_source       text            NOT NULL DEFAULT 'unclassified'
+                              CHECK (classification_source IN
+                                ('unclassified','rules_engine','ml_model','user_manual')),
+  classification_confidence   numeric(4,3)    CHECK (classification_confidence BETWEEN 0 AND 1),
+  notes                       text,
+  attachments                 jsonb           NOT NULL DEFAULT '[]',
+  is_reconciled               boolean         NOT NULL DEFAULT false,
+  is_excluded                 boolean         NOT NULL DEFAULT false,
+  metadata                    jsonb           NOT NULL DEFAULT '{}',
+  -- Soft-delete
+  is_deleted                  boolean         NOT NULL DEFAULT false,
+  deleted_at                  timestamptz,
+  deleted_by                  uuid            REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Trazabilidad
+  created_at                  timestamptz     NOT NULL DEFAULT now(),
+  updated_at                  timestamptz     NOT NULL DEFAULT now(),
+  created_by                  uuid            REFERENCES auth.users(id) ON DELETE SET NULL,
+  updated_by                  uuid            REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Deduplicación Belvo
+  CONSTRAINT uq_transactions_external UNIQUE (account_id, external_id)
+) PARTITION BY RANGE (transaction_date);
+
+-- Particiones mensuales — crear mínimo 12 meses hacia adelante en CI/CD
+CREATE TABLE comerci.transactions_2026_01
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-01-01') TO ('2026-02-01');
+
+CREATE TABLE comerci.transactions_2026_02
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-02-01') TO ('2026-03-01');
+
+CREATE TABLE comerci.transactions_2026_03
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-03-01') TO ('2026-04-01');
+
+CREATE TABLE comerci.transactions_2026_04
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-04-01') TO ('2026-05-01');
+
+CREATE TABLE comerci.transactions_2026_05
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-05-01') TO ('2026-06-01');
+
+CREATE TABLE comerci.transactions_2026_06
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-06-01') TO ('2026-07-01');
+
+CREATE TABLE comerci.transactions_2026_07
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-07-01') TO ('2026-08-01');
+
+CREATE TABLE comerci.transactions_2026_08
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-08-01') TO ('2026-09-01');
+
+CREATE TABLE comerci.transactions_2026_09
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-09-01') TO ('2026-10-01');
+
+CREATE TABLE comerci.transactions_2026_10
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-10-01') TO ('2026-11-01');
+
+CREATE TABLE comerci.transactions_2026_11
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-11-01') TO ('2026-12-01');
+
+CREATE TABLE comerci.transactions_2026_12
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2026-12-01') TO ('2027-01-01');
+
+CREATE TABLE comerci.transactions_2027
+  PARTITION OF comerci.transactions
+  FOR VALUES FROM ('2027-01-01') TO ('2028-01-01');
+
+COMMENT ON TABLE comerci.transactions IS
+  'Tabla central de Comerci. Particionada por transaction_date (mensual). '
+  'external_id + account_id garantizan idempotencia en sincronización Belvo. '
+  'amount_cents: positivo=ingreso, negativo=egreso. '
+  'amount_pen_cents: equivalente en soles para análisis multi-moneda.';
+
+CREATE TRIGGER tr_set_updated_at_transactions
+  BEFORE UPDATE ON comerci.transactions
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- =============================================================================
+-- 5. TABLA: comerci.liabilities
+-- =============================================================================
+CREATE TABLE comerci.liabilities (
+  id                      uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id               uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  business_id             uuid        NOT NULL REFERENCES comerci.businesses(id) ON DELETE CASCADE,
+  liability_type          text        NOT NULL CHECK (liability_type IN ('payable','receivable')),
+  counterparty_name       text        NOT NULL,
+  counterparty_ruc        text,
+  description             text        NOT NULL,
+  original_amount_cents   integer     NOT NULL CHECK (original_amount_cents > 0),
+  paid_amount_cents       integer     NOT NULL DEFAULT 0 CHECK (paid_amount_cents >= 0),
+  currency_code           text        NOT NULL DEFAULT 'PEN' REFERENCES public.cat_monedas(codigo),
+  due_date                date        NOT NULL,
+  status                  text        NOT NULL DEFAULT 'pending'
+                          CHECK (status IN ('pending','partial','paid','overdue','cancelled')),
+  linked_transaction_id   uuid        REFERENCES comerci.transactions(id) ON DELETE SET NULL,
+  notes                   text,
+  -- Soft-delete
+  is_deleted              boolean     NOT NULL DEFAULT false,
+  deleted_at              timestamptz,
+  deleted_by              uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Trazabilidad
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  updated_at              timestamptz NOT NULL DEFAULT now(),
+  created_by              uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  updated_by              uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Validación: el pago no puede exceder la deuda original
+  CONSTRAINT chk_liabilities_paid_leq_original
+    CHECK (paid_amount_cents <= original_amount_cents)
+);
+
+CREATE TRIGGER tr_set_updated_at_liabilities
+  BEFORE UPDATE ON comerci.liabilities
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- =============================================================================
+-- 6. TABLA: comerci.predictions
+-- =============================================================================
+CREATE TABLE comerci.predictions (
+  id                          uuid            NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id                   uuid            NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  business_id                 uuid            NOT NULL REFERENCES comerci.businesses(id) ON DELETE CASCADE,
+  prediction_date             date            NOT NULL,
+  generated_at                timestamptz     NOT NULL DEFAULT now(),
+  horizon_days                smallint        NOT NULL CHECK (horizon_days BETWEEN 1 AND 90),
+  model_version               text            NOT NULL,
+  predicted_income_cents      integer         NOT NULL,
+  predicted_expense_cents     integer         NOT NULL,
+  predicted_balance_cents     integer         NOT NULL,
+  confidence_score            numeric(4,3)    NOT NULL CHECK (confidence_score BETWEEN 0 AND 1),
+  lower_bound_cents           integer,
+  upper_bound_cents           integer,
+  breakeven_warning           boolean         NOT NULL DEFAULT false,
+  days_to_zero                smallint,
+  metadata                    jsonb           NOT NULL DEFAULT '{}',
+  created_at                  timestamptz     NOT NULL DEFAULT now(),
+  created_by                  uuid            REFERENCES auth.users(id) ON DELETE SET NULL
+);
+
+-- =============================================================================
+-- 7. TABLA: comerci.alerts
+-- =============================================================================
+CREATE TABLE comerci.alerts (
+  id                      uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id               uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  business_id             uuid        NOT NULL REFERENCES comerci.businesses(id) ON DELETE CASCADE,
+  alert_type              text        NOT NULL
+                          CHECK (alert_type IN (
+                            'low_balance','high_burn_rate','unusual_expense',
+                            'payment_due','cash_flow_risk','category_spike','ml_anomaly'
+                          )),
+  severity                text        NOT NULL CHECK (severity IN ('low','medium','high','critical')),
+  title                   text        NOT NULL,
+  body                    text        NOT NULL,
+  action_label            text,
+  action_payload          jsonb,
+  related_transaction_id  uuid        REFERENCES comerci.transactions(id) ON DELETE SET NULL,
+  related_liability_id    uuid        REFERENCES comerci.liabilities(id) ON DELETE SET NULL,
+  status                  text        NOT NULL DEFAULT 'active'
+                          CHECK (status IN ('active','read','snoozed','dismissed','expired')),
+  snoozed_until           timestamptz,
+  read_at                 timestamptz,
+  dismissed_at            timestamptz,
+  expires_at              timestamptz,
+  dedup_key               text,
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  updated_at              timestamptz NOT NULL DEFAULT now(),
+  -- Deduplicación
+  CONSTRAINT uq_alerts_business_dedup UNIQUE (business_id, dedup_key)
+);
+
+CREATE TRIGGER tr_set_updated_at_alerts
+  BEFORE UPDATE ON comerci.alerts
+  FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- =============================================================================
+-- 8. TABLA: comerci.daily_snapshots
+-- =============================================================================
+CREATE TABLE comerci.daily_snapshots (
+  id                          uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id                   uuid        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  business_id                 uuid        NOT NULL REFERENCES comerci.businesses(id) ON DELETE CASCADE,
+  snapshot_date               date        NOT NULL,
+  total_balance_cents         integer     NOT NULL,
+  total_income_cents          integer     NOT NULL DEFAULT 0,
+  total_expense_cents         integer     NOT NULL DEFAULT 0,
+  net_flow_cents              integer     NOT NULL,
+  account_count               smallint    NOT NULL,
+  transaction_count           smallint    NOT NULL DEFAULT 0,
+  pending_liabilities_cents   integer     NOT NULL DEFAULT 0,
+  burn_rate_7d_cents          integer,
+  metadata                    jsonb       NOT NULL DEFAULT '{}',
+  created_at                  timestamptz NOT NULL DEFAULT now(),
+  created_by                  uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  -- Un solo snapshot por negocio por día
+  CONSTRAINT uq_daily_snapshots_business_date UNIQUE (business_id, snapshot_date)
+);
 ```
 
 ---
 
-## 📚 Cambios de Versión
+## 7. ROW-LEVEL SECURITY (RLS)
 
-**v1.0** (2026-05-18): Plantilla vacía
-**v2.0** (2026-05-18): Documento completo — ERD, 11 tablas DDL, diccionario de datos, índices, encriptación, RLS, backup, funciones utilitarias, seed data
+Todas las tablas del schema `comerci` usan **la misma función de la BD Maestra**: `fn_current_tenant_id()`. Esto garantiza aislamiento total entre MYPEs (tenants).
 
----
+### 7.1 Activación de RLS
 
-*FASE 5 completada. Siguiente: FASE 6 — Diseño UX/UI.*
+```sql
+-- Habilitar RLS en todas las tablas Comerci
+ALTER TABLE comerci.businesses        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.accounts          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.categories        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.transactions      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.liabilities       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.predictions       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.alerts            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comerci.daily_snapshots   ENABLE ROW LEVEL SECURITY;
+```
+
+### 7.2 Políticas RLS
+
+```sql
+-- =============================================================================
+-- POLÍTICA ESTÁNDAR: SELECT — El tenant solo ve sus propios datos
+-- Se aplica igual a TODAS las tablas del schema comerci
+-- =============================================================================
+
+CREATE POLICY comerci_businesses_select ON comerci.businesses
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_businesses_insert ON comerci.businesses
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_businesses_update ON comerci.businesses
+  FOR UPDATE USING (tenant_id = fn_current_tenant_id())
+  WITH CHECK (tenant_id = fn_current_tenant_id());
+
+-- (Patrón idéntico para accounts, categories, transactions, liabilities,
+--  predictions, alerts, daily_snapshots)
+
+CREATE POLICY comerci_accounts_select ON comerci.accounts
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_accounts_insert ON comerci.accounts
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_accounts_update ON comerci.accounts
+  FOR UPDATE USING (tenant_id = fn_current_tenant_id())
+  WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_categories_select ON comerci.categories
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_cate
