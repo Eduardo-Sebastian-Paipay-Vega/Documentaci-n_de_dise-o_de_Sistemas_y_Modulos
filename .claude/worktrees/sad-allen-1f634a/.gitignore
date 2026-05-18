@@ -1,0 +1,29 @@
+# ==========================================
+# .gitignore — Documentación de Sistemas
+# ==========================================
+
+# Scripts temporales de utilidad (no van al repo)
+_git-push-now.bat
+_push2.bat
+_push*.bat
+_autopush.vbs
+_fix.ps1
+_push.log
+test_push.txt
+
+# Archivos de sistema Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Archivos temporales de editores
+*.tmp
+*.bak
+*~
+.DS_Store
+
+# Lock files de git (nunca deben commitearse)
+*.lock
+
+# Logs
+*.log

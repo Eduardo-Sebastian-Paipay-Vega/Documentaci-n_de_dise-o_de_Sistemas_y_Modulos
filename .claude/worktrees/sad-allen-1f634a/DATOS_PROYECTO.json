@@ -1,0 +1,190 @@
+{
+  "_comentario": "Este archivo almacena toda la información del proyecto y es actualizado por cada fase",
+  "_instrucciones": "NO EDITAR MANUALMENTE. Claude lo actualiza automáticamente durante la orquestación.",
+
+  "metadata": {
+    "timestamp_inicio": null,
+    "timestamp_ultima_actualizacion": null,
+    "version_sistema": "1.0",
+    "estado_general": "pendiente",
+    "fase_actual": 0,
+    "porcentaje_completado": 0
+  },
+
+  "proyecto": {
+    "nombre": null,
+    "tipo_aplicacion": null,
+    "industria": null,
+    "usuario_principal": null,
+    "problema_principal": null,
+    "escala": null,
+    "contexto_actual": null,
+    "diferenciacion": null,
+    "objetivo_principal": null,
+    "restricciones": null
+  },
+
+  "fase_1": {
+    "estado": "pendiente",
+    "timestamp_inicio": null,
+    "timestamp_fin": null,
+    "archivo_generado": null,
+    "items_generados": 0,
+    "longitud_aprox": 0,
+    "problemas_detectados": [],
+    "stakeholders": [],
+    "contexto_tecnologico": null,
+    "error": null
+  },
+
+  "fase_2": {
+    "estado": "pendiente",
+    "timestamp_inicio": null,
+    "timestamp_fin": null,
+    "archivo_generado": null,
+    "items_generados": 0,
+    "longitud_aprox": 0,
+    "uvp": null,
+    "beneficios_tangibles": [],
+    "beneficios_intangibles": [],
+    "segmentos_clientes": [],
+    "error": null
+  },
+
+  "consolidacion": {
+    "estado": "pendiente",
+    "timestamp": null,
+    "archivo_generado": null,
+    "problemas_consolidados": [],
+    "soluciones_propuestas": [],
+    "valor_agregado_consolidado": null,
+    "error": null
+  },
+
+  "fase_3": {
+    "estado": "pendiente",
+    "timestamp_inicio": null,
+    "timestamp_fin": null,
+    "archivo_generado": null,
+    "requisitos_funcionales": [],
+    "requisitos_no_funcionales": [],
+    "casos_uso": [],
+    "actores": [],
+    "modulos": [],
+    "cantidad_rf": 0,
+    "cantidad_cu": 0,
+    "diagramas_generados": 0,
+    "error": null
+  },
+
+  "fase_4": {
+    "estado": "pendiente",
+    "timestamp_inicio": null,
+    "timestamp_fin": null,
+    "archivo_generado": null,
+    "bmc": {
+      "socios": [],
+      "actividades": [],
+      "recursos": [],
+      "propuesta_valor": null,
+      "relaciones": [],
+      "canales": [],
+      "segmentos": [],
+      "costos": null,
+      "ingresos": null
+    },
+    "analisis_mercado": {
+      "tamano_mercado": null,
+      "crecimiento_esperado": null,
+      "tendencias": []
+    },
+    "modelo_ingresos": null,
+    "analisis_costos": {
+      "desarrollo": null,
+      "infraestructura": null,
+      "marketing": null,
+      "operacion": null,
+      "total": null
+    },
+    "roi": {
+      "break_even_meses": null,
+      "roi_year1": null,
+      "roi_year2": null,
+      "roi_year3": null
+    },
+    "mvp_features": [],
+    "cronograma": null,
+    "riesgos": [],
+    "error": null
+  },
+
+  "fase_5": {
+    "estado": "pendiente",
+    "timestamp_inicio": null,
+    "timestamp_fin": null,
+    "archivo_generado": null,
+    "tablas": [],
+    "campos_totales": 0,
+    "relaciones": [],
+    "indices": [],
+    "scripts_sql": null,
+    "normalizacion": {
+      "primera_forma_normal": true,
+      "segunda_forma_normal": true,
+      "tercera_forma_normal": true
+    },
+    "politicas_integridad": [],
+    "procedimientos": [],
+    "estrategia_backup": null,
+    "medidas_seguridad": [],
+    "error": null
+  },
+
+  "fase_6": {
+    "estado": "pendiente",
+    "timestamp_inicio": null,
+    "timestamp_fin": null,
+    "archivo_generado": null,
+    "principios_ux": [],
+    "mapa_sitio": null,
+    "wireframes": [],
+    "cantidad_pantallas": 0,
+    "flujos_usuario": [],
+    "componentes": [],
+    "paleta_colores": {
+      "primario": null,
+      "secundario": null,
+      "acentos": []
+    },
+    "tipografia": {
+      "fuente_principal": null,
+      "fuente_secundaria": null
+    },
+    "breakpoints_responsive": [],
+    "criterios_accesibilidad": [],
+    "error": null
+  },
+
+  "github_sync": {
+    "estado": "pendiente",
+    "timestamp": null,
+    "commit_message": null,
+    "archivos_pusheados": 0,
+    "url_commit": null,
+    "error": null
+  },
+
+  "timeline": {
+    "fase_1_duracion_minutos": null,
+    "fase_2_duracion_minutos": null,
+    "consolidacion_duracion_minutos": null,
+    "fase_3_duracion_minutos": null,
+    "fase_4_duracion_minutos": null,
+    "fase_5_duracion_minutos": null,
+    "fase_6_duracion_minutos": null,
+    "github_sync_duracion_minutos": null,
+    "duracion_total_minutos": null
+  },
+
+  "logs": []
+}

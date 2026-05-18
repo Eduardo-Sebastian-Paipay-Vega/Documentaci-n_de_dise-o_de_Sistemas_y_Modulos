@@ -10,4 +10,9 @@
       "Bash(git commit -m ' *)",
       "Bash(git branch *)",
       "Bash(git push *)",
-      "Bash
+      "Bash(notebooklm *)",
+      "Bash(pip install notebooklm-py*)",
+      "Bash(python -m notebooklm *)"
+    ]
+  }
+}

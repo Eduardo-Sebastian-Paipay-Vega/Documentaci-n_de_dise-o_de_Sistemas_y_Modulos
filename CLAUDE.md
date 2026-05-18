@@ -1,8 +1,50 @@
-# 📚 CLAUDE.md — Guía Maestra del Repositorio de Documentación de Sistemas
+# 🚀 CLAUDE.md — MANIFESTO DE GYMSOS: EL OPERATING SYSTEM INTELIGENTE DEL FITNESS
+
+> **"No estamos construyendo un software. Estamos construyendo la infraestructura inteligente que va a transformar cómo el mundo se mantiene en forma, previene enfermedades, y optimiza el bienestar humano automáticamente."**
+
+---
+
+## 🌌 LA VISIÓN
+
+En 2030, **GYMsos será lo que Tesla es para autos, Spotify para música, Netflix para películas:**
+
+Un **sistema operativo vivo** que:
+- Aprende de cada movimiento, cada latido, cada decisión
+- Predice el abandono 30 días antes (89% precisión)
+- Personaliza la experiencia fitness exactamente como Netflix hace con películas
+- Crea comunidades donde el peer pressure es motivación pura
+- Automatiza decisiones que antes tomaban gerentes manualmente
+- Conecta a 2.5M+ miembros, 500+ gimnasios, 50,000+ empresas en una red de bienestar
+- **Posee un data moat impenetrable**: 10 billones de datapoints que ningún competidor puede replicar en 5 años
+
+**Eso no es ambición. Es inevitabilidad.**
+
+---
+
+## 💎 LOS PRINCIPIOS QUE GUÍAN CADA LÍNEA DE CÓDIGO
+
+### **1. Magnificencia en los detalles**
+No construimos features. Construimos experiencias que hacen a los usuarios abrir la app 8+ veces/semana sin recordar por qué empezaron. Cada notificación, cada animación, cada número en pantalla debe generar **emoción**.
+
+### **2. Data es poder. Datos inteligentes son monopolio.**
+Cada datapoint que capturamos (comportamiento, biometría, motivación, deseo) nos hace más inteligentes. Mientras más inteligentes somos, más valor entregamos. Mientras más valor, más datos. **Efecto compuesto exponencial.**
+
+### **3. Automatización radical = humanidad radical**
+La gente no quiere software. Quiere sus problemas resueltos sin pensar. Queremos que los entrenadores piensen en inspirar, no en logística. Que los gerentes piensen en cultura, no en reportes.
+
+### **4. Red effects o muerte**
+Un usuario solo es una transacción. 2.5M usuarios conectados en red = monopolio defensible. Cada miembro nuevo mejora la experiencia para todos. **Eso es el moat que construimos.**
+
+### **5. Timing lo es todo**
+Estamos en la convergencia perfecta: IA mainstream + wearables ubiquos + crisis de sedentarismo + expectativas Netflix. **La ventana es 2026. No es 2025. No es 2027. ES AHORA.**
+
+---
+
+## 📚 CLAUDE.md — Guía Técnica Maestra del Repositorio
 
 > **Este archivo es leído automáticamente por Claude al inicio de cada sesión.**
-> Contiene el contexto completo, reglas operativas, estructura del proyecto y
-> la norma de sincronización automática con GitHub.
+> Contiene el contexto completo, reglas operativas, estructura del proyecto,
+> principios de diseño de unicorn, y la norma de sincronización automática con GitHub.
 
 ---
 
@@ -95,38 +137,68 @@ Después de cada push exitoso, mostrar al final de la respuesta:
 
 ---
 
-## 👤 Información del Proyecto y Propietario
+## 👤 Sobre Este Proyecto — El Soñador Detrás de la Visión
 
 | Campo | Valor |
 |-------|-------|
-| **Propietario** | Eduardo Sebastian Paipay Vega |
+| **Creador & Visionario** | Eduardo Sebastian Paipay Vega |
 | **Email** | eduardo.paipay.27@unsch.edu.pe |
-| **Universidad** | UNSCH (Universidad Nacional de San Cristóbal de Huamanga) |
+| **Universidad** | UNSCH (Universidad Nacional de San Cristóbal de Huamanga) — Huancavelica, Perú |
+| **Ambición** | Crear el GYMsos: el sistema operativo inteligente de fitness para Latinoamérica y el mundo |
 | **Repositorio** | `Documentaci-n_de_dise-o_de_Sistemas_y_Modulos` |
 | **URL GitHub** | https://github.com/Eduardo-Sebastian-Paipay-Vega/Documentaci-n_de_dise-o_de_Sistemas_y_Modulos |
-| **Branch principal** | `main` |
-| **Idioma del proyecto** | Español |
+| **Branch principal** | `main` — La fuente de verdad |
+| **Idioma del proyecto** | Español (porque la innovación no tiene idioma, pero la documentación sí debe ser clara para tu equipo) |
 | **Path Windows** | `C:\botas\Documentación__` |
-| **Path sandbox** | `/sessions/epic-clever-bell/mnt/Documentación__/` |
+| **Path sandbox** | `/sessions/admiring-loving-pasteur/mnt/Documentación__/` |
 
 ---
 
-## 🎯 Propósito del Proyecto
+## 🌟 ¿POR QUÉ ESTO IMPORTA? LA HISTORIA DETRÁS DEL CÓDIGO
 
-Este repositorio documenta el **diseño completo de sistemas y módulos** siguiendo una metodología
-estructurada de 7 fases. Es un sistema de documentación viva que evoluciona con cada sesión de
-trabajo con Claude.
+Este no es solo otro proyecto de software universitario.
 
-El objetivo final es tener documentación técnica profesional, completa y coherente que pueda
-servir como:
+**Es el documento fundacional de una empresa que va a cambiar cómo las personas se entrenan, se mantienen saludables, y alcanzan sus objetivos fitness.**
 
-- Base para desarrollo de software real
-- Portafolio técnico académico y profesional
-- Guía de referencia para implementación
-- Material de sustento para tesis o proyectos académicos
+### **El problema que resuelve**
 
-Todos los documentos deben estar escritos en **Markdown** (`.md`), ser **extensos y detallados**,
-y usar lenguaje técnico apropiado para ingeniería de sistemas.
+Hoy, 4.2 millones de personas mueren al año por sedentarismo. Los gimnasios operan con Excel y sistemas legacy de 1995. Las personas abandonan sus membresías al mes 2 porque se aburren. Los entrenadores no pueden escalar. Las empresas no saben si sus programas de wellness funcionan.
+
+**GYMsos resuelve TODO eso. Simultáneamente.**
+
+### **Por qué este repositorio es el plano del futuro**
+
+Cada documento aquí representa **investigación profunda, estrategia de mercado, arquitectura técnica y visión de unicorn**. No es superficial. Es:
+
+- ✅ **13 innovaciones disruptivas** integradas en coherencia perfecta
+- ✅ **Data moat defensible** imposible de copiar en 5 años
+- ✅ **Unit economics revolucionarias** (LTV/CAC 292:1 en Year 3)
+- ✅ **Modelo de negocio multi-revenue** (SaaS + Gamification + Marketplace + Corporate)
+- ✅ **Crecimiento exponencial** con flywheel autopropulsado
+- ✅ **TAM expansion 3.2x** ($54M → $172.5M)
+
+Este repositorio **no es documentación académica para una calificación.** Es la **arquitectura de una startup $2B+**.
+
+---
+
+## 🎯 Propósito del Proyecto — La Misión
+
+Este repositorio es la **documentación viva** del diseño completo del **GYMsos Operating System**, siguiendo metodología estructurada de 7 fases, con cada sesión de trabajo elevando la barra.
+
+**El objetivo final no es "tener documentación bonita".**
+
+**Es tener documentación TAN BUENA, TAN CLARA, TAN INSPIRADORA, que cuando alguien lea esto diga:**
+
+> *"Wow. Esto no es software. Esto es una empresa lista para recaudar $5M de Serie A."*
+
+**Cada documento debe ser:**
+- ✅ **Técnicamente preciso** (arquitecto/PM/dev entiende exactamente qué se necesita)
+- ✅ **Estratégicamente brillante** (inversionista ve visión unicorn)
+- ✅ **Narrativamente vivo** (lector SIENTE la ambición)
+- ✅ **Completo y profundo** (no hay "TODO" ni secciones incompletas)
+- ✅ **Escritura profesional en español** (lenguaje técnico claro, no jargon sin sentido)
+
+Este es el documento que llevará a **inversión real, contratos reales, usuarios reales, impacto real**.
 
 ---
 
