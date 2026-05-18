@@ -884,4 +884,830 @@ CREATE POLICY comerci_accounts_update ON comerci.accounts
 CREATE POLICY comerci_categories_select ON comerci.categories
   FOR SELECT USING (tenant_id = fn_current_tenant_id());
 
-CREATE POLICY comerci_cate
+CREATE POLICY comerci_categories_insert ON comerci.categories
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_categories_update ON comerci.categories
+  FOR UPDATE USING (tenant_id = fn_current_tenant_id())
+  WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_transactions_select ON comerci.transactions
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_transactions_insert ON comerci.transactions
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_transactions_update ON comerci.transactions
+  FOR UPDATE USING (tenant_id = fn_current_tenant_id())
+  WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_liabilities_select ON comerci.liabilities
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_liabilities_insert ON comerci.liabilities
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_liabilities_update ON comerci.liabilities
+  FOR UPDATE USING (tenant_id = fn_current_tenant_id())
+  WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_predictions_select ON comerci.predictions
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_predictions_insert ON comerci.predictions
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_alerts_select ON comerci.alerts
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_alerts_insert ON comerci.alerts
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_alerts_update ON comerci.alerts
+  FOR UPDATE USING (tenant_id = fn_current_tenant_id())
+  WITH CHECK (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_daily_snapshots_select ON comerci.daily_snapshots
+  FOR SELECT USING (tenant_id = fn_current_tenant_id());
+
+CREATE POLICY comerci_daily_snapshots_insert ON comerci.daily_snapshots
+  FOR INSERT WITH CHECK (tenant_id = fn_current_tenant_id());
+```
+
+### 7.3 Grants de permisos
+
+```sql
+-- El rol authenticated puede operar sobre el schema comerci
+GRANT USAGE ON SCHEMA comerci TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA comerci TO authenticated;
+
+-- El service_role (workers BullMQ, ML worker) tiene acceso completo
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA comerci TO service_role;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA comerci TO service_role;
+```
+
+---
+
+## 8. ÍNDICES Y OPTIMIZACIONES
+
+```sql
+-- ===== comerci.businesses =====
+CREATE INDEX idx_businesses_tenant ON comerci.businesses (tenant_id)
+  WHERE is_deleted = false;
+
+CREATE INDEX idx_businesses_belvo_status ON comerci.businesses (belvo_link_status)
+  WHERE belvo_link_status IN ('token_expired', 'error') AND is_deleted = false;
+
+-- ===== comerci.accounts =====
+CREATE INDEX idx_accounts_business ON comerci.accounts (business_id)
+  WHERE is_deleted = false AND is_active = true;
+
+CREATE INDEX idx_accounts_tenant ON comerci.accounts (tenant_id)
+  WHERE is_deleted = false;
+
+-- ===== comerci.transactions =====
+-- Índice principal de consulta de movimientos por cuenta y fecha
+CREATE INDEX idx_transactions_account_date ON comerci.transactions (account_id, transaction_date DESC)
+  WHERE is_deleted = false;
+
+-- Para el clasificador ML: movimientos sin clasificar por tenant
+CREATE INDEX idx_transactions_unclassified ON comerci.transactions (tenant_id, created_at DESC)
+  WHERE classification_source = 'unclassified' AND is_deleted = false;
+
+-- Para el daily snapshot worker: movimientos del día
+CREATE INDEX idx_transactions_tenant_date ON comerci.transactions (tenant_id, transaction_date)
+  WHERE is_deleted = false;
+
+-- Para análisis por categoría
+CREATE INDEX idx_transactions_category ON comerci.transactions (tenant_id, category_id, transaction_date DESC)
+  WHERE is_deleted = false AND is_excluded = false;
+
+-- ===== comerci.categories =====
+CREATE INDEX idx_categories_tenant_type ON comerci.categories (tenant_id, category_type)
+  WHERE is_deleted = false;
+
+-- Para búsqueda por keywords (clasificador de reglas)
+CREATE INDEX idx_categories_keywords ON comerci.categories USING GIN (keywords)
+  WHERE is_deleted = false;
+
+-- ===== comerci.liabilities =====
+-- Deudas próximas a vencer (alerta de payment_due)
+CREATE INDEX idx_liabilities_due_date ON comerci.liabilities (business_id, due_date)
+  WHERE status IN ('pending','partial') AND is_deleted = false;
+
+-- ===== comerci.predictions =====
+-- Últimas predicciones por negocio
+CREATE INDEX idx_predictions_business_date ON comerci.predictions
+  (business_id, prediction_date DESC, generated_at DESC);
+
+-- ===== comerci.alerts =====
+-- Alertas activas por negocio (las más consultadas)
+CREATE INDEX idx_alerts_business_active ON comerci.alerts (business_id, created_at DESC)
+  WHERE status = 'active';
+
+-- ===== comerci.daily_snapshots =====
+-- Serie de tiempo por negocio (input del modelo ML)
+CREATE INDEX idx_snapshots_business_date ON comerci.daily_snapshots
+  (business_id, snapshot_date DESC);
+```
+
+---
+
+## 9. FUNCIONES Y PROCEDIMIENTOS ALMACENADOS
+
+### 9.1 `fn_bootstrap_comerci_tenant(tenant_id uuid)` — Inicializar MYPE nueva
+
+Función llamada al completar el onboarding de una nueva MYPE. Crea el registro en `comerci.businesses` y las categorías del sistema.
+
+```sql
+CREATE OR REPLACE FUNCTION fn_bootstrap_comerci_tenant(
+  p_tenant_id     uuid,
+  p_business_name text,
+  p_owner_id      uuid  -- auth.users.id del propietario
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_business_id uuid;
+BEGIN
+  -- 1. Crear el registro del negocio
+  INSERT INTO comerci.businesses (
+    tenant_id, business_name, created_by, updated_by
+  ) VALUES (
+    p_tenant_id, p_business_name, p_owner_id, p_owner_id
+  )
+  RETURNING id INTO v_business_id;
+
+  -- 2. Crear la cuenta de efectivo por defecto
+  INSERT INTO comerci.accounts (
+    tenant_id, business_id, name, account_type, provider, display_order, created_by
+  ) VALUES (
+    p_tenant_id, v_business_id, 'Efectivo en caja', 'cash', 'cash', 0, p_owner_id
+  );
+
+  -- 3. Crear categorías del sistema (is_system = true)
+  INSERT INTO comerci.categories
+    (tenant_id, code, name, category_type, icon, color_hex, is_system, display_order, keywords, created_by)
+  VALUES
+    -- EGRESOS
+    (p_tenant_id,'MERCH',     'Mercadería / Inventario',  'expense','🛒','#EF4444', true,  1,  ARRAY['compra','mercadería','stock','inventario','producto','proveedor'],          p_owner_id),
+    (p_tenant_id,'PAYROLL',   'Planilla / Sueldos',       'expense','👥','#F97316', true,  2,  ARRAY['sueldo','salario','planilla','trabajador','personal','remuneración'],       p_owner_id),
+    (p_tenant_id,'UTILITIES', 'Servicios Básicos',        'expense','💡','#EAB308', true,  3,  ARRAY['luz','agua','internet','teléfono','gas','servicio','recibo'],               p_owner_id),
+    (p_tenant_id,'TRANSPORT', 'Transporte y Logística',   'expense','🚚','#06B6D4', true,  4,  ARRAY['flete','transporte','delivery','combustible','gasolina','movilidad'],       p_owner_id),
+    (p_tenant_id,'RENT',      'Alquiler y Local',         'expense','🏪','#8B5CF6', true,  5,  ARRAY['alquiler','local','tienda','oficina','arriendo'],                           p_owner_id),
+    (p_tenant_id,'MARKETING', 'Marketing y Publicidad',   'expense','📣','#EC4899', true,  6,  ARRAY['publicidad','marketing','facebook','instagram','anuncio','promoción'],      p_owner_id),
+    (p_tenant_id,'ADMIN',     'Gastos Administrativos',   'expense','📋','#6366F1', true,  7,  ARRAY['útiles','impresión','trámite','administrativo','material','papelería'],     p_owner_id),
+    (p_tenant_id,'TAXES',     'Impuestos y Tributos',     'expense','🏛️','#F43F5E', true,  8,  ARRAY['igv','renta','sunat','impuesto','tributo','rus'],                          p_owner_id),
+    (p_tenant_id,'FINANCE',   'Gastos Financieros',       'expense','🏦','#0EA5E9', true,  9,  ARRAY['interés','cuota','préstamo','comisión','banco','financiero'],               p_owner_id),
+    (p_tenant_id,'OTHER_EXP', 'Otros Gastos',             'expense','📦','#9CA3AF', true, 10, ARRAY['otro','varios','misceláneo'],                                               p_owner_id),
+    -- INGRESOS
+    (p_tenant_id,'SALES',     'Ventas',                   'income', '💰','#1DB954', true, 11, ARRAY['venta','ingreso','cobro','pago cliente','efectivo','yape','plin'],          p_owner_id),
+    (p_tenant_id,'CREDIT',    'Créditos y Préstamos',     'income', '💳','#22C55E', true, 12, ARRAY['préstamo','crédito','financiamiento','desembolso'],                         p_owner_id),
+    (p_tenant_id,'OTHER_INC', 'Otros Ingresos',           'income', '➕','#86EFAC', true, 13, ARRAY['otro ingreso','varios'],                                                    p_owner_id);
+
+  -- 4. Registrar módulo activo para este tenant
+  INSERT INTO public.tenant_modules (tenant_id, module_code, status_code, activated_at, created_by)
+  VALUES (p_tenant_id, 'comerci', 'active', now(), p_owner_id)
+  ON CONFLICT (tenant_id, module_code) DO UPDATE SET status_code = 'active';
+
+  -- 5. Registrar en audit_logs
+  INSERT INTO public.audit_logs (
+    tenant_id, actor_id, event_type, resource_name,
+    result, criticality, payload_after
+  ) VALUES (
+    p_tenant_id, p_owner_id, 'INSERT', 'comerci.businesses',
+    'success', 'low',
+    jsonb_build_object('business_id', v_business_id, 'action', 'bootstrap_comerci_tenant')
+  );
+
+  RETURN v_business_id;
+END;
+$$;
+
+COMMENT ON FUNCTION fn_bootstrap_comerci_tenant IS
+  'Inicializa una MYPE nueva en Comerci: crea el negocio, cuenta de efectivo, '
+  'categorías del sistema y activa el módulo para el tenant. '
+  'Debe llamarse desde fn_bootstrap_tenant() o desde el onboarding API.';
+
+GRANT EXECUTE ON FUNCTION fn_bootstrap_comerci_tenant TO service_role;
+```
+
+### 9.2 `fn_recalculate_account_balance(account_id uuid)` — Recalcular saldo
+
+```sql
+CREATE OR REPLACE FUNCTION fn_recalculate_account_balance(p_account_id uuid)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_balance integer;
+BEGIN
+  SELECT COALESCE(SUM(amount_pen_cents), 0)
+  INTO v_balance
+  FROM comerci.transactions
+  WHERE account_id = p_account_id
+    AND is_deleted = false
+    AND is_excluded = false;
+
+  UPDATE comerci.accounts
+  SET balance_cents = v_balance,
+      balance_updated_at = now()
+  WHERE id = p_account_id;
+
+  RETURN v_balance;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION fn_recalculate_account_balance TO service_role, authenticated;
+```
+
+### 9.3 Vista: `v_comerci_business_summary` — Dashboard principal
+
+```sql
+CREATE OR REPLACE VIEW comerci.v_business_summary
+WITH (security_invoker = true)
+AS
+SELECT
+  b.id                      AS business_id,
+  b.tenant_id,
+  b.business_name,
+  b.sector,
+  b.belvo_link_status,
+  b.onboarding_completed_at IS NOT NULL AS onboarding_done,
+  -- Saldo consolidado de todas las cuentas activas
+  COALESCE(
+    (SELECT SUM(a.balance_cents)
+     FROM comerci.accounts a
+     WHERE a.business_id = b.id
+       AND a.is_active = true
+       AND a.is_deleted = false),
+    0
+  )                                     AS total_balance_cents,
+  -- Gastos del mes actual
+  COALESCE(
+    (SELECT SUM(ABS(t.amount_pen_cents))
+     FROM comerci.transactions t
+     JOIN comerci.accounts a ON a.id = t.account_id
+     WHERE a.business_id = b.id
+       AND t.amount_pen_cents < 0
+       AND t.transaction_date >= date_trunc('month', CURRENT_DATE)
+       AND t.is_deleted = false
+       AND t.is_excluded = false),
+    0
+  )                                     AS month_expense_cents,
+  -- Ingresos del mes actual
+  COALESCE(
+    (SELECT SUM(t.amount_pen_cents)
+     FROM comerci.transactions t
+     JOIN comerci.accounts a ON a.id = t.account_id
+     WHERE a.business_id = b.id
+       AND t.amount_pen_cents > 0
+       AND t.transaction_date >= date_trunc('month', CURRENT_DATE)
+       AND t.is_deleted = false
+       AND t.is_excluded = false),
+    0
+  )                                     AS month_income_cents,
+  -- Alertas críticas activas
+  COALESCE(
+    (SELECT COUNT(*)
+     FROM comerci.alerts al
+     WHERE al.business_id = b.id
+       AND al.status = 'active'
+       AND al.severity IN ('high','critical')),
+    0
+  )                                     AS critical_alert_count,
+  b.updated_at
+FROM comerci.businesses b
+WHERE b.is_deleted = false;
+
+COMMENT ON VIEW comerci.v_business_summary IS
+  'Vista del estado financiero consolidado por negocio. '
+  'security_invoker=true: la RLS del usuario en ejecución aplica automáticamente. '
+  'Usada por el endpoint GET /dashboard para retornar el estado en una sola query.';
+```
+
+### 9.4 Función: `fn_comerci_generate_daily_snapshot(business_id uuid)`
+
+```sql
+CREATE OR REPLACE FUNCTION fn_comerci_generate_daily_snapshot(
+  p_business_id uuid,
+  p_date        date DEFAULT CURRENT_DATE
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_tenant_id             uuid;
+  v_total_balance         integer;
+  v_total_income          integer;
+  v_total_expense         integer;
+  v_net_flow              integer;
+  v_account_count         smallint;
+  v_transaction_count     smallint;
+  v_pending_liabilities   integer;
+  v_burn_rate_7d          integer;
+BEGIN
+  -- Obtener tenant_id
+  SELECT tenant_id INTO v_tenant_id FROM comerci.businesses WHERE id = p_business_id;
+
+  -- Saldo consolidado
+  SELECT COALESCE(SUM(balance_cents), 0), COUNT(*)::smallint
+  INTO v_total_balance, v_account_count
+  FROM comerci.accounts
+  WHERE business_id = p_business_id
+    AND is_active = true AND is_deleted = false;
+
+  -- Flujo del día
+  SELECT
+    COALESCE(SUM(CASE WHEN t.amount_pen_cents > 0 THEN t.amount_pen_cents ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN t.amount_pen_cents < 0 THEN ABS(t.amount_pen_cents) ELSE 0 END), 0),
+    COUNT(*)::smallint
+  INTO v_total_income, v_total_expense, v_transaction_count
+  FROM comerci.transactions t
+  JOIN comerci.accounts a ON a.id = t.account_id
+  WHERE a.business_id = p_business_id
+    AND t.transaction_date = p_date
+    AND t.is_deleted = false AND t.is_excluded = false;
+
+  v_net_flow := v_total_income - v_total_expense;
+
+  -- Deudas pendientes
+  SELECT COALESCE(SUM(original_amount_cents - paid_amount_cents), 0)
+  INTO v_pending_liabilities
+  FROM comerci.liabilities
+  WHERE business_id = p_business_id
+    AND status IN ('pending','partial')
+    AND is_deleted = false;
+
+  -- Burn rate 7 días (gasto diario promedio)
+  SELECT COALESCE(
+    (SUM(total_expense_cents) / NULLIF(COUNT(*), 0))::integer,
+    NULL
+  )
+  INTO v_burn_rate_7d
+  FROM comerci.daily_snapshots
+  WHERE business_id = p_business_id
+    AND snapshot_date BETWEEN p_date - INTERVAL '7 days' AND p_date - INTERVAL '1 day';
+
+  -- Insertar o actualizar snapshot
+  INSERT INTO comerci.daily_snapshots (
+    tenant_id, business_id, snapshot_date,
+    total_balance_cents, total_income_cents, total_expense_cents,
+    net_flow_cents, account_count, transaction_count,
+    pending_liabilities_cents, burn_rate_7d_cents
+  ) VALUES (
+    v_tenant_id, p_business_id, p_date,
+    v_total_balance, v_total_income, v_total_expense,
+    v_net_flow, v_account_count, v_transaction_count,
+    v_pending_liabilities, v_burn_rate_7d
+  )
+  ON CONFLICT (business_id, snapshot_date) DO UPDATE SET
+    total_balance_cents        = EXCLUDED.total_balance_cents,
+    total_income_cents         = EXCLUDED.total_income_cents,
+    total_expense_cents        = EXCLUDED.total_expense_cents,
+    net_flow_cents             = EXCLUDED.net_flow_cents,
+    account_count              = EXCLUDED.account_count,
+    transaction_count          = EXCLUDED.transaction_count,
+    pending_liabilities_cents  = EXCLUDED.pending_liabilities_cents,
+    burn_rate_7d_cents         = EXCLUDED.burn_rate_7d_cents;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION fn_comerci_generate_daily_snapshot TO service_role;
+```
+
+---
+
+## 10. DATOS SEMILLA (SEED DATA)
+
+### 10.1 Seed de demostración (entorno de desarrollo)
+
+```sql
+-- ============================================================
+-- TENANT DE DEMO: Bodega "Los Andes" (MYPE típica)
+-- ============================================================
+
+-- 1. Bootstrap del tenant en la BD Maestra
+-- (normalmente se hace vía fn_bootstrap_tenant — aquí simulamos el resultado)
+DO $$
+DECLARE
+  v_tenant_id   uuid := '11111111-0000-0000-0000-000000000001'::uuid;
+  v_owner_id    uuid := '22222222-0000-0000-0000-000000000001'::uuid; -- auth.users.id
+  v_biz_id      uuid;
+  v_account_id  uuid;
+BEGIN
+  -- Insertar tenant demo (si no existe)
+  INSERT INTO public.tenants (id, name, tax_id, industry_type_id, plan_id)
+  VALUES (v_tenant_id, 'Bodega Los Andes', '20601234567', 'mype', 'basic')
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Bootstrap del módulo Comerci para este tenant
+  v_biz_id := fn_bootstrap_comerci_tenant(v_tenant_id, 'Bodega Los Andes', v_owner_id);
+
+  -- Actualizar datos adicionales del negocio
+  UPDATE comerci.businesses
+  SET sector = 'retail', tax_regime = 'RUS',
+      ruc = '20601234567', employee_count = 2,
+      monthly_revenue_avg_cents = 1500000  -- S/ 15,000 promedio
+  WHERE id = v_biz_id;
+
+  -- Obtener la cuenta de efectivo creada por bootstrap
+  SELECT id INTO v_account_id
+  FROM comerci.accounts
+  WHERE business_id = v_biz_id AND account_type = 'cash';
+
+  -- Agregar cuenta Yape
+  INSERT INTO comerci.accounts (
+    tenant_id, business_id, name, account_type, provider,
+    balance_cents, display_order, created_by
+  ) VALUES (
+    v_tenant_id, v_biz_id, 'Yape Negocio', 'digital_wallet', 'yape',
+    280000, 1, v_owner_id  -- S/ 2,800.00
+  );
+
+  -- Insertar algunas transacciones de ejemplo
+  INSERT INTO comerci.transactions
+    (tenant_id, account_id, amount_cents, amount_pen_cents, currency_code,
+     description, transaction_date, source, classification_source, created_by)
+  SELECT
+    v_tenant_id, v_account_id,
+    amount, amount, 'PEN',
+    descripcion, fecha, 'manual', 'user_manual', v_owner_id
+  FROM (VALUES
+    (-45000,  'Compra mercadería Mayorista Lima',    CURRENT_DATE - 5),
+    ( 32000,  'Ventas del día - efectivo',           CURRENT_DATE - 4),
+    (-15000,  'Pago luz del local',                  CURRENT_DATE - 3),
+    ( 48000,  'Ventas del día - Yape',               CURRENT_DATE - 2),
+    (-8000,   'Flete de mercadería',                 CURRENT_DATE - 1),
+    ( 52000,  'Ventas del día - efectivo + Yape',    CURRENT_DATE)
+  ) AS t(amount, descripcion, fecha);
+
+END;
+$$;
+```
+
+---
+
+## 11. CIFRADO DE TOKENS BANCARIOS
+
+Los tokens de Belvo (`belvo_link_id`, `belvo_account_id`) se cifran con **AES-256-GCM a nivel de aplicación** antes de persistir en la base de datos. La base de datos nunca ve el valor en claro.
+
+### 11.1 Implementación Node.js (TypeScript)
+
+```typescript
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+
+const ALGORITHM = 'aes-256-gcm';
+const KEY = Buffer.from(process.env.BELVO_ENCRYPTION_KEY!, 'hex'); // 64 hex chars = 32 bytes
+
+/**
+ * Cifra un token de Belvo para almacenamiento en BD.
+ * Retorna string base64 con formato: iv(12b):authTag(16b):encrypted
+ */
+export function encryptBelvoToken(plaintext: string): string {
+  const iv = randomBytes(12);                           // 96 bits para GCM
+  const cipher = createCipheriv(ALGORITHM, KEY, iv);
+  
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, 'utf8'),
+    cipher.final()
+  ]);
+  const authTag = cipher.getAuthTag();                  // 128 bits de integridad
+  
+  return Buffer.concat([iv, authTag, encrypted]).toString('base64');
+}
+
+/**
+ * Descifra un token de Belvo recuperado de la BD.
+ */
+export function decryptBelvoToken(ciphertext: string): string {
+  const buf     = Buffer.from(ciphertext, 'base64');
+  const iv      = buf.subarray(0, 12);
+  const authTag = buf.subarray(12, 28);
+  const data    = buf.subarray(28);
+  
+  const decipher = createDecipheriv(ALGORITHM, KEY, iv);
+  decipher.setAuthTag(authTag);
+  
+  return decipher.update(data) + decipher.final('utf8');
+}
+```
+
+### 11.2 Variables de entorno requeridas
+
+```bash
+# Clave AES-256-GCM: 64 caracteres hexadecimales (32 bytes)
+# Generar con: openssl rand -hex 32
+BELVO_ENCRYPTION_KEY=<clave_64_hex_chars>
+
+# Credenciales Belvo (Open Banking LATAM)
+BELVO_SECRET_ID=<belvo_secret_id>
+BELVO_SECRET_PASSWORD=<belvo_secret_password>
+BELVO_ENV=sandbox  # o production
+```
+
+---
+
+## 12. PIPELINE ML — TABLAS DE SOPORTE
+
+El motor de Machine Learning (clasificación + predicción) usa las siguientes tablas como input:
+
+### 12.1 Flujo de datos para el clasificador de categorías
+
+```
+comerci.transactions
+  (classification_source='unclassified')
+  │
+  ▼
+[ml-worker: clasificar_transaccion]
+  │
+  ├── Días 0–30: classifyByRules()
+  │     Input: description, amount_cents
+  │     Output: category_id, confidence=0.85, source='rules_engine'
+  │
+  ├── Días 30+: sklearn Pipeline (TF-IDF + LogisticRegression)
+  │     Input: description (tokenizado)
+  │     Training: transactions WHERE classification_source='user_manual'
+  │     Output: category_id, confidence=variable, source='ml_model'
+  │
+  └── UPDATE comerci.transactions SET
+        category_id = :cat_id,
+        classification_source = :source,
+        classification_confidence = :confidence,
+        updated_by = 'ml-worker-service-account-uuid'
+```
+
+### 12.2 Flujo de datos para el predictor de flujo de caja
+
+```
+comerci.daily_snapshots
+  (últimos 30+ días)
+  │
+  ▼
+[ml-worker: predecir_flujo]
+  │
+  ├── Días 0–30: Predictor de reglas
+  │     avg(income_7d) → predicted_income
+  │     avg(expense_7d) → predicted_expense
+  │     model_version='rules_v1', confidence=0.65
+  │
+  └── Días 30+: ExponentialSmoothing (Holt-Winters)
+        seasonal_periods=7 (ciclo semanal MYPE)
+        trend='add', seasonal='add'
+        model_version='holtwinters_v1', confidence=0.85
+  │
+  └── INSERT INTO comerci.predictions (...)
+        con breakeven_warning y days_to_zero calculados
+```
+
+### 12.3 Labels de training (histórico de clasificaciones manuales)
+
+```sql
+-- Vista de training data para el clasificador ML
+-- El ml-worker la consulta periodicamente para reentrenar
+CREATE OR REPLACE VIEW comerci.v_ml_training_data
+WITH (security_invoker = true)
+AS
+SELECT
+  t.id,
+  t.tenant_id,
+  t.description,
+  t.amount_pen_cents,
+  t.category_id,
+  c.code    AS category_code,
+  c.name    AS category_name,
+  c.category_type,
+  t.transaction_date,
+  t.classification_source
+FROM comerci.transactions t
+JOIN comerci.categories c ON c.id = t.category_id
+WHERE t.classification_source = 'user_manual'  -- Solo los que el usuario confirmó
+  AND t.is_deleted = false
+  AND t.is_excluded = false;
+```
+
+---
+
+## 13. POLÍTICA DE RESPALDOS
+
+Al correr sobre Supabase (PostgreSQL 16 gestionado), la política de respaldos hereda la configuración de la BD Maestra:
+
+| Tipo | Frecuencia | Retención | Almacenamiento |
+|------|-----------|-----------|----------------|
+| Snapshots automáticos | Diario (3:00 AM UTC) | 7 días (plan básico) / 30 días (plan pro) | Supabase S3 interno |
+| WAL (Point-in-Time Recovery) | Continuo (cada 60 seg) | 24 horas | Supabase S3 interno |
+| Snapshot manual pre-migración | Antes de cada migración DDL | Permanente | S3 bucket propio |
+| Export CSV por tenant (para portabilidad) | Bajo demanda | Indefinido | S3 bucket propio |
+
+**RPO (Recovery Point Objective):** < 60 segundos (WAL continuo).
+
+**RTO (Recovery Time Objective):** < 4 horas (snapshot diario + WAL replay).
+
+**Exportación de datos por tenant (GDPR/portabilidad):**
+
+```sql
+-- Exportar todos los datos financieros de un tenant como JSON
+SELECT json_build_object(
+  'business',      (SELECT row_to_json(b) FROM comerci.businesses b WHERE b.tenant_id = :tid),
+  'accounts',      (SELECT json_agg(row_to_json(a)) FROM comerci.accounts a WHERE a.tenant_id = :tid AND a.is_deleted = false),
+  'transactions',  (SELECT json_agg(row_to_json(t)) FROM comerci.transactions t WHERE t.tenant_id = :tid AND t.is_deleted = false),
+  'categories',    (SELECT json_agg(row_to_json(c)) FROM comerci.categories c WHERE c.tenant_id = :tid AND c.is_deleted = false),
+  'liabilities',   (SELECT json_agg(row_to_json(l)) FROM comerci.liabilities l WHERE l.tenant_id = :tid AND l.is_deleted = false),
+  'exported_at',   now()
+) AS tenant_export;
+```
+
+---
+
+## 14. DIAGRAMA ENTIDAD-RELACIÓN
+
+```mermaid
+erDiagram
+  %% BD Maestra - schema public (fuentes externas)
+  public_tenants {
+    uuid id PK
+    text name
+    text industry_type_id
+    text plan_id
+  }
+
+  auth_users {
+    uuid id PK
+    text email
+  }
+
+  public_profiles {
+    uuid id PK
+    uuid tenant_id FK
+    text full_name
+  }
+
+  public_cat_monedas {
+    text codigo PK
+    text nombre
+    text simbolo
+  }
+
+  public_audit_logs {
+    uuid id PK
+    uuid tenant_id
+    text event_type
+    text resource_name
+  }
+
+  %% Schema comerci
+  comerci_businesses {
+    uuid id PK
+    uuid tenant_id FK
+    text business_name
+    text ruc
+    text sector
+    text tax_regime
+    text belvo_link_id
+    text belvo_link_status
+    timestamptz onboarding_completed_at
+    boolean is_deleted
+    uuid created_by FK
+    uuid updated_by FK
+  }
+
+  comerci_accounts {
+    uuid id PK
+    uuid tenant_id FK
+    uuid business_id FK
+    text name
+    text account_type
+    text provider
+    integer balance_cents
+    text belvo_account_id
+    boolean is_active
+    boolean is_deleted
+  }
+
+  comerci_categories {
+    uuid id PK
+    uuid tenant_id FK
+    text code
+    text name
+    text category_type
+    boolean is_system
+    uuid parent_id FK
+    text[] keywords
+    boolean is_deleted
+  }
+
+  comerci_transactions {
+    uuid id PK
+    uuid tenant_id FK
+    uuid account_id FK
+    uuid category_id FK
+    integer amount_cents
+    integer amount_pen_cents
+    text description
+    date transaction_date
+    text external_id
+    text source
+    text classification_source
+    numeric classification_confidence
+    boolean is_deleted
+  }
+
+  comerci_liabilities {
+    uuid id PK
+    uuid tenant_id FK
+    uuid business_id FK
+    text liability_type
+    text counterparty_name
+    integer original_amount_cents
+    integer paid_amount_cents
+    date due_date
+    text status
+    uuid linked_transaction_id FK
+    boolean is_deleted
+  }
+
+  comerci_predictions {
+    uuid id PK
+    uuid tenant_id FK
+    uuid business_id FK
+    date prediction_date
+    text model_version
+    integer predicted_income_cents
+    integer predicted_expense_cents
+    integer predicted_balance_cents
+    numeric confidence_score
+    boolean breakeven_warning
+    smallint days_to_zero
+  }
+
+  comerci_alerts {
+    uuid id PK
+    uuid tenant_id FK
+    uuid business_id FK
+    text alert_type
+    text severity
+    text title
+    text status
+    text dedup_key
+  }
+
+  comerci_daily_snapshots {
+    uuid id PK
+    uuid tenant_id FK
+    uuid business_id FK
+    date snapshot_date
+    integer total_balance_cents
+    integer total_income_cents
+    integer total_expense_cents
+    integer burn_rate_7d_cents
+  }
+
+  %% Relaciones con BD Maestra
+  public_tenants ||--o{ comerci_businesses : "1:1 extiende"
+  auth_users ||--o{ public_profiles : "1:1"
+  auth_users ||--o{ comerci_businesses : "created_by / updated_by"
+
+  %% Relaciones internas Comerci
+  comerci_businesses ||--o{ comerci_accounts : "tiene"
+  comerci_businesses ||--o{ comerci_liabilities : "tiene"
+  comerci_businesses ||--o{ comerci_predictions : "genera"
+  comerci_businesses ||--o{ comerci_alerts : "recibe"
+  comerci_businesses ||--o{ comerci_daily_snapshots : "registra"
+
+  comerci_accounts ||--o{ comerci_transactions : "contiene"
+  comerci_categories ||--o{ comerci_transactions : "clasifica"
+  comerci_categories ||--o{ comerci_categories : "parent (subcategoría)"
+  comerci_transactions ||--o| comerci_liabilities : "paga"
+```
+
+---
+
+## 15. TRAZABILIDAD RF ↔ TABLAS
+
+| Requisito Funcional | Tablas Involucradas |
+|--------------------|---------------------|
+| RF-01: Registro y autenticación de MYPEs | `public.tenants`, `auth.users`, `public.profiles` (BD Maestra) |
+| RF-02: Conectar cuentas bancarias (Belvo) | `comerci.businesses.belvo_link_id`, `comerci.accounts.belvo_account_id` |
+| RF-03: Sincronizar transacciones automáticamente | `comerci.transactions` (external_id, source='belvo_bank') |
+| RF-04: Clasificar gastos e ingresos con IA | `comerci.transactions.category_id`, `comerci.categories` |
+| RF-05: Dashboard de saldo consolidado | `comerci.v_business_summary`, `comerci.accounts.balance_cents` |
+| RF-06: Predictor de flujo de caja (14/30 días) | `comerci.predictions`, `comerci.daily_snapshots` |
+| RF-07: Simulador "¿puedo gastar esto?" | `comerci.predictions` (predicted_balance_cents) |
+| RF-08: Alertas inteligentes | `comerci.alerts`, `comerci.daily_snapshots` |
+| RF-09: Gestión de deudas por cobrar/pagar | `comerci.liabilities` |
+| RF-10: Reportes financieros (PDF mensual) | `comerci.transactions`, `comerci.categories`, `comerci.daily_snapshots` |
+| RF-11: Análisis por categoría | `comerci.transactions` + `comerci.categories` + índice category |
+| RF-12: Ingreso manual de movimientos | `comerci.transactions` (source='manual') |
+| RF-13: Invitar miembros (Contador, Empleado) | `public.roles`, `public.user_roles_sedes` (BD Maestra) |
+| RF-14: Suscripción y billing | `public.subscription_contracts`, `public.entitlements` (BD Maestra) |
+| RF-15: Auditoría de acciones críticas | `public.audit_logs` (BD Maestra) |
+
+---
+
+*Documento generado y mantenido por Claude Sonnet 4.6*
+*Versión 3.0 — Integración completa con BD Maestra Democra Platform*
+*Última actualización: 2026-05-18*
