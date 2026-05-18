@@ -699,4 +699,519 @@ COMMENT ON TRIGGER tr_[nombre] ON [schema].[tabla] IS
 -- NUNCA se eliminan políticas RLS existentes sin análisis.
 -- ============================================================
 
+<<<<<<< HEAD
 -- [RF-XXX] �
+=======
+-- [RF-XXX] — Política: [nombre descriptivo]
+-- Tabla: [schema].[tabla]
+-- Aplica a: [rol de DB o authenticated]
+-- Operaciones: SELECT / INSERT / UPDATE / DELETE
+-- Rollback: DROP POLICY IF EXISTS [nombre] ON [schema].[tabla];
+
+ALTER TABLE [schema].[tabla] ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "pol_[tabla]_[operacion]_[descripcion]"
+  ON [schema].[tabla]
+  FOR [SELECT|INSERT|UPDATE|DELETE|ALL]
+  TO authenticated
+  USING (
+    tenant_id = fn_current_tenant_id()
+    -- RF-XXX: condición adicional por requisito de acceso
+    AND [condicion_adicional]
+  )
+  WITH CHECK (
+    tenant_id = fn_current_tenant_id()
+  );
+
+
+-- ============================================================
+-- SECCIÓN 7: GRANTS Y PERMISOS
+-- ============================================================
+-- Otorgar permisos sobre funciones y vistas nuevas a los
+-- roles de base de datos ya existentes.
+-- ============================================================
+
+-- Funciones: EXECUTE
+GRANT EXECUTE ON FUNCTION [schema].fn_[nombre](uuid, [tipos])
+  TO authenticated;
+
+-- Vistas: SELECT
+GRANT SELECT ON [schema].vw_[nombre]
+  TO authenticated;
+
+
+-- ============================================================
+-- SECCIÓN 8: DATOS SEMILLA (SEED) PARA CATÁLOGOS NUEVOS
+-- ============================================================
+-- Si se crearon valores nuevos de catálogo requeridos por RF,
+-- se insertan aquí con INSERT ... ON CONFLICT DO NOTHING.
+-- ============================================================
+
+-- [RF-XXX]: Seed de [nombre del catálogo]
+INSERT INTO public.cat_[nombre] (id, description)
+VALUES
+  ('[valor_1]', '[Descripción]'),
+  ('[valor_2]', '[Descripción]')
+ON CONFLICT (id) DO NOTHING;
+
+
+-- ============================================================
+-- SECCIÓN 9: COMENTARIOS DE DOCUMENTACIÓN EN BD
+-- ============================================================
+-- COMMENT ON para tablas existentes que ahora tienen
+-- trazabilidad con RF/CU (si aún no tienen comentario).
+-- ============================================================
+
+COMMENT ON TABLE [schema].[tabla] IS
+  '[Descripción funcional de la tabla]
+   RF relacionados: RF-XXX, RF-YYY
+   CU relacionados: CU-XXX, CU-YYY
+   Plan: [nivel en que se usa]';
+
+COMMENT ON COLUMN [schema].[tabla].[columna] IS
+  'RF-XXX: [descripción del significado de negocio de esta columna]';
+
+
+-- ============================================================
+-- SECCIÓN 10: REGISTRO DE DECISIONES DE DISEÑO
+-- ============================================================
+-- Documenta las decisiones arquitectónicas tomadas en este
+-- script: qué se reutilizó del primer piso, qué se extendió,
+-- qué se creó nuevo, y POR QUÉ se tomó cada decisión.
+-- También documenta los RF que se decidió implementar en la
+-- capa de aplicación (no en BD) y la justificación.
+-- ============================================================
+
+/*
+============================================================
+REGISTRO DE DECISIONES DE DISEÑO — SEGUNDO PISO
+============================================================
+
+OBJETOS REUTILIZADOS DEL PRIMER PISO (sin modificación)
+──────────────────────────────────────────────────────────
+DEC-R-001
+  Objeto       : public.tenants
+  RF que lo usa: RF-XXX, RF-YYY
+  Decisión     : Reutilizar sin modificación. La tabla ya contiene
+                 plan_id y status_financial_id que son suficientes
+                 para los requisitos de aislamiento multi-tenant.
+
+DEC-R-002
+  Objeto       : public.fn_current_tenant_id()
+  RF que lo usa: Todos los RF con aislamiento multi-tenant
+  Decisión     : Reutilizar en todas las políticas RLS nuevas del
+                 segundo piso. Garantiza consistencia del patrón.
+
+
+OBJETOS EXTENDIDOS DEL PRIMER PISO (ALTER TABLE / nueva política)
+──────────────────────────────────────────────────────────────────
+DEC-E-001
+  Objeto       : [schema].[tabla] — columna [nombre_columna]
+  RF que lo usa: RF-XXX
+  Decisión     : Agregar columna con ALTER TABLE ADD COLUMN IF NOT EXISTS.
+                 La tabla ya existía; la columna nueva es aditiva y
+                 no rompe queries existentes (valor default definido).
+
+DEC-E-002
+  Objeto       : [schema].[tabla] — política RLS [nombre]
+  RF que lo usa: RF-YYY
+  Decisión     : Agregar política adicional para operación UPDATE.
+                 Las políticas SELECT existentes se mantienen intactas.
+
+
+OBJETOS NUEVOS CREADOS EN EL SEGUNDO PISO
+──────────────────────────────────────────
+DEC-N-001
+  Objeto       : [schema].[tabla] (CREATE TABLE IF NOT EXISTS)
+  RF que lo usa: RF-XXX, RF-YYY
+  Decisión     : No existía tabla equivalente en el primer piso.
+                 Se creó en schema [nombre] para mantener la separación
+                 vertical por dominio. Sigue todas las convenciones
+                 heredadas: tenant_id, RLS, timestamps, soft-delete.
+
+DEC-N-002
+  Objeto       : [schema].fn_[nombre]() (CREATE OR REPLACE FUNCTION)
+  RF que lo usa: RF-ZZZ
+  Decisión     : Lógica demasiado compleja para implementar en capa
+                 de aplicación. Requiere acceso atómico a múltiples
+                 tablas. Se implementa como función SECURITY DEFINER
+                 para garantizar integridad transaccional.
+
+
+RF IMPLEMENTADOS EN CAPA DE APLICACIÓN (no en BD)
+───────────────────────────────────────────────────
+DEC-APP-001
+  RF           : RF-XXX — [Nombre]
+  Decisión     : Implementar en la capa de aplicación (TypeScript/API).
+  Justificación: La lógica no requiere integridad transaccional fuerte.
+                 Implementar en BD añadiría complejidad sin beneficio
+                 medible en consistencia.
+
+============================================================
+FIN DEL REGISTRO DE DECISIONES
+============================================================
+*/
+
+
+-- ============================================================
+-- FIN DEL SCRIPT — SEGUNDO PISO
+-- ============================================================
+-- RESUMEN DE OBJETOS EN ESTE SCRIPT:
+--
+--   REUTILIZADOS del primer piso (sin SQL generado): [N]
+--
+--   EXTENDIDOS del primer piso:
+--     Sección 1:  [N] inserts en catálogos existentes
+--     Sección 2:  [N] columnas en [N] tablas (ALTER TABLE)
+--
+--   CREADOS en el segundo piso:
+--     Sección 2B: [N] tablas nuevas
+--     Sección 2C: [N] catálogos nuevos
+--     Sección 3:  [N] funciones/stored procedures
+--     Sección 4:  [N] vistas
+--     Sección 5:  [N] triggers
+--     Sección 6:  [N] políticas RLS
+--     Sección 7:  [N] grants
+--     Sección 8:  [N] registros seed
+--     Sección 9:  [N] comentarios de documentación
+--
+--   DECISIONES documentadas en Sección 10: [N]
+-- ============================================================
+-- VERIFICACIÓN FINAL DE INTEGRIDAD:
+-- Ejecutar después del script para confirmar que no se rompió
+-- ningún objeto del primer piso:
+--
+-- SELECT schemaname, tablename, rowsecurity
+-- FROM pg_tables
+-- WHERE schemaname NOT IN ('pg_catalog','information_schema')
+-- ORDER BY schemaname, tablename;
+-- ============================================================
+```
+
+---
+
+## ESTRUCTURA OBLIGATORIA DEL DICCIONARIO DE DATOS (ENTREGABLE 2)
+
+El diccionario de datos en Markdown debe seguir esta estructura:
+
+```markdown
+# Diccionario de Base de Datos — [Nombre del Sistema]
+
+> **Proyecto**: [Nombre]
+> **Fase**: 5 — Base de Datos
+> **Versión**: [N.N]
+> **Fecha**: [YYYY-MM-DD]
+> **Autor**: Eduardo Sebastian Paipay Vega — UNSCH
+> **Motor**: PostgreSQL 16 (Supabase)
+> **Base existente**: BD_Maestra_actualizada_[FECHA].md
+> **Script de extensión**: extension-bd-[nombre]-v[N.N].sql
+
+---
+
+## Índice de Contenidos
+
+1. Resumen del sistema y arquitectura de datos
+2. Convenciones globales del modelo
+3. Mapa de trazabilidad RF → CU → Objeto de BD
+4. Catálogo de objetos por schema
+   4.1 Schema `public` — Core + IAM + Billing
+   4.2 Schema `ong` — Operaciones
+   4.3 Schema `rrhh` — Recursos Humanos
+   4.4 Schema `finanzas` — Finanzas
+   4.5 Schema `clinico` — Clínico
+   4.6 Schema `academico` — Académico
+   4.7 Schema `comunicaciones` — Comunicaciones
+   4.8 Schema `auditoria` — Auditoría
+5. Catálogo de funciones y stored procedures
+6. Catálogo de vistas
+7. Catálogo de triggers
+8. Catálogo de políticas RLS
+9. Brechas estructurales detectadas (GAPs)
+10. Historial de cambios
+
+---
+
+## 1. Resumen del Sistema y Arquitectura de Datos
+
+[Descripción del sistema derivada de AGEN_1 y AGEN_2]
+
+### Arquitectura multi-tenant
+
+[Describir cómo funciona el aislamiento por tenant en la BD existente:
+RLS, fn_current_tenant_id(), etc.]
+
+### Schemas y sus dominios funcionales
+
+| Schema | Dominio | Tablas | Funciones | Vistas | Plan mínimo |
+|--------|---------|--------|-----------|--------|-------------|
+| `public` | Core / IAM / Billing | [N] | [N] | [N] | Todos |
+| `ong` | Gestión de ONG | [N] | [N] | [N] | Básico |
+| `rrhh` | Recursos Humanos | [N] | [N] | [N] | Estándar |
+| `finanzas` | Gestión Financiera | [N] | [N] | [N] | Estándar |
+| `clinico` | Fichas Médicas | [N] | [N] | [N] | Plus |
+| `academico` | Cursos y Certs. | [N] | [N] | [N] | Plus |
+| `comunicaciones` | Notificaciones | [N] | [N] | [N] | Estándar |
+| `auditoria` | Bitácora Forense | [N] | [N] | [N] | Todos |
+
+---
+
+## 2. Convenciones Globales del Modelo
+
+[Documentar las convenciones ya establecidas en la BD existente:]
+
+### Claves primarias
+[UUID con gen_random_uuid() en todas las tablas de datos]
+
+### Timestamps
+[created_at + updated_at con trigger fn_set_updated_at()]
+
+### Trazabilidad de usuario
+[created_by / updated_by → FK a auth.users]
+
+### Soft-delete
+[is_deleted + deleted_at + deleted_by donde aplica]
+
+### Multi-tenancy
+[tenant_id + RLS fn_current_tenant_id() en toda tabla de datos]
+
+### Escala de notas
+[Vigesimal peruana 0-20 en schema académico]
+
+---
+
+## 3. Mapa de Trazabilidad RF → CU → Objeto de BD
+
+| RF | Nombre RF | Plan | CU Relacionado | Objeto BD | Schema | Tipo de Objeto |
+|----|----------|------|---------------|-----------|--------|---------------|
+| RF-001 | [Nombre] | Básico | CU-001 | fn_nombre() | public | Función |
+| RF-002 | [Nombre] | Básico | CU-001, CU-002 | vw_nombre | ong | Vista |
+| RF-003 | [Nombre] | Estándar | CU-003 | tr_nombre en tabla | rrhh | Trigger |
+| RF-004 | [Nombre] | Estándar | CU-004 | [columna] en [tabla] | finanzas | Columna (ALTER) |
+| RF-005 | [Nombre] | Plus | CU-005 | [GAP-001] | — | Brecha |
+
+---
+
+## 4. Catálogo de Objetos por Schema
+
+### Para cada tabla documenta:
+
+#### [schema].[nombre_tabla]
+
+| Columna | Tipo | Default | Constraints | RF | CU | Plan | Descripción |
+|---------|------|---------|-------------|----|----|------|-------------|
+| `id` | uuid | gen_random_uuid() | PK | — | — | Todos | Identificador único |
+| `tenant_id` | uuid | — | NOT NULL, FK tenants | — | — | Todos | Aislamiento multi-tenant |
+| `[campo_nuevo]` | [tipo] | [default] | [constraint] | RF-XXX | CU-XXX | [Plan] | [Descripción] |
+
+**Objetos relacionados:**
+- Función: `fn_[nombre]()` — RF-XXX
+- Vista: `vw_[nombre]` — RF-YYY
+- Trigger: `tr_[nombre]` — RN-XXX
+- Política RLS: `pol_[nombre]`
+
+---
+
+## 5. Catálogo de Funciones y Stored Procedures
+
+Para cada función:
+
+### [schema].fn_[nombre]
+
+| Campo | Detalle |
+|-------|---------|
+| **Schema** | [nombre] |
+| **Nombre** | fn_[nombre] |
+| **Tipo** | Función / Stored Procedure |
+| **Lenguaje** | plpgsql |
+| **Security** | DEFINER / INVOKER |
+| **RF que implementa** | RF-XXX, RF-YYY |
+| **CU relacionado** | CU-XXX |
+| **HU relacionada** | HU-XXX (si aplica) |
+| **Plan mínimo** | Básico / Estándar / Plus |
+| **Tablas que lee** | [lista] |
+| **Tablas que escribe** | [lista] |
+| **Retorna** | [tipo] |
+
+**Parámetros:**
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| p_tenant_id | uuid | ID del tenant (seguridad multi-tenant) |
+| p_[param] | [tipo] | [Descripción] |
+
+**Descripción funcional:**
+[Qué hace esta función, cuándo se llama, qué problema resuelve]
+
+---
+
+## 6. Catálogo de Vistas
+
+Para cada vista:
+
+### [schema].vw_[nombre]
+
+| Campo | Detalle |
+|-------|---------|
+| **Schema** | [nombre] |
+| **Nombre** | vw_[nombre] |
+| **RF que implementa** | RF-XXX |
+| **CU relacionado** | CU-XXX |
+| **Plan mínimo** | [nivel] |
+| **Tablas fuente** | [lista] |
+| **Filtro multi-tenant** | Sí — `WHERE tenant_id = fn_current_tenant_id()` |
+
+**Columnas de la vista:**
+
+| Columna | Tipo | Fuente | RF | Descripción |
+|---------|------|--------|----|-------------|
+| [col] | [tipo] | [tabla].[campo] | RF-XXX | [Descripción] |
+
+---
+
+## 7. Catálogo de Triggers
+
+Para cada trigger:
+
+### tr_[nombre] en [schema].[tabla]
+
+| Campo | Detalle |
+|-------|---------|
+| **Tabla** | [schema].[tabla] |
+| **Evento** | BEFORE/AFTER INSERT/UPDATE/DELETE |
+| **Nivel** | FOR EACH ROW |
+| **Función** | fn_tr_[nombre]() |
+| **RN que implementa** | RN-XXX |
+| **RF relacionado** | RF-XXX |
+| **CU relacionado** | CU-XXX |
+
+**Descripción:** [Qué regla de negocio implementa este trigger]
+
+---
+
+## 8. Catálogo de Políticas RLS
+
+Para cada política:
+
+### pol_[nombre] en [schema].[tabla]
+
+| Campo | Detalle |
+|-------|---------|
+| **Tabla** | [schema].[tabla] |
+| **Operación** | SELECT / INSERT / UPDATE / DELETE |
+| **Rol** | authenticated / [rol específico] |
+| **RF que protege** | RF-XXX |
+| **Condición USING** | `tenant_id = fn_current_tenant_id()` |
+| **Condición WITH CHECK** | [si aplica] |
+
+---
+
+## 9. Brechas Estructurales Detectadas
+
+| GAP ID | RF Origen | CU Origen | Descripción | Impacto | Recomendación |
+|--------|----------|----------|-------------|---------|--------------|
+| GAP-001 | RF-XXX | CU-XXX | [Qué falta] | Alto/Medio/Bajo | [Acción] |
+
+---
+
+## 10. Historial de Cambios
+
+| Versión | Fecha | Autor | Descripción del cambio |
+|---------|-------|-------|----------------------|
+| 1.0 | [YYYY-MM-DD] | Eduardo Sebastian Paipay Vega | Creación inicial — extensión sobre BD_Maestra_[fecha] |
+```
+
+---
+
+## INSTRUCCIONES FINALES AL LLM
+
+### Antes de generar el script
+
+1. **Lee completa la BD_Maestra** sin saltarte ninguna tabla, función o trigger
+2. **Lee completo el AGEN_3 output** — cada RF y CU debe estar en el mapa de trazabilidad
+3. **Construye el mapa de trazabilidad** (paso 5 del proceso) antes de escribir una sola línea SQL
+4. **Verifica cada objeto** antes de generarlo: ¿ya existe en la BD_Maestra? Si sí, no lo recrees
+5. **Respeta las convenciones** de naming, tipos y patrones de la BD existente en cada objeto
+
+### Durante la generación del script
+
+1. Cada sección del script es un bloque auto-contenido con encabezado de comentario completo
+2. Ningún bloque puede existir sin anotación RF/CU
+3. Todos los objetos son idempotentes: `CREATE OR REPLACE`, `ADD COLUMN IF NOT EXISTS`, `ON CONFLICT DO NOTHING`
+4. Los gaps se documentan en Sección 10 del script como comentarios `/* ... */`
+5. El script NO usa `BEGIN; ... COMMIT;` global — cada sección puede ejecutarse independientemente
+6. Las funciones SECURITY DEFINER siempre validan `tenant_id = fn_current_tenant_id()` como primera instrucción
+
+### Al generar el diccionario
+
+1. Incluye TODOS los objetos: los existentes en BD_Maestra + los nuevos del script
+2. Cada tabla existente en la BD_Maestra aparece con su descripción + los RF/CU que la usan
+3. Las tablas de catálogo documentan sus valores semilla
+4. El mapa de trazabilidad (Sección 3) debe ser completo y sin vacíos
+
+### Nivel de calidad esperado
+
+El script debe:
+- Ejecutarse sin errores en PostgreSQL 16 / Supabase
+- No romper ningún objeto existente
+- Ser revisable por un DBA sin que tenga que buscar en las fases previas qué hace cada cosa
+- Ser actualizable en próximas versiones con nuevos bloques en cada sección
+
+El diccionario debe:
+- Poder ser leído por un desarrollador y conocer toda la BD sin ver el script
+- Ser el único documento que necesita un equipo nuevo para entender el modelo de datos
+
+### Formato de los archivos generados
+
+| Archivo | Formato | Carpeta destino |
+|---------|---------|-----------------|
+| `extension-bd-[sistema]-v[N.N].sql` | SQL puro con comentarios | `Fase 5 (BD)/scripts/` |
+| `diccionario-bd-[sistema]-v[N.N].md` | Markdown con tablas | `Fase 5 (BD)/` |
+
+### Nombres de archivo según el sistema
+
+Para el sistema Democra ONG Platform:
+- Script: `extension-bd-democra-ong-v1.0.sql`
+- Diccionario: `diccionario-bd-democra-ong-v1.0.md`
+
+Para cualquier otro sistema definido en las fases:
+- Usar el nombre corto del sistema definido en AGEN_3
+
+---
+
+## RECORDATORIO FINAL — LAS DOS REGLAS QUE GOBIERNAN TODO
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║  ✅ PUEDES CREAR cualquier objeto necesario:                      ║
+║     tablas, schemas, catálogos, índices, funciones,              ║
+║     vistas, triggers, políticas RLS, secuencias, tipos.          ║
+║     El segundo piso puede ser tan grande como los RF requieran.  ║
+║                                                                  ║
+║  ❌ NUNCA DESTRUYAS nada del primer piso:                         ║
+║     DROP TABLE · DROP COLUMN · DROP SCHEMA                       ║
+║     DROP FUNCTION (de objetos existentes) · TRUNCATE             ║
+║     Modificar tipo de columna existente · Eliminar políticas RLS ║
+║                                                                  ║
+║  🏗️  FILOSOFÍA LEGO MULTI-TENANT:                                ║
+║     Bloque sobre bloque. Todo coexiste. Nada colisiona.          ║
+║     tenant_id + RLS en TODA tabla nueva. Sin excepción.          ║
+║                                                                  ║
+║  🏷️  ANOTACIÓN OBLIGATORIA en cada bloque SQL:                   ║
+║     -- RF-XXX · CU-XXX · Módulo · Plan · Tipo de objeto          ║
+║                                                                  ║
+║  🔍 VERIFICA ANTES DE CREAR:                                      ║
+║     ¿Existe en BD_Maestra? → Reutiliza / Extiende                ║
+║     ¿No existe? → Crea con convenciones heredadas                 ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+*AGEN_5.md — Prompt Maestro de Extensión de Base de Datos*
+*Script SQL Anotado + Diccionario de Datos en Markdown*
+*Versión: 1.0 — Generado: 2026-05-13*
+*Depende de: BD_Maestra_actualizada.md + AGEN_1 + AGEN_2 + AGEN_3 + AGEN_4*
+*Repositorio: https://github.com/Eduardo-Sebastian-Paipay-Vega/Documentaci-n_de_dise-o_de_Sistemas_y_Modulos*
+>>>>>>> 54bb822 (15052026)
