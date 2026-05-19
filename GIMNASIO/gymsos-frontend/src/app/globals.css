@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ──────────────────────────────────────── */
+:root {
+  --gymsos-green:   #00D084;
+  --gymsos-navy:    #1F2937;
+  --gymsos-orange:  #FF6B35;
+  --gymsos-bg:      #070D18;
+  --gymsos-bg-2:    #0D1526;
+  --gymsos-card:    rgba(255, 255, 255, 0.03);
+}
+
+/* ─── Base reset ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Lenis manages smooth scroll; keep native behavior here */
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: var(--gymsos-bg);
+  color: #ffffff;
+  font-family: var(--font-inter), "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ─── Custom scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #070D18; }
+::-webkit-scrollbar-thumb {
+  background: #1a2940;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: #00D084; }
+
+/* ─── Fluid typography ───────────────────────────────────── */
+.text-fluid-sm   { font-size: clamp(0.875rem, 1.5vw, 1rem); }
+.text-fluid-base { font-size: clamp(1rem, 2vw, 1.125rem); }
+.text-fluid-lg   { font-size: clamp(1.25rem, 3vw, 1.75rem); }
+.text-fluid-xl   { font-size: clamp(1.75rem, 4vw, 3rem); }
+.text-fluid-2xl  { font-size: clamp(2.5rem, 6vw, 5rem); }
+.text-fluid-3xl  { font-size: clamp(3rem, 8vw, 8rem); }
+.text-fluid-hero { font-size: clamp(3.5rem, 9vw, 9rem); }
+
+/* ─── Gradient text ──────────────────────────────────────── */
+.gradient-text-green {
+  background: linear-gradient(135deg, #00D084 0%, #00FFB3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-orange {
+  background: linear-gradient(135deg, #FF6B35 0%, #FF9A5C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glass card ─────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card-green {
+  background: rgba(0, 208, 132, 0.06);
+  border: 1px solid rgba(0, 208, 132, 0.18);
+}
+
+/* ─── Subtle dot grid background ────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ─── Ticker / marquee ───────────────────────────────────── */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 35s linear infinite;
+}
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─── Float animations ───────────────────────────────────── */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.animate-float         { animation: floatY 5s ease-in-out infinite; }
+.animate-float-slow    { animation: floatY 7s ease-in-out 0.5s infinite; }
+.animate-float-slower  { animation: floatY 9s ease-in-out 1s infinite; }
+
+/* ─── Glow pulse ─────────────────────────────────────────── */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.85; }
+}
+.animate-glow-pulse { animation: glowPulse 4s ease-in-out infinite; }
+
+/* ─── Shimmer ────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.6) 25%,
+    rgba(255, 255, 255, 1)   50%,
+    rgba(255, 255, 255, 0.6) 75%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* ─── Phone mockup ───────────────────────────────────────── */
+.phone-frame {
+  width: 260px;
+  height: 530px;
+  border-radius: 38px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: #0a0f1c;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 26px;
+  background: #0a0f1c;
+  border-radius: 0 0 18px 18px;
+  z-index: 20;
+}
+
+/* ─── Bar chart ──────────────────────────────────────────── */
+.bar-animate {
+  width: 0%;
+  animation: barGrow 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes barGrow {
+  from { width: 0%; }
+  to   { width: var(--bar-width, 0%); }
+}
