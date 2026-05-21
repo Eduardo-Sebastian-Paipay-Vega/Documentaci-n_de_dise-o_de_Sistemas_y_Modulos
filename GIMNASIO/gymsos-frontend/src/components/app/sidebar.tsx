@@ -6,52 +6,68 @@ import { useState } from "react"
 import { useAuth } from "@/components/providers/auth-provider"
 import { cn } from "@/lib/utils"
 import { type Rol } from "@/lib/auth"
+import { navIndicator, slideInLeft } from "@/lib/motion"
+import {
+  LayoutDashboard, Users, BarChart3, CalendarDays, Tag, Settings,
+  Home, CreditCard, QrCode, TrendingUp, MessageCircle,
+  Dumbbell, ClipboardCheck, ClipboardList,
+  UserPlus, Banknote, DoorOpen, Headphones,
+  LogOut, PanelLeft, ChevronRight,
+  type LucideIcon
+} from "lucide-react"
 
 interface NavItem {
-  href: string
-  icon: string
-  label: string
+  href:   string
+  icon:   LucideIcon
+  label:  string
   badge?: string
 }
 
 const NAV_BY_ROL: Record<Rol, NavItem[]> = {
   gerente: [
-    { href: "/dashboard/gerente",              icon: "📊", label: "Dashboard" },
-    { href: "/dashboard/gerente/miembros",     icon: "👥", label: "Miembros", badge: "1,247" },
-    { href: "/dashboard/gerente/reportes",     icon: "📈", label: "Reportes" },
-    { href: "/dashboard/gerente/clases",       icon: "📅", label: "Clases" },
-    { href: "/dashboard/gerente/promociones",  icon: "🎯", label: "Promociones" },
-    { href: "/dashboard/gerente/configuracion",icon: "⚙️", label: "Configuración" },
+    { href: "/dashboard/gerente",               icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/dashboard/gerente/miembros",      icon: Users,           label: "Miembros",    badge: "1,247" },
+    { href: "/dashboard/gerente/reportes",      icon: BarChart3,       label: "Reportes" },
+    { href: "/dashboard/gerente/clases",        icon: CalendarDays,    label: "Clases" },
+    { href: "/dashboard/gerente/promociones",   icon: Tag,             label: "Promociones" },
+    { href: "/dashboard/gerente/configuracion", icon: Settings,        label: "Configuración" },
   ],
   miembro: [
-    { href: "/dashboard/miembro",              icon: "🏠", label: "Inicio" },
-    { href: "/dashboard/miembro/membresia",    icon: "💳", label: "Mi Membresía" },
-    { href: "/dashboard/miembro/clases",       icon: "📅", label: "Clases", badge: "3" },
-    { href: "/dashboard/miembro/qr",           icon: "📱", label: "Acceso QR" },
-    { href: "/dashboard/miembro/progreso",     icon: "📊", label: "Mi Progreso" },
-    { href: "/dashboard/miembro/soporte",      icon: "💬", label: "Soporte" },
+    { href: "/dashboard/miembro",               icon: Home,            label: "Inicio" },
+    { href: "/dashboard/miembro/membresia",     icon: CreditCard,      label: "Mi Membresía" },
+    { href: "/dashboard/miembro/clases",        icon: CalendarDays,    label: "Clases",       badge: "3" },
+    { href: "/dashboard/miembro/qr",            icon: QrCode,          label: "Acceso QR" },
+    { href: "/dashboard/miembro/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
+    { href: "/dashboard/miembro/soporte",       icon: MessageCircle,   label: "Soporte" },
   ],
   entrenador: [
-    { href: "/dashboard/entrenador",           icon: "🏋️", label: "Dashboard" },
-    { href: "/dashboard/entrenador/clases",    icon: "📅", label: "Mis Clases", badge: "4" },
-    { href: "/dashboard/entrenador/clientes",  icon: "👥", label: "Mis Clientes" },
-    { href: "/dashboard/entrenador/asistencia",icon: "✅", label: "Asistencia" },
-    { href: "/dashboard/entrenador/evaluaciones",icon:"📋", label: "Evaluaciones" },
+    { href: "/dashboard/entrenador",            icon: Dumbbell,        label: "Dashboard" },
+    { href: "/dashboard/entrenador/clases",     icon: CalendarDays,    label: "Mis Clases",   badge: "6" },
+    { href: "/dashboard/entrenador/clientes",   icon: Users,           label: "Mis Clientes" },
+    { href: "/dashboard/entrenador/asistencia", icon: ClipboardCheck,  label: "Asistencia" },
+    { href: "/dashboard/entrenador/evaluaciones",icon: ClipboardList,  label: "Evaluaciones" },
   ],
   recepcionista: [
-    { href: "/dashboard/recepcionista",                icon: "🗂️", label: "Dashboard" },
-    { href: "/dashboard/recepcionista/registro",       icon: "➕", label: "Registrar Miembro" },
-    { href: "/dashboard/recepcionista/pagos",          icon: "💰", label: "Procesar Pago" },
-    { href: "/dashboard/recepcionista/acceso",         icon: "🚪", label: "Reg. Acceso", badge: "Live" },
-    { href: "/dashboard/recepcionista/soporte",        icon: "💬", label: "Soporte", badge: "2" },
+    { href: "/dashboard/recepcionista",              icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/dashboard/recepcionista/registro",     icon: UserPlus,        label: "Registrar" },
+    { href: "/dashboard/recepcionista/pagos",        icon: Banknote,        label: "Pagos" },
+    { href: "/dashboard/recepcionista/acceso",       icon: DoorOpen,        label: "Control Acceso", badge: "Live" },
+    { href: "/dashboard/recepcionista/soporte",      icon: Headphones,      label: "Soporte",         badge: "2" },
   ],
 }
 
-const ROL_COLOR: Record<Rol, string> = {
-  gerente:       "#00D084",
-  miembro:       "#00D084",
-  entrenador:    "#FF6B35",
+const ROL_ACCENT: Record<Rol, string> = {
+  gerente:       "var(--accent)",
+  miembro:       "var(--accent)",
+  entrenador:    "#F97316",
   recepcionista: "#3B82F6",
+}
+
+const ROL_LABEL: Record<Rol, string> = {
+  gerente:       "Gerente",
+  miembro:       "Miembro",
+  entrenador:    "Entrenador",
+  recepcionista: "Recepcionista",
 }
 
 export function Sidebar() {
@@ -61,81 +77,119 @@ export function Sidebar() {
 
   if (!user) return null
 
-  const nav = NAV_BY_ROL[user.rol]
-  const color = ROL_COLOR[user.rol]
+  const nav    = NAV_BY_ROL[user.rol]
+  const accent = ROL_ACCENT[user.rol]
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 68 : 240 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="relative h-screen bg-[#0D1526] border-r border-white/5 flex flex-col overflow-hidden shrink-0"
+      animate={{ width: collapsed ? 56 : 220 }}
+      transition={{ type: "spring", stiffness: 300, damping: 34, mass: 0.9 }}
+      className="relative h-screen flex flex-col shrink-0 overflow-hidden"
+      style={{
+        background: "var(--bg-surface)",
+        borderRight: "1px solid var(--border-faint)",
+      }}
     >
-      {/* Logo */}
-      <div className="h-16 flex items-center px-4 border-b border-white/5 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center" style={{ background: color }}>
-            <span className="text-[#070D18] font-black text-sm">G</span>
+      {/* Header */}
+      <div
+        className="h-14 flex items-center px-3 shrink-0"
+        style={{ borderBottom: "1px solid var(--border-faint)" }}
+      >
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div
+            className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center"
+            style={{ background: accent }}
+          >
+            <span className="text-[#09090B] font-black text-xs leading-none">G</span>
           </div>
+
           <AnimatePresence>
             {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, x: -8 }}
+              <motion.div
+                initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                className="text-white font-bold text-base tracking-tight whitespace-nowrap overflow-hidden"
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                className="overflow-hidden"
               >
-                GYM<span style={{ color }}>sos</span>
-              </motion.span>
+                <span
+                  className="text-sm font-semibold tracking-tight whitespace-nowrap"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  GYM<span style={{ color: accent }}>sos</span>
+                </span>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Collapse toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto shrink-0 w-6 h-6 text-neutral-600 hover:text-neutral-300 transition-colors"
+          className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+          style={{ color: "var(--text-tertiary)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--text-secondary)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-tertiary)")}
           aria-label="Toggle sidebar"
         >
-          {collapsed ? "›" : "‹"}
+          <PanelLeft size={14} />
         </button>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 py-4 overflow-y-auto overflow-x-hidden">
-        <ul className="space-y-1 px-2">
+      {/* Navigation */}
+      <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden">
+        <ul className="space-y-0.5 px-2">
           {nav.map((item) => {
+            const Icon   = item.icon
             const active = pathname === item.href
+
             return (
               <li key={item.href}>
                 <a
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative",
+                    "relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors duration-150 group",
                     active
                       ? "text-white"
-                      : "text-neutral-500 hover:text-neutral-200 hover:bg-white/4",
+                      : "hover:bg-white/4"
                   )}
-                  style={active ? { background: `${color}18`, color: "white" } : {}}
+                  style={active ? {
+                    background: `${accent}12`,
+                    color: "var(--text-primary)",
+                  } : {
+                    color: "var(--text-tertiary)",
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) e.currentTarget.style.color = "var(--text-secondary)"
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) e.currentTarget.style.color = "var(--text-tertiary)"
+                  }}
                 >
-                  {/* Active indicator */}
+                  {/* Active pill indicator */}
                   {active && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
-                      style={{ background: color }}
-                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full"
+                      style={{ background: accent }}
+                      transition={navIndicator}
                     />
                   )}
 
-                  <span className="text-base shrink-0">{item.icon}</span>
+                  <Icon
+                    size={15}
+                    className="shrink-0"
+                    strokeWidth={active ? 2 : 1.75}
+                    style={{ color: active ? accent : "inherit" }}
+                  />
 
                   <AnimatePresence>
                     {!collapsed && (
                       <motion.span
-                        initial={{ opacity: 0, x: -6 }}
+                        initial={{ opacity: 0, x: -4 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -6 }}
-                        className="text-sm font-medium flex-1 whitespace-nowrap"
+                        exit={{ opacity: 0, x: -4 }}
+                        transition={{ duration: 0.16, ease: [0.4, 0, 0.2, 1] }}
+                        className="text-xs font-medium flex-1 whitespace-nowrap"
                       >
                         {item.label}
                       </motion.span>
@@ -144,8 +198,15 @@ export function Sidebar() {
 
                   {!collapsed && item.badge && (
                     <span
-                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                      style={{ background: `${color}20`, color }}
+                      className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 tabular-nums"
+                      style={{
+                        background: item.badge === "Live"
+                          ? `${accent}18`
+                          : "rgba(255,255,255,0.07)",
+                        color: item.badge === "Live"
+                          ? accent
+                          : "var(--text-tertiary)",
+                      }}
                     >
                       {item.badge}
                     </span>
@@ -157,37 +218,62 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* User info + logout */}
-      <div className="p-3 border-t border-white/5 shrink-0">
-        <div className="flex items-center gap-3">
+      {/* User footer */}
+      <div
+        className="px-2 py-3 shrink-0"
+        style={{ borderTop: "1px solid var(--border-faint)" }}
+      >
+        <div className="flex items-center gap-2.5 px-1.5">
+          {/* Avatar */}
           <div
-            className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs font-black text-[#070D18]"
-            style={{ background: color }}
+            className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold"
+            style={{
+              background: `${accent}20`,
+              color: accent,
+              border: `1px solid ${accent}30`,
+            }}
           >
-            {user.nombre[0]}
+            {user.nombre[0].toUpperCase()}
           </div>
 
           <AnimatePresence>
             {!collapsed && (
               <motion.div
-                initial={{ opacity: 0, x: -6 }}
+                initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -6 }}
+                exit={{ opacity: 0, x: -4 }}
+                transition={{ duration: 0.16, ease: [0.4, 0, 0.2, 1] }}
                 className="flex-1 min-w-0"
               >
-                <p className="text-white text-xs font-semibold truncate">{user.nombre}</p>
-                <p className="text-neutral-600 text-[10px] truncate capitalize">{user.rol}</p>
+                <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                  {user.nombre}
+                </p>
+                <p className="text-[10px] truncate" style={{ color: "var(--text-tertiary)" }}>
+                  {ROL_LABEL[user.rol]}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <button
-            onClick={logout}
-            className="shrink-0 w-7 h-7 rounded-lg text-neutral-600 hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-all flex items-center justify-center text-sm"
-            title="Cerrar sesión"
-          >
-            ↩
-          </button>
+          {!collapsed && (
+            <button
+              onClick={logout}
+              className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center transition-all"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = "var(--red)"
+                e.currentTarget.style.background = "rgba(239,68,68,0.08)"
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = "var(--text-tertiary)"
+                e.currentTarget.style.background = "transparent"
+              }}
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+            >
+              <LogOut size={13} />
+            </button>
+          )}
         </div>
       </div>
     </motion.aside>
