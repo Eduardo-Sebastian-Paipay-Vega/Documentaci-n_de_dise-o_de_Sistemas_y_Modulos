@@ -20,6 +20,7 @@ const chainBuilder = {
   limit:   () => chainBuilder,
   gte:     () => chainBuilder,
   lte:     () => chainBuilder,
+  lt:      () => chainBuilder,
   single:  () => Promise.resolve({ data: null, error: null }),
   in:      () => chainBuilder,
   or:      () => chainBuilder,

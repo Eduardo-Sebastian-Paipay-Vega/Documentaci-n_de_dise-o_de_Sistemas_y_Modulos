@@ -1,0 +1,286 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for hooks/useMiembros.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">hooks</a> useMiembros.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>67/67</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">55.55% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>5/9</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">75% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>3/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>67/67</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use client"
+&nbsp;
+import { useState, useCallback } from "react"
+import { useAsyncWithDemoFallback } from "./useAsync"
+import {
+  getUsuariosPorGimnasio,
+  getPagosPendientesPorVencer,
+  getPagosPorGimnasio,
+  type UsuarioConMembresia,
+  type PagoDetalle,
+} from "@/lib/services"
+&nbsp;
+const DEMO_MIEMBROS: UsuarioConMembresia[] = [
+  { id_usuario: "001", email: "juan@email.com",   nombre: "Juan Quispe",    telefono: "+51 912 345 678", fecha_nacimiento: null, documento: "87654321", genero: "M", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-01-01", updated_at: null, membresia: { id_membresia: "m1", estado: "activa",    fecha_inicio: "2026-05-01", fecha_vencimiento: "2026-06-30", plan_nombre: "Gold Premium", precio_mensual: 149.90 }, score_churn: 12 },
+  { id_usuario: "002", email: "rosa@email.com",   nombre: "Rosa Chávez",    telefono: "+51 934 567 890", fecha_nacimiento: null, documento: "12345678", genero: "F", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-01-15", updated_at: null, membresia: { id_membresia: "m2", estado: "activa",    fecha_inicio: "2026-05-01", fecha_vencimiento: "2026-05-31", plan_nombre: "Silver",       precio_mensual: 109.90 }, score_churn: 58 },
+  { id_usuario: "003", email: "pedro@email.com",  nombre: "Pedro Llontop",  telefono: "+51 956 789 012", fecha_nacimiento: null, documento: "55443322", genero: "M", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-02-01", updated_at: null, membresia: { id_membresia: "m3", estado: "activa",    fecha_inicio: "2026-05-01", fecha_vencimiento: "2026-06-15", plan_nombre: "Basic",        precio_mensual: 79.90  }, score_churn: 71 },
+  { id_usuario: "004", email: "carmen@email.com", nombre: "Carmen Torres",  telefono: "+51 923 456 789", fecha_nacimiento: null, documento: "99887766", genero: "F", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-02-15", updated_at: null, membresia: { id_membresia: "m4", estado: "vencida",   fecha_inicio: "2026-03-01", fecha_vencimiento: "2026-04-30", plan_nombre: "Gold Premium", precio_mensual: 149.90 }, score_churn: 88 },
+  { id_usuario: "005", email: "luis@email.com",   nombre: "Luis Mamani",    telefono: "+51 945 678 901", fecha_nacimiento: null, documento: "11223344", genero: "M", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-01-01", updated_at: null, membresia: { id_membresia: "m5", estado: "activa",    fecha_inicio: "2026-01-01", fecha_vencimiento: "2026-12-31", plan_nombre: "Enterprise",   precio_mensual: 299.90 }, score_churn: 5  },
+  { id_usuario: "006", email: "ana@email.com",    nombre: "Ana Flores",     telefono: "+51 967 890 123", fecha_nacimiento: null, documento: "22334455", genero: "F", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-03-01", updated_at: null, membresia: { id_membresia: "m6", estado: "activa",    fecha_inicio: "2026-05-01", fecha_vencimiento: "2026-06-20", plan_nombre: "Silver",       precio_mensual: 109.90 }, score_churn: 29 },
+  { id_usuario: "007", email: "miguel@email.com", nombre: "Miguel Huanca",  telefono: "+51 989 012 345", fecha_nacimiento: null, documento: "33445566", genero: "M", id_gimnasio: "g1", rol: "miembro", estado: "suspendido", created_at: "2026-01-20", updated_at: null, membresia: { id_membresia: "m7", estado: "suspendida",fecha_inicio: "2026-04-01", fecha_vencimiento: "2026-05-10", plan_nombre: "Basic",        precio_mensual: 79.90  }, score_churn: 95 },
+  { id_usuario: "008", email: "paty@email.com",   nombre: "Patricia Ríos",  telefono: "+51 901 234 567", fecha_nacimiento: null, documento: "44556677", genero: "F", id_gimnasio: "g1", rol: "miembro", estado: "activo",     created_at: "2026-02-01", updated_at: null, membresia: { id_membresia: "m8", estado: "activa",    fecha_inicio: "2026-05-01", fecha_vencimiento: "2026-07-15", plan_nombre: "Gold Premium", precio_mensual: 149.90 }, score_churn: 18 },
+]
+&nbsp;
+const DEMO_PAGOS_PENDIENTES: PagoDetalle[] = [
+  { id_pago: "", id_usuario: "002", id_membresia: "m2", monto: 109.90, moneda: "PEN", metodo_pago: "efectivo", estado: "pendiente", fecha_pago: "2026-05-31", proxima_renovacion: null, descripcion: "Renovación", nombre_usuario: "Rosa Chávez",   plan_nombre: "Silver"      },
+  { id_pago: "", id_usuario: "004", id_membresia: "m4", monto: 149.90, moneda: "PEN", metodo_pago: "efectivo", estado: "pendiente", fecha_pago: "2026-06-01", proxima_renovacion: null, descripcion: "Renovación", nombre_usuario: "Carmen Torres",  plan_nombre: "Gold Premium"},
+  { id_pago: "", id_usuario: "003", id_membresia: "m3", monto: 79.90,  moneda: "PEN", metodo_pago: "efectivo", estado: "pendiente", fecha_pago: "2026-06-03", proxima_renovacion: null, descripcion: "Renovación", nombre_usuario: "Pedro Llontop",  plan_nombre: "Basic"       },
+]
+&nbsp;
+export function useMiembros(gymId: string | undefined, opts: { busqueda?: string; estado?: string } = {}) {
+  const { data, loading, error, refetch } = useAsyncWithDemoFallback(
+    gymId
+      ? <span class="fstat-no" title="function not covered" >() =&gt; getUsuariosPorGimnasio(gymId, { rol: "miembro", ...opts })</span>
+      : null,
+    { data: DEMO_MIEMBROS, count: DEMO_MIEMBROS.length },
+    [gymId, opts.busqueda, opts.estado],
+  )
+&nbsp;
+  return { miembros: data?.<span class="branch-0 cbranch-no" title="branch not covered" >data ?? [],</span> total: data?.<span class="branch-0 cbranch-no" title="branch not covered" >count ?? 0, l</span>oading, error, refetch }
+}
+&nbsp;
+export function usePagosPendientes(gymId: string | undefined) {
+  return useAsyncWithDemoFallback(
+    gymId ? () =&gt; getPagosPendientesPorVencer(<span class="branch-0 cbranch-no" title="branch not covered" >gymId) : null,</span>
+    DEMO_PAGOS_PENDIENTES,
+    [gymId],
+  )
+}
+&nbsp;
+const DEMO_PAGOS_HOY: PagoDetalle[] = [
+  { id_pago: "p001", id_usuario: "001", id_membresia: "m1", monto: 149.90, moneda: "PEN", metodo_pago: "efectivo", estado: "completado", fecha_pago: new Date().toISOString(), proxima_renovacion: null, descripcion: null, nombre_usuario: "Juan Quispe",   plan_nombre: "Gold Premium" },
+  { id_pago: "p002", id_usuario: "006", id_membresia: "m6", monto: 109.90, moneda: "PEN", metodo_pago: "yape",     estado: "completado", fecha_pago: new Date().toISOString(), proxima_renovacion: null, descripcion: null, nombre_usuario: "Ana Flores",    plan_nombre: "Silver" },
+  { id_pago: "p003", id_usuario: "008", id_membresia: "m8", monto: 119.92, moneda: "PEN", metodo_pago: "tarjeta",  estado: "completado", fecha_pago: new Date().toISOString(), proxima_renovacion: null, descripcion: "Cupón DESC20",     nombre_usuario: "Patricia Ríos", plan_nombre: "Gold Premium" },
+  { id_pago: "p004", id_usuario: "003", id_membresia: "m3", monto: 79.90,  moneda: "PEN", metodo_pago: "efectivo", estado: "pendiente",  fecha_pago: new Date().toISOString(), proxima_renovacion: null, descripcion: null, nombre_usuario: "Pedro Llontop", plan_nombre: "Basic" },
+]
+&nbsp;
+export function usePagosHoy(gymId: string | undefined) {
+  const hoy  = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const desde = hoy.toISOString()
+&nbsp;
+  return useAsyncWithDemoFallback(
+    gymId ? () =&gt; getPagosPorGimnasio(gymId, { desde, limit: 50 <span class="branch-0 cbranch-no" title="branch not covered" >}) : null,</span>
+    DEMO_PAGOS_HOY,
+    [gymId],
+  )
+}
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-05-26T10:20:11.242Z
+            </div>
+        <script src="../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
+    </body>
+</html>
+    

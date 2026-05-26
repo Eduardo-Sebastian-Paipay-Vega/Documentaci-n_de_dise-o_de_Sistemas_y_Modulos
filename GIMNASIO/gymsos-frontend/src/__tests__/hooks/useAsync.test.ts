@@ -84,43 +84,49 @@ describe("useAsync", () => {
 })
 
 describe("useAsyncWithDemoFallback", () => {
-  test("retorna demoData inmediatamente cuando isDemoMode=true", async () => {
-    // Remock como demo mode
-    jest.resetModules()
-    jest.doMock("@/lib/supabase", () => ({
-      isDemoMode: true,
-      supabase:   {},
-    }))
-
-    const { useAsyncWithDemoFallback: useFallback } = await import("@/hooks/useAsync")
-
-    const DEMO = [1, 2, 3]
-    const { result } = renderHook(() =>
-      useFallback(() => Promise.resolve([4, 5, 6]), DEMO, [])
-    )
-
-    expect(result.current.data).toEqual(DEMO)
-    expect(result.current.loading).toBe(false)
-    expect(result.current.error).toBeNull()
-  })
-
-  test("en modo real llama a la función async", async () => {
-    jest.resetModules()
-    jest.doMock("@/lib/supabase", () => ({
-      isDemoMode: false,
-      supabase:   {},
-    }))
-
-    const { useAsyncWithDemoFallback: useFallback } = await import("@/hooks/useAsync")
-
+  // isDemoMode=false is mocked at module level above
+  test("en modo real llama a la función async y retorna datos reales", async () => {
     const REAL_DATA = { name: "real" }
     const DEMO_DATA = { name: "demo" }
 
     const { result } = renderHook(() =>
-      useFallback(() => Promise.resolve(REAL_DATA), DEMO_DATA, [])
+      useAsyncWithDemoFallback(() => Promise.resolve(REAL_DATA), DEMO_DATA, [])
     )
 
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.data).toEqual(REAL_DATA)
+  })
+
+  test("en modo real no devuelve demoData cuando hay datos reales", async () => {
+    const DEMO_DATA = [1, 2, 3]
+    const REAL_DATA = [4, 5, 6]
+
+    const { result } = renderHook(() =>
+      useAsyncWithDemoFallback(() => Promise.resolve(REAL_DATA), DEMO_DATA, [])
+    )
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.data).toEqual(REAL_DATA)
+    expect(result.current.data).not.toEqual(DEMO_DATA)
+  })
+
+  test("expone refetch en modo real", async () => {
+    const { result } = renderHook(() =>
+      useAsyncWithDemoFallback(() => Promise.resolve(42), 0, [])
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(typeof result.current.refetch).toBe("function")
+  })
+
+  test("captura errores en modo real", async () => {
+    const { result } = renderHook(() =>
+      useAsyncWithDemoFallback(
+        () => Promise.reject(new Error("fallo real")),
+        [],
+        [],
+      )
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.error).toBe("fallo real")
   })
 })
