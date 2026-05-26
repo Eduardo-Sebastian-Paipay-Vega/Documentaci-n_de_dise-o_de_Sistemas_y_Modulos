@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -10,20 +10,24 @@ import { fadeIn, staggerContainer, easings } from "@/lib/motion"
 import { Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react"
 
 const DEMO_CREDS: Record<Rol, { email: string; password: string; label: string; desc: string }> = {
-  gerente:       { email: "gerente@gymsos.io",    password: "gerente123",    label: "Gerente",       desc: "KPIs · Reportes · Configuración" },
-  recepcionista: { email: "recepcion@gymsos.io",  password: "recepcion123",  label: "Recepcionista", desc: "Registro · Pagos · Acceso" },
-  entrenador:    { email: "entrenador@gymsos.io", password: "entrenador123", label: "Entrenador",    desc: "Clases · Clientes · Evaluaciones" },
+  gerente:       { email: "gerente@gymsos.io",    password: "gerente123",    label: "Gerente",       desc: "KPIs Â· Reportes Â· ConfiguraciÃ³n" },
+  recepcionista: { email: "recepcion@gymsos.io",  password: "recepcion123",  label: "Recepcionista", desc: "Registro Â· Pagos Â· Acceso" },
+  entrenador:    { email: "entrenador@gymsos.io", password: "entrenador123", label: "Entrenador",    desc: "Clases Â· Clientes Â· Evaluaciones" },
   miembro:       { email: "miembro@gymsos.io",    password: "miembro123",    label: "Miembro",       desc: "QR · Clases · Progreso" },
+  cliente:       { email: "cliente@gymsos.io",    password: "cliente123",    label: "Cliente",       desc: "Portal personal de entrenamiento" },
+  nutricionista: { email: "nutricion@gymsos.io",  password: "nutricion123",  label: "Nutricionista", desc: "Planes · Evaluaciones · Recetas" },
 }
 
-const ROLES: Rol[] = ["gerente", "recepcionista", "entrenador", "miembro"]
+const ROLES: Rol[] = ["gerente", "recepcionista", "entrenador", "nutricionista", "miembro", "cliente"]
 
-// Role accent colors — subtle, not aggressive
+// Role accent colors â€” subtle, not aggressive
 const ROL_ACCENT: Record<Rol, string> = {
   gerente:       "var(--accent)",
   recepcionista: "#3B82F6",
   entrenador:    "#F97316",
   miembro:       "#8B5CF6",
+  cliente:       "#22C55E",
+  nutricionista: "#10B981",
 }
 
 export default function LoginPage() {
@@ -61,7 +65,7 @@ export default function LoginPage() {
         setError(result.error ?? "Credenciales incorrectas")
       }
     } catch {
-      setError("Error de conexión. Verifica tu internet e intenta de nuevo.")
+      setError("Error de conexiÃ³n. Verifica tu internet e intenta de nuevo.")
     } finally {
       setSubmitting(false)
     }
@@ -74,7 +78,7 @@ export default function LoginPage() {
       className="min-h-screen flex"
       style={{ background: "var(--bg-base)" }}
     >
-      {/* ── Left — branding panel ── */}
+      {/* â”€â”€ Left â€” branding panel â”€â”€ */}
       <div className="hidden lg:flex lg:w-[52%] relative flex-col justify-between p-12 overflow-hidden">
         {/* Structural grid */}
         <div className="absolute inset-0 line-grid opacity-100 pointer-events-none" />
@@ -87,7 +91,7 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Top — logo */}
+        {/* Top â€” logo */}
         <div className="relative z-10 flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-md flex items-center justify-center"
@@ -100,7 +104,7 @@ export default function LoginPage() {
           </span>
         </div>
 
-        {/* Center — headline */}
+        {/* Center â€” headline */}
         <motion.div
           className="relative z-10 max-w-md"
           variants={staggerContainer}
@@ -133,8 +137,8 @@ export default function LoginPage() {
             className="text-base leading-relaxed max-w-sm"
             style={{ color: "var(--text-tertiary)" }}
           >
-            Gestión completa por roles, acceso QR, predicción de churn,
-            gamificación y más — en un solo lugar.
+            GestiÃ³n completa por roles, acceso QR, predicciÃ³n de churn,
+            gamificaciÃ³n y mÃ¡s â€” en un solo lugar.
           </motion.p>
 
           {/* Stats row */}
@@ -142,7 +146,7 @@ export default function LoginPage() {
             {[
               { value: "2.5M+", label: "Miembros activos" },
               { value: "500+",  label: "Gimnasios" },
-              { value: "89%",   label: "Retención AI" },
+              { value: "89%",   label: "RetenciÃ³n AI" },
             ].map((s) => (
               <div key={s.label}>
                 <p className="text-xl font-black tabular-nums" style={{ color: "var(--text-primary)" }}>
@@ -156,15 +160,15 @@ export default function LoginPage() {
           </motion.div>
         </motion.div>
 
-        {/* Bottom — version */}
+        {/* Bottom â€” version */}
         <div className="relative z-10">
           <span className="text-xs" style={{ color: "var(--text-disabled)" }}>
-            GYMsos v2.0 · 2026
+            GYMsos v2.0 Â· 2026
           </span>
         </div>
       </div>
 
-      {/* ── Right — login form ── */}
+      {/* â”€â”€ Right â€” login form â”€â”€ */}
       <div
         className="flex-1 flex items-center justify-center px-6 py-12"
         style={{
@@ -196,7 +200,7 @@ export default function LoginPage() {
             className="text-2xl font-bold tracking-tight mb-1"
             style={{ color: "var(--text-primary)" }}
           >
-            Iniciar sesión
+            Iniciar sesiÃ³n
           </h2>
           <p className="text-sm mb-7" style={{ color: "var(--text-tertiary)" }}>
             Selecciona tu rol o ingresa tus credenciales
@@ -248,7 +252,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-3 mb-5">
             <div className="flex-1 h-px" style={{ background: "var(--border-faint)" }} />
-            <span className="text-[11px]" style={{ color: "var(--text-disabled)" }}>o continúa con email</span>
+            <span className="text-[11px]" style={{ color: "var(--text-disabled)" }}>o continÃºa con email</span>
             <div className="flex-1 h-px" style={{ background: "var(--border-faint)" }} />
           </div>
 
@@ -260,7 +264,7 @@ export default function LoginPage() {
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Correo electrónico
+                Correo electrÃ³nico
               </label>
               <input
                 type="email"
@@ -279,14 +283,14 @@ export default function LoginPage() {
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Contraseña
+                ContraseÃ±a
               </label>
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError("") }}
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   required
                   className="input-base pr-10"
                   autoComplete="current-password"
@@ -357,7 +361,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <p className="mt-6 text-center text-[11px]" style={{ color: "var(--text-disabled)" }}>
-            ¿Sin cuenta?{" "}
+            Â¿Sin cuenta?{" "}
             <button
               onClick={() => setShowSolicitud(!showSolicitud)}
               className="transition-colors"
@@ -407,3 +411,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

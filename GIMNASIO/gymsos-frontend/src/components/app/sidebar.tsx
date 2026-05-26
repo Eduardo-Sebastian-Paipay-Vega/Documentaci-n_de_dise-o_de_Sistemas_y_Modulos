@@ -12,6 +12,7 @@ import {
   Home, CreditCard, QrCode, TrendingUp, MessageCircle,
   Dumbbell, ClipboardCheck, ClipboardList,
   UserPlus, Banknote, DoorOpen, Headphones,
+  Apple, UtensilsCrossed, Microscope,
   LogOut, PanelLeft, ChevronRight,
   type LucideIcon
 } from "lucide-react"
@@ -40,6 +41,14 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { href: "/dashboard/miembro/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
     { href: "/dashboard/miembro/soporte",       icon: MessageCircle,   label: "Soporte" },
   ],
+  cliente: [
+    { href: "/dashboard/cliente",               icon: Home,            label: "Inicio" },
+    { href: "/dashboard/cliente/membresia",     icon: CreditCard,      label: "Mi Membresia" },
+    { href: "/dashboard/cliente/clases",        icon: CalendarDays,    label: "Clases",       badge: "3" },
+    { href: "/dashboard/cliente/qr",            icon: QrCode,          label: "Acceso QR" },
+    { href: "/dashboard/cliente/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
+    { href: "/dashboard/cliente/soporte",       icon: MessageCircle,   label: "Soporte" },
+  ],
   entrenador: [
     { href: "/dashboard/entrenador",            icon: Dumbbell,        label: "Dashboard" },
     { href: "/dashboard/entrenador/clases",     icon: CalendarDays,    label: "Mis Clases",   badge: "6" },
@@ -54,20 +63,31 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { href: "/dashboard/recepcionista/acceso",       icon: DoorOpen,        label: "Control Acceso", badge: "Live" },
     { href: "/dashboard/recepcionista/soporte",      icon: Headphones,      label: "Soporte",         badge: "2" },
   ],
+  nutricionista: [
+    { href: "/dashboard/nutricionista",                      icon: LayoutDashboard,  label: "Dashboard" },
+    { href: "/dashboard/nutricionista/miembros",             icon: Users,            label: "Mis Pacientes" },
+    { href: "/dashboard/nutricionista/planes-nutricion",     icon: UtensilsCrossed,  label: "Planes Nutric." },
+    { href: "/dashboard/nutricionista/evaluaciones",         icon: Microscope,       label: "Evaluaciones" },
+    { href: "/dashboard/nutricionista/recetas",              icon: Apple,            label: "Recetas" },
+  ],
 }
 
 const ROL_ACCENT: Record<Rol, string> = {
-  gerente:       "var(--accent)",
-  miembro:       "var(--accent)",
-  entrenador:    "#F97316",
-  recepcionista: "#3B82F6",
+  gerente:        "var(--accent)",
+  miembro:        "var(--accent)",
+  cliente:        "#22C55E",
+  entrenador:     "#F97316",
+  recepcionista:  "#3B82F6",
+  nutricionista:  "#10B981",
 }
 
 const ROL_LABEL: Record<Rol, string> = {
-  gerente:       "Gerente",
-  miembro:       "Miembro",
-  entrenador:    "Entrenador",
-  recepcionista: "Recepcionista",
+  gerente:        "Gerente",
+  miembro:        "Miembro",
+  cliente:        "Cliente",
+  entrenador:     "Entrenador",
+  recepcionista:  "Recepcionista",
+  nutricionista:  "Nutricionista",
 }
 
 export function Sidebar() {
