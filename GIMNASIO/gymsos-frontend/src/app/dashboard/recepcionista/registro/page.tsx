@@ -4,39 +4,83 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { staggerContainer, fadeUp } from "@/lib/motion"
+import { useAuth } from "@/components/providers/auth-provider"
+import { usePlanes } from "@/hooks/usePlanes"
+import { usePagosHoy } from "@/hooks/useMiembros"
+import { registrarNuevoMiembro } from "@/lib/services"
+import { Loader2 } from "lucide-react"
 
-// RF-001: Registro de nuevo miembro
-// En prod: INSERT INTO usuarios + INSERT INTO membresias + INSERT INTO pagos
-// Todos bajo el id_gimnasio del recepcionista
+const METODOS = [
+  { v: "efectivo", label: "💵 Efectivo" },
+  { v: "yape",     label: "📱 Yape" },
+  { v: "tarjeta",  label: "💳 Tarjeta" },
+] as const
 
-const PLANES = [
-  { id:"basic",   nombre:"Basic",        precio:79.90,  duracion:30,  desc:"Acceso básico L-V" },
-  { id:"silver",  nombre:"Silver",       precio:109.90, duracion:30,  desc:"Acceso completo + 10 clases" },
-  { id:"gold",    nombre:"Gold Premium", precio:149.90, duracion:30,  desc:"Ilimitado + clases ilimitadas" },
-  { id:"annual",  nombre:"Gold Anual",   precio:1499.00,duracion:365, desc:"Gold + 2 meses gratis" },
-]
+type MetodoPago = "efectivo" | "yape" | "tarjeta"
 
-const RECIENTES = [
-  { nombre:"Sofía Mendoza",  plan:"Gold Premium",hora:"10:23", tipo:"Nuevo miembro",   color:"#00D084" },
-  { nombre:"Pablo Fuentes",  plan:"Silver",      hora:"09:47", tipo:"Renovación",      color:"#3B82F6" },
-  { nombre:"Valeria Cruz",   plan:"Basic",       hora:"09:15", tipo:"Nuevo miembro",   color:"#00D084" },
-  { nombre:"Andrés Rojas",   plan:"Gold Premium",hora:"08:52", tipo:"Pago pendiente",  color:"#F59E0B" },
-]
+type FormData = {
+  nombre: string
+  email: string
+  telefono: string
+  documento: string
+  genero: "M" | "F" | "Otro"
+  pago: MetodoPago
+}
 
 export default function RegistroPage() {
-  const [step, setStep] = useState(1)
-  const [planSel, setPlanSel] = useState("gold")
-  const [exito, setExito] = useState(false)
-  const [form, setForm] = useState({ nombre:"", email:"", telefono:"", documento:"", genero:"M", pago:"efectivo" })
+  const { user } = useAuth()
+  const gymId    = user?.id_gimnasio
 
-  function handleChange(k: string, v: string) {
+  const planesState  = usePlanes(gymId)
+  const pagosHoyState = usePagosHoy(gymId)
+
+  const planes  = planesState.data ?? []
+  const recientes = (pagosHoyState.data ?? []).slice(0, 5)
+
+  const [step, setStep]     = useState(1)
+  const [planSel, setPlanSel] = useState<string | null>(null)
+  const [exito, setExito]   = useState(false)
+  const [guardando, setGuardando] = useState(false)
+  const [error, setError]   = useState<string | null>(null)
+  const [form, setForm]     = useState<FormData>({
+    nombre: "", email: "", telefono: "", documento: "", genero: "M", pago: "efectivo",
+  })
+
+  function handleChange(k: keyof FormData, v: string) {
     setForm(prev => ({ ...prev, [k]: v }))
   }
 
-  function handleRegistrar(e: React.FormEvent) {
+  const planActual = planes.find(p => p.id_plan === planSel) ?? planes[0]
+
+  async function handleRegistrar(e: React.FormEvent) {
     e.preventDefault()
-    setExito(true)
-    setTimeout(() => { setExito(false); setStep(1); setForm({ nombre:"", email:"", telefono:"", documento:"", genero:"M", pago:"efectivo" }) }, 3000)
+    if (!gymId || !planActual) return
+    setGuardando(true)
+    setError(null)
+    try {
+      await registrarNuevoMiembro({
+        nombre:       form.nombre,
+        email:        form.email,
+        telefono:     form.telefono || undefined,
+        documento:    form.documento || undefined,
+        genero:       form.genero,
+        id_gimnasio:  gymId,
+        id_plan:      planActual.id_plan,
+        duracion_dias: planActual.duracion_dias,
+        metodo_pago:  form.pago,
+        monto:        planActual.precio_mensual,
+      })
+      pagosHoyState.refetch()
+      setExito(true)
+      setStep(1)
+      setForm({ nombre: "", email: "", telefono: "", documento: "", genero: "M", pago: "efectivo" })
+      setPlanSel(null)
+      setTimeout(() => setExito(false), 4000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al registrar el miembro")
+    } finally {
+      setGuardando(false)
+    }
   }
 
   return (
@@ -44,7 +88,7 @@ export default function RegistroPage() {
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="mb-6">
         <motion.div variants={fadeUp}>
           <h1 className="text-white font-black text-2xl">Registrar Nuevo Miembro</h1>
-          <p className="text-neutral-500 text-sm mt-0.5">RF-001 · Registro con plan y pago inmediato</p>
+          <p className="text-neutral-500 text-sm mt-0.5">Registro con plan y pago inmediato</p>
         </motion.div>
       </motion.div>
 
@@ -53,18 +97,16 @@ export default function RegistroPage() {
         <div className="lg:col-span-2">
           {/* Steps */}
           <div className="flex items-center gap-2 mb-5">
-            {[1,2,3].map((s) => (
+            {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-2">
                 <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all",
-                  step > s ? "bg-[#00D084] text-[#070D18]" :
+                  step > s  ? "bg-[#00D084] text-[#070D18]" :
                   step === s ? "bg-[#00D084]/20 border border-[#00D084] text-[#00D084]" :
                   "bg-white/8 text-neutral-500"
                 )}>
                   {step > s ? "✓" : s}
                 </div>
-                <span className={cn("text-xs font-medium hidden sm:block",
-                  step >= s ? "text-white" : "text-neutral-600"
-                )}>
+                <span className={cn("text-xs font-medium hidden sm:block", step >= s ? "text-white" : "text-neutral-600")}>
                   {s === 1 ? "Datos personales" : s === 2 ? "Plan" : "Pago"}
                 </span>
                 {s < 3 && <div className="w-8 h-px bg-white/10" />}
@@ -72,30 +114,23 @@ export default function RegistroPage() {
             ))}
           </div>
 
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="glass-card rounded-2xl p-6"
-          >
+          <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass-card rounded-2xl p-6">
             {step === 1 && (
               <form onSubmit={(e) => { e.preventDefault(); setStep(2) }}>
                 <p className="text-white font-semibold mb-4">Datos personales</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
-                    { label:"Nombre completo", key:"nombre",    type:"text",  placeholder:"María González", required:true },
-                    { label:"Email",           key:"email",     type:"email", placeholder:"maria@email.com",  required:true },
-                    { label:"Teléfono",        key:"telefono",  type:"tel",   placeholder:"+51 9XX XXX XXX",  required:false },
-                    { label:"DNI / Documento", key:"documento", type:"text",  placeholder:"12345678",          required:true },
+                    { label: "Nombre completo", key: "nombre",    type: "text",  placeholder: "María González", required: true },
+                    { label: "Email",           key: "email",     type: "email", placeholder: "maria@email.com", required: true },
+                    { label: "Teléfono",        key: "telefono",  type: "tel",   placeholder: "+51 9XX XXX XXX", required: false },
+                    { label: "DNI / Documento", key: "documento", type: "text",  placeholder: "12345678",        required: true },
                   ].map(f => (
                     <div key={f.key} className={f.key === "nombre" ? "sm:col-span-2" : ""}>
                       <label className="text-xs text-neutral-500 uppercase tracking-wider block mb-1">{f.label}</label>
                       <input
-                        type={f.type}
-                        required={f.required}
-                        value={form[f.key as keyof typeof form]}
-                        onChange={e => handleChange(f.key, e.target.value)}
+                        type={f.type} required={f.required}
+                        value={form[f.key as keyof FormData]}
+                        onChange={e => handleChange(f.key as keyof FormData, e.target.value)}
                         placeholder={f.placeholder}
                         className="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-[#00D084]/40 transition-colors"
                       />
@@ -103,7 +138,7 @@ export default function RegistroPage() {
                   ))}
                   <div>
                     <label className="text-xs text-neutral-500 uppercase tracking-wider block mb-1">Género</label>
-                    <select value={form.genero} onChange={e => handleChange("genero", e.target.value)}
+                    <select value={form.genero} onChange={e => handleChange("genero", e.target.value as "M" | "F" | "Otro")}
                       className="w-full h-10 bg-white/5 border border-white/10 rounded-xl px-3 text-white text-sm focus:outline-none focus:border-[#00D084]/40">
                       <option value="M" className="bg-[#0D1526]">Masculino</option>
                       <option value="F" className="bg-[#0D1526]">Femenino</option>
@@ -111,8 +146,7 @@ export default function RegistroPage() {
                     </select>
                   </div>
                 </div>
-                <button type="submit"
-                  className="mt-5 w-full py-3 rounded-xl bg-[#00D084] text-[#070D18] font-bold hover:bg-[#00E891] transition-colors">
+                <button type="submit" className="mt-5 w-full py-3 rounded-xl bg-[#00D084] text-[#070D18] font-bold hover:bg-[#00E891] transition-colors">
                   Siguiente →
                 </button>
               </form>
@@ -121,25 +155,30 @@ export default function RegistroPage() {
             {step === 2 && (
               <div>
                 <p className="text-white font-semibold mb-4">Seleccionar Plan</p>
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  {PLANES.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => setPlanSel(p.id)}
-                      className={cn(
-                        "rounded-xl p-4 text-left border-2 transition-all",
-                        planSel === p.id ? "border-[#00D084] bg-[#00D084]/8" : "border-white/8 hover:border-white/20"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-white font-bold text-sm">{p.nombre}</p>
-                        {planSel === p.id && <span className="text-[#00D084] text-xs">✓</span>}
-                      </div>
-                      <p className="text-[#00D084] font-black">S/ {p.precio}</p>
-                      <p className="text-neutral-600 text-[11px] mt-1">{p.desc}</p>
-                    </button>
-                  ))}
-                </div>
+                {planesState.loading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 size={16} className="animate-spin text-neutral-500" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 mb-5">
+                    {planes.map(p => (
+                      <button key={p.id_plan} onClick={() => setPlanSel(p.id_plan)}
+                        className={cn("rounded-xl p-4 text-left border-2 transition-all",
+                          (planSel === p.id_plan || (!planSel && planes[0]?.id_plan === p.id_plan))
+                            ? "border-[#00D084] bg-[#00D084]/8" : "border-white/8 hover:border-white/20"
+                        )}>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-white font-bold text-sm">{p.nombre}</p>
+                          {(planSel === p.id_plan || (!planSel && planes[0]?.id_plan === p.id_plan)) && (
+                            <span className="text-[#00D084] text-xs">✓</span>
+                          )}
+                        </div>
+                        <p className="text-[#00D084] font-black">S/ {p.precio_mensual.toFixed(2)}</p>
+                        <p className="text-neutral-600 text-[11px] mt-1">{p.descripcion ?? `${p.duracion_dias} días`}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl glass-card text-neutral-300 font-semibold">← Atrás</button>
                   <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-xl bg-[#00D084] text-[#070D18] font-bold hover:bg-[#00E891] transition-colors">Siguiente →</button>
@@ -151,26 +190,28 @@ export default function RegistroPage() {
               <form onSubmit={handleRegistrar}>
                 <p className="text-white font-semibold mb-4">Procesar Pago</p>
 
+                {error && (
+                  <div className="mb-4 px-4 py-3 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-sm">
+                    {error}
+                  </div>
+                )}
+
                 <div className="glass-card rounded-xl p-4 mb-4">
                   <p className="text-neutral-500 text-xs mb-2">Resumen</p>
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-300">{form.nombre}</span>
-                    <span className="text-white font-bold">{PLANES.find(p => p.id === planSel)?.nombre}</span>
+                    <span className="text-white font-bold">{planActual?.nombre ?? "—"}</span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
                     <span className="text-neutral-500">Total a cobrar</span>
-                    <span className="text-[#00D084] font-black text-lg">S/ {PLANES.find(p => p.id === planSel)?.precio}</span>
+                    <span className="text-[#00D084] font-black text-lg">S/ {planActual?.precio_mensual.toFixed(2) ?? "0.00"}</span>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <label className="text-xs text-neutral-500 uppercase tracking-wider block mb-2">Método de pago</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { v:"efectivo", label:"💵 Efectivo" },
-                      { v:"yape",     label:"📱 Yape" },
-                      { v:"tarjeta",  label:"💳 Tarjeta" },
-                    ].map(m => (
+                    {METODOS.map(m => (
                       <button key={m.v} type="button" onClick={() => handleChange("pago", m.v)}
                         className={cn("py-2.5 rounded-xl text-sm font-semibold transition-all",
                           form.pago === m.v ? "bg-[#00D084] text-[#070D18]" : "glass-card text-neutral-400 hover:text-white"
@@ -183,7 +224,9 @@ export default function RegistroPage() {
 
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl glass-card text-neutral-300 font-semibold">← Atrás</button>
-                  <button type="submit" className="flex-1 py-3 rounded-xl bg-[#00D084] text-[#070D18] font-bold hover:bg-[#00E891] transition-colors">
+                  <button type="submit" disabled={guardando}
+                    className="flex-1 py-3 rounded-xl bg-[#00D084] text-[#070D18] font-bold hover:bg-[#00E891] transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+                    {guardando && <Loader2 size={14} className="animate-spin" />}
                     ✓ Registrar y Cobrar
                   </button>
                 </div>
@@ -194,47 +237,47 @@ export default function RegistroPage() {
 
         {/* Panel lateral — Registros recientes */}
         <div>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card rounded-2xl overflow-hidden"
-          >
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="glass-card rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-white/5 flex items-center justify-between">
-              <p className="text-white font-semibold text-sm">Registros de Hoy</p>
-              <span className="text-xs bg-[#00D084]/15 text-[#00D084] font-bold px-2 py-0.5 rounded-full">{RECIENTES.length}</span>
+              <p className="text-white font-semibold text-sm">Cobros de Hoy</p>
+              <span className="text-xs bg-[#00D084]/15 text-[#00D084] font-bold px-2 py-0.5 rounded-full">
+                {pagosHoyState.loading ? "—" : recientes.length}
+              </span>
             </div>
-            <div className="divide-y divide-white/4">
-              {RECIENTES.map((r, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.08 }}
-                  className="px-4 py-3"
-                >
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <div className="w-6 h-6 rounded-full bg-[#00D084] flex items-center justify-center text-[10px] font-black text-[#070D18]">
-                      {r.nombre[0]}
+            {pagosHoyState.loading ? (
+              <div className="flex items-center justify-center h-24">
+                <Loader2 size={16} className="animate-spin text-neutral-500" />
+              </div>
+            ) : (
+              <div className="divide-y divide-white/4">
+                {recientes.map((r, i) => (
+                  <motion.div key={r.id_pago || i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.06 }} className="px-4 py-3">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <div className="w-6 h-6 rounded-full bg-[#00D084] flex items-center justify-center text-[10px] font-black text-[#070D18]">
+                        {(r.nombre_usuario ?? "?")[0]}
+                      </div>
+                      <p className="text-white text-xs font-semibold truncate">{r.nombre_usuario ?? "—"}</p>
                     </div>
-                    <p className="text-white text-xs font-semibold">{r.nombre}</p>
-                  </div>
-                  <p className="text-neutral-500 text-[11px] ml-8">{r.plan}</p>
-                  <div className="flex items-center justify-between ml-8 mt-0.5">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: `${r.color}20`, color: r.color }}>
-                      {r.tipo}
-                    </span>
-                    <span className="text-neutral-600 text-[10px]">{r.hora}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    <p className="text-neutral-500 text-[11px] ml-8">{r.plan_nombre ?? "—"}</p>
+                    <div className="flex items-center justify-between ml-8 mt-0.5">
+                      <span className="text-[10px] font-bold text-[#00D084]">S/ {r.monto.toFixed(2)}</span>
+                      <span className="text-neutral-600 text-[10px]">
+                        {new Date(r.fecha_pago).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+                {recientes.length === 0 && (
+                  <p className="text-center text-neutral-500 text-sm py-6">Sin cobros hoy</p>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
 
-      {/* Toast de éxito */}
       <AnimatePresence>
         {exito && (
           <motion.div

@@ -1,53 +1,35 @@
 "use client"
-
+// REEMPLAZADO: datos reales desde Supabase via hooks
 import { motion, useInView } from "framer-motion"
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { useAuth } from "@/components/providers/auth-provider"
-import { cn } from "@/lib/utils"
-import { fadeUp, staggerContainer } from "@/lib/motion"
+import { fadeUp, staggerContainer, fadeIn, staggerFast, easings } from "@/lib/motion"
+import { useClasesEntrenador } from "@/hooks/useClases"
+import { Loader2, Users, CalendarCheck, Star } from "lucide-react"
 
-const misClases = [
-  { nombre: "Spinning Extremo",  hora: "07:30", sala: "Sala A", inscritos: 12, max: 15, estado: "en_curso" },
-  { nombre: "HIIT Total",        hora: "09:00", sala: "Sala C", inscritos: 8,  max: 10, estado: "proxima"  },
-  { nombre: "Funcional Avanzado",hora: "11:00", sala: "Sala B", inscritos: 6,  max: 12, estado: "proxima"  },
-  { nombre: "CrossFit Básico",   hora: "18:30", sala: "Sala C", inscritos: 14, max: 14, estado: "llena"    },
+const DEMO_CLIENTES = [
+  { nombre: "Carlos M.",  plan: "Gold",    progreso: 78, sesiones: 24, meta: "Perder 10kg", avatar: "C" },
+  { nombre: "Ana Torres", plan: "Premium", progreso: 92, sesiones: 31, meta: "Tonificar",   avatar: "A" },
+  { nombre: "Luis P.",    plan: "Silver",  progreso: 45, sesiones: 12, meta: "Ganar masa",  avatar: "L" },
+  { nombre: "Rosa Ch.",   plan: "Basic",   progreso: 61, sesiones: 18, meta: "Resistencia", avatar: "R" },
+  { nombre: "Jorge F.",   plan: "Gold",    progreso: 83, sesiones: 27, meta: "Rendimiento", avatar: "J" },
 ]
 
-const misClientes = [
-  { nombre: "Carlos M.",   plan: "Gold",    progreso: 78, sesiones: 24, meta: "Perder 10kg",    avatar: "C" },
-  { nombre: "Ana Torres",  plan: "Premium", progreso: 92, sesiones: 31, meta: "Tonificar",      avatar: "A" },
-  { nombre: "Luis P.",     plan: "Silver",  progreso: 45, sesiones: 12, meta: "Ganar masa",     avatar: "L" },
-  { nombre: "Rosa Ch.",    plan: "Basic",   progreso: 61, sesiones: 18, meta: "Resistencia",    avatar: "R" },
-  { nombre: "Jorge F.",    plan: "Gold",    progreso: 83, sesiones: 27, meta: "Rendimiento",    avatar: "J" },
+const EVALUACIONES = [
+  { cliente: "Ana Torres", tipo: "Composición corporal", fecha: "Hoy 14:00",    pendiente: true  },
+  { cliente: "Carlos M.",  tipo: "Fuerza máxima",        fecha: "Mañana 10:00", pendiente: true  },
+  { cliente: "Jorge F.",   tipo: "VO2 Max",              fecha: "Vie 09:00",    pendiente: true  },
+  { cliente: "Luis P.",    tipo: "Postura y movilidad",  fecha: "Completada",   pendiente: false },
 ]
-
-const semanaAsistencia = [
-  { dia: "Lun", asistio: true  },
-  { dia: "Mar", asistio: true  },
-  { dia: "Mié", asistio: false },
-  { dia: "Jue", asistio: true  },
-  { dia: "Vie", asistio: true  },
-  { dia: "Sáb", asistio: false },
-  { dia: "Dom", asistio: false },
-]
-
-const evaluaciones = [
-  { cliente: "Ana Torres",  tipo: "Composición corporal", fecha: "Hoy 14:00",  pendiente: true  },
-  { cliente: "Carlos M.",   tipo: "Fuerza máxima",        fecha: "Mañana 10:00",pendiente: true  },
-  { cliente: "Jorge F.",    tipo: "VO2 Max",              fecha: "Vie 09:00",   pendiente: true  },
-  { cliente: "Luis P.",     tipo: "Postura y movilidad",  fecha: "Completada",  pendiente: false },
-]
-
-const ESTADO_CONFIG = {
-  en_curso: { label: "En curso",  bg: "bg-[#00D084]/15", text: "text-[#00D084]"  },
-  proxima:  { label: "Próxima",   bg: "bg-white/8",      text: "text-neutral-400" },
-  llena:    { label: "Llena",     bg: "bg-[#FF6B35]/15", text: "text-[#FF6B35]"  },
-}
 
 export default function EntrenadorDashboard() {
-  const { user } = useAuth()
-  const clientesRef = useRef<HTMLDivElement>(null)
-  const inView = useInView(clientesRef, { once: true })
+  const { user }       = useAuth()
+  const clientesRef    = useRef<HTMLDivElement>(null)
+  const inView         = useInView(clientesRef, { once: true })
+
+  const entrenadorId = user?.id_usuario
+  const clasesState  = useClasesEntrenador(entrenadorId)
+  const clases       = clasesState.data ?? []
   const [activeCliente, setActiveCliente] = useState<string | null>(null)
 
   return (
@@ -63,12 +45,14 @@ export default function EntrenadorDashboard() {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-neutral-600 text-xs">Clases hoy</p>
-              <p className="text-[#FF6B35] font-black text-3xl">4</p>
+              <p className="text-[#FF6B35] font-black text-3xl">
+                {clasesState.loading ? "—" : clases.length}
+              </p>
             </div>
             <div className="w-px h-10 bg-white/8" />
             <div className="text-right">
               <p className="text-neutral-600 text-xs">Clientes activos</p>
-              <p className="text-white font-black text-3xl">5</p>
+              <p className="text-white font-black text-3xl">{DEMO_CLIENTES.length}</p>
             </div>
           </div>
         </motion.div>
@@ -87,47 +71,56 @@ export default function EntrenadorDashboard() {
             <p className="text-white font-semibold">📅 Mis Clases de Hoy</p>
             <button className="text-[#FF6B35] text-xs font-semibold hover:underline">Ver semana →</button>
           </div>
-          <div className="space-y-3">
-            {misClases.map((c, i) => {
-              const cfg = ESTADO_CONFIG[c.estado as keyof typeof ESTADO_CONFIG]
-              const pct = (c.inscritos / c.max) * 100
-              return (
-                <motion.div
-                  key={c.nombre}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + i * 0.07 }}
-                  className="flex items-center gap-4 rounded-xl px-4 py-3 bg-white/3 border border-white/6 hover:border-white/12 transition-all"
-                >
-                  <div className="text-center shrink-0 w-12">
-                    <p className="text-white font-bold text-sm">{c.hora}</p>
-                    <p className="text-neutral-600 text-[10px]">hoy</p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm">{c.nombre}</p>
-                    <p className="text-neutral-500 text-xs">{c.sala}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <div className="flex-1 h-1 bg-white/8 rounded-full overflow-hidden max-w-[80px]">
-                        <div
-                          className={cn("h-full rounded-full transition-all", pct >= 100 ? "bg-[#FF6B35]" : "bg-[#00D084]")}
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-neutral-500 text-[10px]">{c.inscritos}/{c.max}</span>
+          {clasesState.loading ? (
+            <div className="flex items-center justify-center h-24">
+              <Loader2 size={16} className="animate-spin text-neutral-500" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {clases.map((c, i) => {
+                const inscritos = c.inscritos ?? 0
+                const pct = (inscritos / c.capacidad_maxima) * 100
+                const llena = inscritos >= c.capacidad_maxima
+                return (
+                  <motion.div
+                    key={c.id_clase}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 + i * 0.07 }}
+                    className="flex items-center gap-4 rounded-xl px-4 py-3 bg-white/3 border border-white/6 hover:border-white/12 transition-all"
+                  >
+                    <div className="text-center shrink-0 w-12">
+                      <p className="text-white font-bold text-sm">
+                        {new Date(c.fecha_hora_inicio).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                      </p>
+                      <p className="text-neutral-600 text-[10px]">hoy</p>
                     </div>
-                  </div>
-                  <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full shrink-0", cfg.bg, cfg.text)}>
-                    {cfg.label}
-                  </span>
-                  {c.estado === "en_curso" && (
-                    <button className="shrink-0 bg-[#00D084] text-[#070D18] text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-[#00E891] transition-colors">
-                      Tomar asistencia
-                    </button>
-                  )}
-                </motion.div>
-              )
-            })}
-          </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-sm">{c.nombre}</p>
+                      <p className="text-neutral-500 text-xs">{c.nombre_espacio ?? "—"}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <div className="flex-1 h-1 bg-white/8 rounded-full overflow-hidden max-w-[80px]">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%`, background: llena ? "#FF6B35" : "#00D084" }} />
+                        </div>
+                        <span className="text-neutral-500 text-[10px]">{inscritos}/{c.capacidad_maxima}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0" style={{
+                      background: c.estado === "en_curso" ? "rgba(0,208,132,0.15)" : llena ? "rgba(255,107,53,0.15)" : "rgba(255,255,255,0.05)",
+                      color:      c.estado === "en_curso" ? "#00D084" : llena ? "#FF6B35" : "#9CA3AF",
+                    }}>
+                      {c.estado === "en_curso" ? "En curso" : llena ? "Llena" : "Próxima"}
+                    </span>
+                    {c.estado === "en_curso" && (
+                      <button className="shrink-0 bg-[#00D084] text-[#070D18] text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-[#00E891] transition-colors">
+                        Asistencia
+                      </button>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
         </motion.div>
 
         {/* Asistencia semanal personal */}
@@ -140,7 +133,12 @@ export default function EntrenadorDashboard() {
           <p className="text-white font-semibold mb-1">✅ Asistencia Semanal</p>
           <p className="text-neutral-600 text-xs mb-5">Registro de mis sesiones</p>
           <div className="grid grid-cols-7 gap-1.5">
-            {semanaAsistencia.map((d) => (
+            {[
+            { dia: "Lun", asistio: true  }, { dia: "Mar", asistio: true  },
+            { dia: "Mié", asistio: false }, { dia: "Jue", asistio: true  },
+            { dia: "Vie", asistio: true  }, { dia: "Sáb", asistio: false },
+            { dia: "Dom", asistio: false },
+          ].map((d) => (
               <div key={d.dia} className="flex flex-col items-center gap-1.5">
                 <div className={cn(
                   "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all",
@@ -184,7 +182,7 @@ export default function EntrenadorDashboard() {
           <button className="text-[#FF6B35] text-xs font-semibold hover:underline">Ver todos →</button>
         </div>
         <div className="space-y-3">
-          {misClientes.map((c, i) => (
+          {DEMO_CLIENTES.map((c, i) => (
             <motion.div
               key={c.nombre}
               initial={{ opacity: 0, y: 8 }}
@@ -265,11 +263,11 @@ export default function EntrenadorDashboard() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-white font-semibold">📋 Evaluaciones</p>
           <span className="text-xs bg-[#FF6B35]/15 text-[#FF6B35] px-2 py-0.5 rounded-full font-bold">
-            {evaluaciones.filter(e => e.pendiente).length} pendientes
+            {EVALUACIONES.filter(e => e.pendiente).length} pendientes
           </span>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {evaluaciones.map((ev, i) => (
+          {EVALUACIONES.map((ev, i) => (
             <motion.div
               key={`${ev.cliente}-${ev.tipo}`}
               initial={{ opacity: 0, scale: 0.96 }}
