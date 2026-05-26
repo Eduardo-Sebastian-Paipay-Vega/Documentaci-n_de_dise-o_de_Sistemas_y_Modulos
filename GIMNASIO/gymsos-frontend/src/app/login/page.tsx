@@ -36,6 +36,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]       = useState("")
   const [activeRole, setActiveRole] = useState<Rol | null>(null)
+  const [showSolicitud, setShowSolicitud] = useState(false)
 
   useEffect(() => {
     if (!loading && user) router.replace(ROL_ROUTES[user.rol])
@@ -54,9 +55,14 @@ export default function LoginPage() {
     if (!email || !password) return
     setSubmitting(true)
     setError("")
-    const result = await login(email, password)
-    if (!result.ok) {
-      setError(result.error ?? "Credenciales incorrectas")
+    try {
+      const result = await login(email, password)
+      if (!result.ok) {
+        setError(result.error ?? "Credenciales incorrectas")
+      }
+    } catch {
+      setError("Error de conexión. Verifica tu internet e intenta de nuevo.")
+    } finally {
       setSubmitting(false)
     }
   }
@@ -353,6 +359,7 @@ export default function LoginPage() {
           <p className="mt-6 text-center text-[11px]" style={{ color: "var(--text-disabled)" }}>
             ¿Sin cuenta?{" "}
             <button
+              onClick={() => setShowSolicitud(!showSolicitud)}
               className="transition-colors"
               style={{ color: "var(--text-tertiary)" }}
               onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
@@ -361,6 +368,40 @@ export default function LoginPage() {
               Solicitar acceso
             </button>
           </p>
+
+          <AnimatePresence>
+            {showSolicitud && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden mt-3"
+              >
+                <div
+                  className="px-4 py-3 rounded-lg text-center"
+                  style={{
+                    background: "rgba(0,208,132,0.06)",
+                    border: "1px solid rgba(0,208,132,0.18)",
+                  }}
+                >
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Las cuentas son creadas por el administrador del gimnasio.
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                    Contacta a tu gerente o escribe a{" "}
+                    <a
+                      href="mailto:eduardo.paipay.27@unsch.edu.pe"
+                      className="transition-colors"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      soporte@gymsos.io
+                    </a>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </div>

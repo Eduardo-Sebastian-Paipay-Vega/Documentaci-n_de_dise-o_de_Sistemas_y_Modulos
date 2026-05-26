@@ -66,23 +66,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // ── Obtener perfil completo desde tabla `usuarios` ────────────────────────────
+  // Nota: NO se hace join a `gimnasios` aquí porque esa tabla no tiene RLS policy
+  // SELECT todavía y Supabase la bloquea silenciosamente. El nombre del gym se
+  // carga por separado usando la anon key (tabla pública de referencia).
   async function fetchPerfil(authUserId: string): Promise<Usuario | null> {
     const { data, error } = await supabase
       .from("usuarios")
       .select(`
         id_usuario, email, nombre, telefono, documento, genero,
         id_gimnasio, rol, estado,
-        gimnasios ( nombre ),
         membresias (
           id_membresia, estado, fecha_inicio, fecha_vencimiento,
           planes ( nombre )
         )
       `)
       .eq("id_usuario", authUserId)
-      .eq("estado", "activo")           // Usuarios suspendidos/inactivos no acceden
+      .eq("estado", "activo")
       .single()
 
     if (error || !data) return null
+
+    // Nombre del gimnasio en query separada (evita el bloqueo RLS del join)
+    let nombreGimnasio: string | undefined
+    const { data: gym } = await supabase
+      .from("gimnasios")
+      .select("nombre")
+      .eq("id_gimnasio", data.id_gimnasio)
+      .single()
+    if (gym) nombreGimnasio = gym.nombre
 
     // Membresía activa más reciente
     const mem = Array.isArray(data.membresias)
@@ -97,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       documento:       data.documento ?? undefined,
       genero:          data.genero   ?? undefined,
       id_gimnasio:     data.id_gimnasio,
-      nombre_gimnasio: (data.gimnasios as { nombre: string } | null)?.nombre,
+      nombre_gimnasio: nombreGimnasio,
       rol:             data.rol,
       estado:          data.estado,
       membresia: mem ? {
