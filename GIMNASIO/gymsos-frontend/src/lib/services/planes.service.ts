@@ -39,22 +39,39 @@ export async function getPlanesPorGimnasio(gymId: string): Promise<Plan[]> {
 }
 
 export async function getPlanesConConteo(gymId: string): Promise<Plan[]> {
-  const planes = await getPlanesPorGimnasio(gymId)
-
-  const { data: membresiaData, error } = await supabase
-    .from("membresias")
-    .select("id_plan")
-    .in("id_plan", planes.map((p) => p.id_plan))
-    .eq("estado", "activa")
+  // Single query: planes + conteo de membresias activas en JOIN lateral
+  const { data, error } = await supabase
+    .from("planes")
+    .select(
+      `
+      id_plan, id_gimnasio, nombre, precio_mensual, precio_trimestral,
+      precio_anual, duracion_dias, clases_incluidas, horarios_acceso,
+      sucursales_incluidas, descripcion, activo, created_at,
+      membresias!left ( id_membresia )
+    `,
+    )
+    .eq("id_gimnasio", gymId)
+    .eq("activo", true)
+    .eq("membresias.estado", "activa")
+    .order("precio_mensual", { ascending: true })
 
   if (error) handleSupabaseError(error)
 
-  const conteo: Record<string, number> = {}
-  for (const m of membresiaData ?? []) {
-    conteo[m.id_plan] = (conteo[m.id_plan] ?? 0) + 1
-  }
-
-  return planes.map((p) => ({ ...p, total_miembros: conteo[p.id_plan] ?? 0 }))
+  return (data ?? []).map((p) => ({
+    id_plan:              p.id_plan,
+    id_gimnasio:          p.id_gimnasio,
+    nombre:               p.nombre,
+    precio_mensual:       p.precio_mensual,
+    precio_trimestral:    p.precio_trimestral,
+    precio_anual:         p.precio_anual,
+    duracion_dias:        p.duracion_dias,
+    clases_incluidas:     p.clases_incluidas,
+    horarios_acceso:      p.horarios_acceso,
+    sucursales_incluidas: p.sucursales_incluidas as Plan["sucursales_incluidas"],
+    descripcion:          p.descripcion,
+    activo:               p.activo,
+    total_miembros:       Array.isArray(p.membresias) ? p.membresias.length : 0,
+  }))
 }
 
 export async function crearPlan(plan: Omit<Plan, "id_plan" | "total_miembros">): Promise<string> {

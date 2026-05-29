@@ -1,4 +1,4 @@
-﻿export type Rol = "miembro" | "cliente" | "entrenador" | "recepcionista" | "gerente" | "nutricionista"
+﻿export type { Rol } from "./roles"
 export type EstadoUsuario = "activo" | "inactivo" | "suspendido"
 
 export interface Usuario {
@@ -21,14 +21,7 @@ export interface Usuario {
   }
 }
 
-export const ROL_ROUTES: Record<Rol, string> = {
-  gerente: "/dashboard/gerente",
-  miembro: "/dashboard/miembro",
-  cliente: "/dashboard/cliente",
-  entrenador: "/dashboard/entrenador",
-  recepcionista: "/dashboard/recepcionista",
-  nutricionista: "/dashboard/nutricionista",
-}
+export { ROL_ROUTES } from "./roles"
 
 export const ROL_LABELS: Record<Rol, string> = {
   gerente: "Gerente",

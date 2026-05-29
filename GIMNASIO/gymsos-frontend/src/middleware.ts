@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { ROUTE_ALLOWED_ROLES, ROL_ROUTES, isValidRol } from "@/lib/roles"
 
 // Rutas públicas — no requieren autenticación
 const PUBLIC_PATHS = ["/login", "/api/health"]
-
-// Mapa de prefijos de ruta → roles permitidos
-// Aplicado ANTES de que React se ejecute en el cliente
-const ROLE_ROUTE_MAP: Record<string, string[]> = {
-  "/dashboard/gerente":       ["gerente", "admin"],
-  "/dashboard/recepcionista": ["recepcionista", "admin"],
-  "/dashboard/entrenador":    ["entrenador", "admin"],
-  "/dashboard/nutricionista": ["nutricionista", "admin"],
-  "/dashboard/miembro":       ["miembro", "admin"],
-  "/dashboard/cliente":       ["cliente", "admin"],
-}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -44,17 +34,17 @@ export function middleware(request: NextRequest) {
 
   // Verificar que el rol tenga permiso para la ruta solicitada
   if (rolCookie && pathname.startsWith("/dashboard")) {
-    const matchedPrefix = Object.keys(ROLE_ROUTE_MAP).find((prefix) =>
+    const matchedPrefix = Object.keys(ROUTE_ALLOWED_ROLES).find((prefix) =>
       pathname.startsWith(prefix)
     )
 
     if (matchedPrefix) {
-      const allowedRoles = ROLE_ROUTE_MAP[matchedPrefix]
-      if (!allowedRoles.includes(rolCookie)) {
+      const allowedRoles = ROUTE_ALLOWED_ROLES[matchedPrefix]
+      if (!allowedRoles.includes(rolCookie as never)) {
         // Redirigir al dashboard propio del rol (evita 403 confuso)
-        const ownDashboard = `/dashboard/${rolCookie}`
+        const validRol = isValidRol(rolCookie) ? rolCookie : "miembro"
         const redirectUrl = request.nextUrl.clone()
-        redirectUrl.pathname = ownDashboard
+        redirectUrl.pathname = ROL_ROUTES[validRol]
         return NextResponse.redirect(redirectUrl)
       }
     }
@@ -63,7 +53,8 @@ export function middleware(request: NextRequest) {
   // Raíz → login (o dashboard si tiene sesión)
   if (pathname === "/") {
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = rolCookie ? `/dashboard/${rolCookie}` : "/login"
+    const validRol = isValidRol(rolCookie) ? rolCookie : null
+    redirectUrl.pathname = validRol ? ROL_ROUTES[validRol] : "/login"
     return NextResponse.redirect(redirectUrl)
   }
 

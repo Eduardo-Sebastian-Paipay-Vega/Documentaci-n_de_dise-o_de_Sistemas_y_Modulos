@@ -15,7 +15,7 @@ export const supabase = createClient(
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
 
-export type DbRol = "miembro" | "cliente" | "entrenador" | "recepcionista" | "gerente" | "nutricionista"
+export type { Rol as DbRol } from "./roles"
 export type DbEstado = "activo" | "inactivo" | "suspendido"
 
 export interface DbUsuario {

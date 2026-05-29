@@ -27,7 +27,7 @@ interface NavItem {
 const NAV_BY_ROL: Record<Rol, NavItem[]> = {
   gerente: [
     { href: "/dashboard/gerente",               icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/dashboard/gerente/miembros",      icon: Users,           label: "Miembros",    badge: "1,247" },
+    { href: "/dashboard/gerente/miembros",      icon: Users,           label: "Miembros" },
     { href: "/dashboard/gerente/reportes",      icon: BarChart3,       label: "Reportes" },
     { href: "/dashboard/gerente/clases",        icon: CalendarDays,    label: "Clases" },
     { href: "/dashboard/gerente/promociones",   icon: Tag,             label: "Promociones" },
@@ -36,22 +36,22 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
   miembro: [
     { href: "/dashboard/miembro",               icon: Home,            label: "Inicio" },
     { href: "/dashboard/miembro/membresia",     icon: CreditCard,      label: "Mi Membresía" },
-    { href: "/dashboard/miembro/clases",        icon: CalendarDays,    label: "Clases",       badge: "3" },
+    { href: "/dashboard/miembro/clases",        icon: CalendarDays,    label: "Clases" },
     { href: "/dashboard/miembro/qr",            icon: QrCode,          label: "Acceso QR" },
     { href: "/dashboard/miembro/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
     { href: "/dashboard/miembro/soporte",       icon: MessageCircle,   label: "Soporte" },
   ],
   cliente: [
     { href: "/dashboard/cliente",               icon: Home,            label: "Inicio" },
-    { href: "/dashboard/cliente/membresia",     icon: CreditCard,      label: "Mi Membresia" },
-    { href: "/dashboard/cliente/clases",        icon: CalendarDays,    label: "Clases",       badge: "3" },
+    { href: "/dashboard/cliente/membresia",     icon: CreditCard,      label: "Mi Membresía" },
+    { href: "/dashboard/cliente/clases",        icon: CalendarDays,    label: "Clases" },
     { href: "/dashboard/cliente/qr",            icon: QrCode,          label: "Acceso QR" },
     { href: "/dashboard/cliente/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
     { href: "/dashboard/cliente/soporte",       icon: MessageCircle,   label: "Soporte" },
   ],
   entrenador: [
     { href: "/dashboard/entrenador",            icon: Dumbbell,        label: "Dashboard" },
-    { href: "/dashboard/entrenador/clases",     icon: CalendarDays,    label: "Mis Clases",   badge: "6" },
+    { href: "/dashboard/entrenador/clases",     icon: CalendarDays,    label: "Mis Clases" },
     { href: "/dashboard/entrenador/clientes",   icon: Users,           label: "Mis Clientes" },
     { href: "/dashboard/entrenador/asistencia", icon: ClipboardCheck,  label: "Asistencia" },
     { href: "/dashboard/entrenador/evaluaciones",icon: ClipboardList,  label: "Evaluaciones" },
@@ -61,7 +61,7 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { href: "/dashboard/recepcionista/registro",     icon: UserPlus,        label: "Registrar" },
     { href: "/dashboard/recepcionista/pagos",        icon: Banknote,        label: "Pagos" },
     { href: "/dashboard/recepcionista/acceso",       icon: DoorOpen,        label: "Control Acceso", badge: "Live" },
-    { href: "/dashboard/recepcionista/soporte",      icon: Headphones,      label: "Soporte",         badge: "2" },
+    { href: "/dashboard/recepcionista/soporte",      icon: Headphones,      label: "Soporte" },
   ],
   nutricionista: [
     { href: "/dashboard/nutricionista",                      icon: LayoutDashboard,  label: "Dashboard" },
