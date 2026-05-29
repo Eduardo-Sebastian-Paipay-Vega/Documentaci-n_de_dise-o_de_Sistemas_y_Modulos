@@ -77,6 +77,8 @@ CREATE POLICY "asistencias_update_staff" ON asistencias
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- SECCIÓN C: TABLA USUARIOS — escritura
+-- (SELECT policies ya aplicadas en 001: entrenador_select_gym_users,
+--  nutricionista_select_miembros, gerente_select_gym_users, etc.)
 -- ─────────────────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "usuarios_insert_staff"  ON usuarios;
