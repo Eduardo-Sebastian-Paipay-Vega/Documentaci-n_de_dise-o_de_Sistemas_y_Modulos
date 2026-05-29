@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   genero              VARCHAR(10)   CHECK (genero IN ('M','F','Otro')),
   id_gimnasio         UUID          NOT NULL REFERENCES gimnasios(id_gimnasio),
   rol                 VARCHAR(20)   NOT NULL DEFAULT 'miembro'
-                        CHECK (rol IN ('miembro','entrenador','recepcionista','gerente','admin')),
+                        CHECK (rol IN ('miembro','cliente','entrenador','recepcionista','gerente','nutricionista','admin')),
   estado              VARCHAR(20)   NOT NULL DEFAULT 'activo'
                         CHECK (estado IN ('activo','inactivo','suspendido')),
   created_at          TIMESTAMPTZ   NOT NULL DEFAULT NOW(),

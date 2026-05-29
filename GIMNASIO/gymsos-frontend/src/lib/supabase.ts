@@ -15,7 +15,7 @@ export const supabase = createClient(
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
 
-export type DbRol = "miembro" | "entrenador" | "recepcionista" | "gerente"
+export type DbRol = "miembro" | "cliente" | "entrenador" | "recepcionista" | "gerente" | "nutricionista"
 export type DbEstado = "activo" | "inactivo" | "suspendido"
 
 export interface DbUsuario {
@@ -104,7 +104,7 @@ export interface DbPago {
   id_membresia: string
   monto: number
   moneda: string
-  metodo_pago: "tarjeta" | "transferencia" | "efectivo"
+  metodo_pago: "tarjeta" | "transferencia" | "efectivo" | "yape" | "plin"
   id_transaccion_stripe: string | null
   estado: "pendiente" | "completado" | "fallido" | "reembolsado"
   fecha_pago: string
