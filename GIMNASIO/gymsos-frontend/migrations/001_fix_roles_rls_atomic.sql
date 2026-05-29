@@ -67,13 +67,13 @@ CREATE OR REPLACE FUNCTION rpc_registrar_nuevo_miembro(
   p_auth_user_id    UUID,
   p_email           TEXT,
   p_nombre          TEXT,
+  p_id_gimnasio     UUID,
+  p_id_plan         UUID,
+  p_monto           DECIMAL,
   p_telefono        TEXT     DEFAULT NULL,
   p_documento       TEXT     DEFAULT NULL,
   p_genero          TEXT     DEFAULT NULL,
-  p_id_gimnasio     UUID,
-  p_id_plan         UUID,
   p_duracion_dias   INT      DEFAULT 30,
-  p_monto           DECIMAL,
   p_metodo_pago     TEXT     DEFAULT 'efectivo'
 )
 RETURNS JSON
