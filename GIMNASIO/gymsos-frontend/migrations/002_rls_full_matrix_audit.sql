@@ -220,7 +220,11 @@ CREATE POLICY "churn_insert_admin" ON churn_predictions
 -- SECCIÓN I: TABLA AUDIT_LOGS — observabilidad inmutable
 -- ─────────────────────────────────────────────────────────────────────────────
 
-CREATE TABLE IF NOT EXISTS audit_logs (
+-- DROP y recreación: audit_logs puede estar incompleta de ejecuciones parciales
+-- anteriores. Es una tabla nueva sin datos de producción → DROP CASCADE es seguro.
+DROP TABLE IF EXISTS audit_logs CASCADE;
+
+CREATE TABLE audit_logs (
   id_log        UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
   id_gimnasio   UUID        REFERENCES gimnasios(id_gimnasio),
   id_actor      UUID        REFERENCES auth.users(id),
@@ -232,9 +236,6 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   datos_despues JSONB,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
--- Si la tabla ya existía de una ejecución parcial anterior, asegurar columna
-ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS id_gimnasio UUID REFERENCES gimnasios(id_gimnasio);
 
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
