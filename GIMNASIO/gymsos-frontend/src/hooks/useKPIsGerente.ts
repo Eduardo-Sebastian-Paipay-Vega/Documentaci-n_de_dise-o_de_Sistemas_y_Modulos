@@ -21,6 +21,10 @@ const DEMO_KPIS: KPIsGerente = {
   churnDelta:      -0.5,
   ingresosDelta:   8.3,
   miembrosDelta:   12,
+  tasaRetencion:   87.4,
+  ltv:             31.0,
+  ocupacionPromedio: 73,
+  horaPico:        "07:00 - 08:00",
 }
 
 const DEMO_CHURN: ChurnAtRisk[] = [
