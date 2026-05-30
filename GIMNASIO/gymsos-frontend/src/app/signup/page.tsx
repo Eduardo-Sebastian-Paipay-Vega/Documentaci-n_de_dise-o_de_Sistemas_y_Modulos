@@ -61,19 +61,26 @@ export default function SignupPage() {
     setCodeError("")
     setGym(null)
 
-    const { data, error: err } = await supabase
-      .from("gimnasios")
-      .select("id_gimnasio, nombre, ciudad")
-      .eq("codigo_acceso", code)
-      .eq("estado", "activo")
+    // Buscar en gym.codigos_acceso (tabla separada — migración 008)
+    const { data: codeRow, error: err } = await supabase
+      .from("codigos_acceso")
+      .select("id_gimnasio, gimnasios(nombre, ciudad, estado)")
+      .eq("codigo", code)
+      .eq("activo", true)
       .single()
 
     setCheckingCode(false)
 
-    if (err || !data) {
+    const gymData = codeRow?.gimnasios as { nombre: string; ciudad: string; estado: string } | undefined
+
+    if (err || !codeRow || gymData?.estado !== "activo") {
       setCodeError("Código inválido. Solicita el código a tu gimnasio.")
     } else {
-      setGym(data)
+      setGym({
+        id_gimnasio: codeRow.id_gimnasio,
+        nombre:      gymData?.nombre ?? "",
+        ciudad:      gymData?.ciudad ?? null,
+      })
     }
   }
 
