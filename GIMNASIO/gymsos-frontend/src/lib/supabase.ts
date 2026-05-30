@@ -7,7 +7,9 @@ if (!supabaseUrl || !supabaseAnon) {
   throw new Error("Supabase no configurado. Agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local")
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnon)
+export const supabase = createClient(supabaseUrl, supabaseAnon, {
+  db: { schema: "gym" },
+})
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
 
