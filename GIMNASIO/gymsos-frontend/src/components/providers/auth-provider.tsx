@@ -4,11 +4,51 @@ import {
   createContext, useContext, useState, useEffect, useCallback, type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
-import { type Usuario, saveSession, getSession, clearSession, ROL_ROUTES } from "@/lib/auth"
-import { supabase } from "@/lib/supabase"
+import { supabase, supabasePublic } from "@/lib/supabase"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Arquitectura BD Maestra:
+//   public.tenants   → el gimnasio como tenant
+//   public.profiles  → el usuario autenticado
+//   public.sedes     → sucursales del gimnasio
+//   gym.*            → dominio GYMsos
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Rol =
+  | "gerente" | "recepcionista" | "entrenador"
+  | "nutricionista" | "miembro" | "cliente" | "admin"
+
+export interface GymProfile {
+  // De public.profiles
+  id:              string
+  tenant_id:       string | null
+  full_name:       string | null
+  tipo_documento:  string | null
+  numero_documento: string | null
+  genero:          string | null
+  foto_url:        string | null
+  cargo:           string | null
+  // De auth.users
+  email:           string
+  // De public.tenants (join)
+  tenant_name?:    string
+  tenant_plan?:    string
+  // Rol en este tenant (de public.user_roles_sedes o metadata de auth)
+  rol:             Rol
+}
+
+const ROL_ROUTES: Record<Rol, string> = {
+  gerente:       "/dashboard/gerente",
+  recepcionista: "/dashboard/recepcionista",
+  entrenador:    "/dashboard/entrenador",
+  nutricionista: "/dashboard/nutricionista",
+  miembro:       "/dashboard/miembro",
+  cliente:       "/dashboard/cliente",
+  admin:         "/dashboard/gerente",
+}
 
 interface AuthContextValue {
-  user:    Usuario | null
+  user:    GymProfile | null
   loading: boolean
   login:   (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   logout:  () => void
@@ -16,25 +56,86 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function fetchProfile(authUserId: string, email: string): Promise<GymProfile | null> {
+  // 1. Obtener profile de public.profiles
+  const { data: profile, error } = await supabasePublic
+    .from("profiles")
+    .select("id, tenant_id, full_name, tipo_documento, numero_documento, genero, foto_url, cargo")
+    .eq("id", authUserId)
+    .single()
+
+  if (error || !profile) return null
+
+  // 2. Obtener tenant si existe
+  let tenant_name: string | undefined
+  let tenant_plan: string | undefined
+  if (profile.tenant_id) {
+    const { data: tenant } = await supabasePublic
+      .from("tenants")
+      .select("name, plan_id")
+      .eq("id", profile.tenant_id)
+      .single()
+    tenant_name = tenant?.name
+    tenant_plan = tenant?.plan_id
+  }
+
+  // 3. Determinar rol (desde user_roles_sedes o metadata de auth)
+  let rol: Rol = "miembro"
+  if (profile.tenant_id) {
+    const { data: roles } = await supabasePublic
+      .from("user_roles_sedes")
+      .select("roles(name)")
+      .eq("user_id", authUserId)
+      .eq("tenant_id", profile.tenant_id)
+      .limit(1)
+
+    const roleName = (roles?.[0]?.roles as { name?: string } | null)?.name
+    if (roleName && isValidRol(roleName)) rol = roleName as Rol
+  }
+
+  return {
+    id:               profile.id,
+    tenant_id:        profile.tenant_id,
+    full_name:        profile.full_name,
+    tipo_documento:   profile.tipo_documento,
+    numero_documento: profile.numero_documento,
+    genero:           profile.genero,
+    foto_url:         profile.foto_url,
+    cargo:            profile.cargo,
+    email,
+    tenant_name,
+    tenant_plan,
+    rol,
+  }
+}
+
+function isValidRol(value: string): boolean {
+  return ["gerente","recepcionista","entrenador","nutricionista","miembro","cliente","admin"].includes(value)
+}
+
+// ── Provider ──────────────────────────────────────────────────────────────────
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<Usuario | null>(null)
+  const [user, setUser]       = useState<GymProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const router                = useRouter()
 
-  // Cargar sesión al iniciar desde Supabase Auth
   useEffect(() => {
+    // Cargar sesión existente
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session?.user) {
-        const perfil = await fetchPerfil(data.session.user.id)
-        setUser(perfil)
+        const profile = await fetchProfile(data.session.user.id, data.session.user.email ?? "")
+        setUser(profile)
       }
       setLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const perfil = await fetchPerfil(session.user.id)
-        setUser(perfil)
+        const profile = await fetchProfile(session.user.id, session.user.email ?? "")
+        setUser(profile)
       } else {
         setUser(null)
       }
@@ -42,62 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => listener.subscription.unsubscribe()
   }, [])
-
-  async function fetchPerfil(authUserId: string): Promise<Usuario | null> {
-    const { data, error } = await supabase
-      .from("usuarios")
-      .select(`
-        id_usuario, email, nombre, telefono, documento, genero,
-        id_gimnasio, rol, estado,
-        membresias (
-          id_membresia, estado, fecha_inicio, fecha_vencimiento,
-          planes ( nombre )
-        )
-      `)
-      .eq("id_usuario", authUserId)
-      .eq("estado", "activo")
-      .single()
-
-    if (error || !data) return null
-
-    const { data: gym } = await supabase
-      .from("gimnasios")
-      .select("nombre")
-      .eq("id_gimnasio", data.id_gimnasio)
-      .single()
-
-    const mem = Array.isArray(data.membresias)
-      ? data.membresias.find((m: { estado: string }) => m.estado === "activa")
-      : null
-
-    const planNombre = (() => {
-      if (!mem) return undefined
-      const planes = (mem as unknown as { planes?: unknown }).planes
-      if (!planes) return undefined
-      if (Array.isArray(planes)) return (planes[0] as { nombre?: string } | undefined)?.nombre
-      return (planes as { nombre?: string }).nombre
-    })()
-
-    return {
-      id_usuario:      data.id_usuario,
-      email:           data.email,
-      nombre:          data.nombre,
-      telefono:        data.telefono ?? undefined,
-      documento:       data.documento ?? undefined,
-      genero:          data.genero   ?? undefined,
-      id_gimnasio:     data.id_gimnasio,
-      nombre_gimnasio: gym?.nombre,
-      rol:             data.rol,
-      estado:          data.estado,
-      membresia: mem ? {
-        id_membresia:      mem.id_membresia,
-        plan:              planNombre ?? "Plan",
-        fecha_inicio:      mem.fecha_inicio,
-        fecha_vencimiento: mem.fecha_vencimiento,
-        estado:            mem.estado,
-      } : undefined,
-    }
-  }
 
   const login = useCallback(
     async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
@@ -114,26 +159,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!data.user) return { ok: false, error: "Error al iniciar sesión." }
 
-      const perfil = await fetchPerfil(data.user.id)
+      const profile = await fetchProfile(data.user.id, data.user.email ?? "")
 
-      if (!perfil) {
+      if (!profile) {
         await supabase.auth.signOut()
-        return { ok: false, error: "Usuario no encontrado o cuenta suspendida." }
+        return { ok: false, error: "Perfil no encontrado. Completa tu registro." }
       }
 
-      setUser(perfil)
-      saveSession(perfil)
-      document.cookie = `gymsos_rol=${perfil.rol}; path=/; max-age=86400; SameSite=Lax`
-      router.push(ROL_ROUTES[perfil.rol])
+      if (!profile.tenant_id) {
+        // Autenticado pero sin gym asignado → ir a onboarding
+        router.push("/onboarding")
+        return { ok: true }
+      }
+
+      setUser(profile)
+      document.cookie = `gymsos_rol=${profile.rol}; path=/; max-age=86400; SameSite=Lax`
+      router.push(ROL_ROUTES[profile.rol])
       return { ok: true }
     },
     [router],
   )
 
   const logout = useCallback(async () => {
-    clearSession()
-    document.cookie = "gymsos_rol=; path=/; max-age=0"
     setUser(null)
+    document.cookie = "gymsos_rol=; path=/; max-age=0"
     await supabase.auth.signOut()
     router.push("/login")
   }, [router])
@@ -150,3 +199,5 @@ export function useAuth(): AuthContextValue {
   if (!ctx) throw new Error("useAuth debe usarse dentro de <AuthProvider>")
   return ctx
 }
+
+export { ROL_ROUTES }

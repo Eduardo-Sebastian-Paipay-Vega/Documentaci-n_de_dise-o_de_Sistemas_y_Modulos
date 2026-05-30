@@ -7,8 +7,15 @@ if (!supabaseUrl || !supabaseAnon) {
   throw new Error("Supabase no configurado. Agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local")
 }
 
+// Cliente para tablas de dominio GYMsos (gym schema)
 export const supabase = createClient(supabaseUrl, supabaseAnon, {
   db: { schema: "gym" },
+})
+
+// Cliente para infraestructura compartida BD Maestra (public schema)
+// Usar para: tenants, profiles, sedes, roles, subscriptions
+export const supabasePublic = createClient(supabaseUrl, supabaseAnon, {
+  db: { schema: "public" },
 })
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
