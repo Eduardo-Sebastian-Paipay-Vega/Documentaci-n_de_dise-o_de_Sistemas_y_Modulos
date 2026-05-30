@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 // Gemini 1.5 Flash — gratis en Google AI Studio (15 RPM, 1M TPM)
 // https://aistudio.google.com/app/apikey
+// gemini-2.5-flash via v1beta (soporta thinkingConfig para desactivar thinking)
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 export type AIRecomendacionRequest = {
   tipo: "workout" | "nutricion" | "retencion" | "churn_intervencion"
@@ -97,8 +98,8 @@ export async function POST(request: NextRequest) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature:     0.7,
-          maxOutputTokens: 256,
-          responseMimeType: "application/json",
+          maxOutputTokens: 512,
+          thinkingConfig:  { thinkingBudget: 0 },
         },
       }),
     })
@@ -111,13 +112,20 @@ export async function POST(request: NextRequest) {
     const geminiData = await geminiRes.json()
     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}"
 
+    // Extraer JSON buscando primera { y última } — funciona con o sin ```json blocks
+    const firstBrace = rawText.indexOf("{")
+    const lastBrace  = rawText.lastIndexOf("}")
+    const cleanText  = firstBrace !== -1 && lastBrace > firstBrace
+      ? rawText.slice(firstBrace, lastBrace + 1)
+      : rawText.trim()
+
     let parsed: AIRecomendacionResponse
     try {
-      parsed = JSON.parse(rawText)
+      parsed = JSON.parse(cleanText)
     } catch {
       parsed = {
-        recomendacion:   rawText.slice(0, 120),
-        accion_sugerida: "Contactar al miembro",
+        recomendacion:   cleanText.slice(0, 150).replace(/[{}"\n\r]/g, " ").trim(),
+        accion_sugerida: "Ver detalles en el perfil",
         urgencia:        "media",
         tags:            ["general"],
       }

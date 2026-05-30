@@ -11,12 +11,12 @@ import { Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react"
 
 // Acceso rápido — cuentas reales en Supabase, útil para demos y testing
 const ROL_DESC: Partial<Record<Rol, string>> = {
-  gerente:       “KPIs · Reportes · Configuración”,
-  recepcionista: “Registro · Pagos · Acceso”,
-  entrenador:    “Clases · Clientes · Evaluaciones”,
-  miembro:       “QR · Clases · Progreso”,
-  cliente:       “Portal personal de entrenamiento”,
-  nutricionista: “Planes · Evaluaciones · Recetas”,
+  gerente:       "KPIs · Reportes · Configuración",
+  recepcionista: "Registro · Pagos · Acceso",
+  entrenador:    "Clases · Clientes · Evaluaciones",
+  miembro:       "QR · Clases · Progreso",
+  cliente:       "Portal personal de entrenamiento",
+  nutricionista: "Planes · Evaluaciones · Recetas",
 }
 
 const ROL_ACCENT: Record<Rol, string> = {
@@ -77,7 +77,7 @@ export default function LoginPage() {
       className="min-h-screen flex"
       style={{ background: "var(--bg-base)" }}
     >
-      {/* â”€â”€ Left â€” branding panel â”€â”€ */}
+      {/* â"€â"€ Left â€" branding panel â"€â"€ */}
       <div className="hidden lg:flex lg:w-[52%] relative flex-col justify-between p-12 overflow-hidden">
         {/* Structural grid */}
         <div className="absolute inset-0 line-grid opacity-100 pointer-events-none" />
@@ -90,7 +90,7 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Top â€” logo */}
+        {/* Top â€" logo */}
         <div className="relative z-10 flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-md flex items-center justify-center"
@@ -103,7 +103,7 @@ export default function LoginPage() {
           </span>
         </div>
 
-        {/* Center â€” headline */}
+        {/* Center â€" headline */}
         <motion.div
           className="relative z-10 max-w-md"
           variants={staggerContainer}
@@ -137,7 +137,7 @@ export default function LoginPage() {
             style={{ color: "var(--text-tertiary)" }}
           >
             GestiÃ³n completa por roles, acceso QR, predicciÃ³n de churn,
-            gamificaciÃ³n y mÃ¡s â€” en un solo lugar.
+            gamificaciÃ³n y mÃ¡s â€" en un solo lugar.
           </motion.p>
 
           {/* Stats row */}
@@ -159,7 +159,7 @@ export default function LoginPage() {
           </motion.div>
         </motion.div>
 
-        {/* Bottom â€” version */}
+        {/* Bottom â€" version */}
         <div className="relative z-10">
           <span className="text-xs" style={{ color: "var(--text-disabled)" }}>
             GYMsos v2.0 Â· 2026
@@ -167,7 +167,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Right â€” login form â”€â”€ */}
+      {/* â"€â"€ Right â€" login form â"€â"€ */}
       <div
         className="flex-1 flex items-center justify-center px-6 py-12"
         style={{
