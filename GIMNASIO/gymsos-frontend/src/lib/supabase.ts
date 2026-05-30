@@ -3,15 +3,11 @@ import { createClient } from "@supabase/supabase-js"
 const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL  ?? ""
 const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
 
-export const isDemoMode =
-  process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
-  !supabaseUrl ||
-  supabaseUrl.includes("TU_PROYECTO")
+if (!supabaseUrl || !supabaseAnon) {
+  throw new Error("Supabase no configurado. Agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local")
+}
 
-export const supabase = createClient(
-  supabaseUrl  || "https://placeholder.supabase.co",
-  supabaseAnon || "placeholder",
-)
+export const supabase = createClient(supabaseUrl, supabaseAnon)
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
 

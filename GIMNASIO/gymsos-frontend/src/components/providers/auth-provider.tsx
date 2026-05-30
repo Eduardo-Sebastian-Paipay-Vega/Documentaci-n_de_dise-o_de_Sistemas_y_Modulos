@@ -1,23 +1,11 @@
 "use client"
 
 import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
+  createContext, useContext, useState, useEffect, useCallback, type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
-import {
-  type Usuario,
-  authenticateDemo,
-  saveSession,
-  getSession,
-  clearSession,
-  ROL_ROUTES,
-} from "@/lib/auth"
-import { supabase, isDemoMode } from "@/lib/supabase"
+import { type Usuario, saveSession, getSession, clearSession, ROL_ROUTES } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 
 interface AuthContextValue {
   user:    Usuario | null
@@ -33,17 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router                = useRouter()
 
-  // ── Cargar sesión al iniciar ─────────────────────────────────────────────────
+  // Cargar sesión al iniciar desde Supabase Auth
   useEffect(() => {
-    if (isDemoMode) {
-      // Modo demo: leer sessionStorage
-      const session = getSession()
-      setUser(session)
-      setLoading(false)
-      return
-    }
-
-    // Modo Supabase: obtener sesión activa
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session?.user) {
         const perfil = await fetchPerfil(data.session.user.id)
@@ -52,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    // Escuchar cambios de sesión (tab, refresh, etc.)
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         const perfil = await fetchPerfil(session.user.id)
@@ -65,10 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  // ── Obtener perfil completo desde tabla `usuarios` ────────────────────────────
-  // Nota: NO se hace join a `gimnasios` aquí porque esa tabla no tiene RLS policy
-  // SELECT todavía y Supabase la bloquea silenciosamente. El nombre del gym se
-  // carga por separado usando la anon key (tabla pública de referencia).
   async function fetchPerfil(authUserId: string): Promise<Usuario | null> {
     const { data, error } = await supabase
       .from("usuarios")
@@ -86,19 +60,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (error || !data) return null
 
-    // Nombre del gimnasio en query separada (evita el bloqueo RLS del join)
-    let nombreGimnasio: string | undefined
     const { data: gym } = await supabase
       .from("gimnasios")
       .select("nombre")
       .eq("id_gimnasio", data.id_gimnasio)
       .single()
-    if (gym) nombreGimnasio = gym.nombre
 
-    // Membresía activa más reciente
     const mem = Array.isArray(data.membresias)
       ? data.membresias.find((m: { estado: string }) => m.estado === "activa")
       : null
+
+    const planNombre = (() => {
+      if (!mem) return undefined
+      const planes = (mem as unknown as { planes?: unknown }).planes
+      if (!planes) return undefined
+      if (Array.isArray(planes)) return (planes[0] as { nombre?: string } | undefined)?.nombre
+      return (planes as { nombre?: string }).nombre
+    })()
 
     return {
       id_usuario:      data.id_usuario,
@@ -108,12 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       documento:       data.documento ?? undefined,
       genero:          data.genero   ?? undefined,
       id_gimnasio:     data.id_gimnasio,
-      nombre_gimnasio: nombreGimnasio,
+      nombre_gimnasio: gym?.nombre,
       rol:             data.rol,
       estado:          data.estado,
       membresia: mem ? {
         id_membresia:      mem.id_membresia,
-        plan:              (mem.planes as { nombre: string } | null)?.nombre ?? "Plan",
+        plan:              planNombre ?? "Plan",
         fecha_inicio:      mem.fecha_inicio,
         fecha_vencimiento: mem.fecha_vencimiento,
         estado:            mem.estado,
@@ -121,24 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // ── Login ─────────────────────────────────────────────────────────────────────
   const login = useCallback(
     async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
-
-      // ── Modo demo (sin Supabase configurado) ──────────────────────────────────
-      if (isDemoMode) {
-        const found = authenticateDemo(email, password)
-        if (!found) {
-          return { ok: false, error: "Credenciales incorrectas. Verifica tu email y contraseña." }
-        }
-        setUser(found)
-        saveSession(found)
-        document.cookie = `gymsos_rol=${found.rol}; path=/; max-age=86400; SameSite=Lax`
-        router.push(ROL_ROUTES[found.rol])
-        return { ok: true }
-      }
-
-      // ── Modo Supabase ─────────────────────────────────────────────────────────
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
@@ -156,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!perfil) {
         await supabase.auth.signOut()
-        return { ok: false, error: "Usuario no encontrado o cuenta suspendida. Contacta al administrador." }
+        return { ok: false, error: "Usuario no encontrado o cuenta suspendida." }
       }
 
       setUser(perfil)
@@ -168,12 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [router],
   )
 
-  // ── Logout ────────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     clearSession()
     document.cookie = "gymsos_rol=; path=/; max-age=0"
     setUser(null)
-    if (!isDemoMode) await supabase.auth.signOut()
+    await supabase.auth.signOut()
     router.push("/login")
   }, [router])
 

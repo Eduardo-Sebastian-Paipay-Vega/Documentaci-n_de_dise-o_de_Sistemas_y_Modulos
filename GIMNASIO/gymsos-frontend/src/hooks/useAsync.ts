@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { isDemoMode } from "@/lib/supabase"
 
 export type AsyncState<T> = {
   data: T | null
@@ -35,17 +34,12 @@ export function useAsync<T>(
 
     try {
       const result = await asyncFn()
-      if (mountedRef.current) {
-        setData(result)
-      }
+      if (mountedRef.current) setData(result)
     } catch (e) {
-      if (mountedRef.current) {
+      if (mountedRef.current)
         setError(e instanceof Error ? e.message : "Error desconocido")
-      }
     } finally {
-      if (mountedRef.current) {
-        setLoading(false)
-      }
+      if (mountedRef.current) setLoading(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
@@ -55,21 +49,12 @@ export function useAsync<T>(
   return { data, loading, error, refetch: execute }
 }
 
+// Alias mantenido por compatibilidad con hooks existentes.
+// El segundo argumento (demoData) ya no se usa — Supabase es siempre la fuente real.
 export function useAsyncWithDemoFallback<T>(
   asyncFn: (() => Promise<T>) | null,
-  demoData: T,
+  _demoData: T,
   deps: unknown[] = [],
 ): AsyncState<T> {
-  const result = useAsync<T>(isDemoMode ? null : asyncFn, deps)
-
-  if (isDemoMode) {
-    return {
-      data:    demoData,
-      loading: false,
-      error:   null,
-      refetch: () => {},
-    }
-  }
-
-  return result
+  return useAsync<T>(asyncFn, deps)
 }

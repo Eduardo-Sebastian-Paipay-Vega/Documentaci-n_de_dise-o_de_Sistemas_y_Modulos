@@ -5,22 +5,20 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/providers/auth-provider"
 import { cn } from "@/lib/utils"
-import { type Rol, ROL_ROUTES } from "@/lib/auth"
+import { type Rol, ROL_ROUTES, USUARIOS_DEMO_CREDS, ROL_LABELS } from "@/lib/auth"
 import { fadeIn, staggerContainer, easings } from "@/lib/motion"
 import { Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react"
 
-const DEMO_CREDS: Record<Rol, { email: string; password: string; label: string; desc: string }> = {
-  gerente:       { email: "gerente@gymsos.io",    password: "gerente123",    label: "Gerente",       desc: "KPIs Â· Reportes Â· ConfiguraciÃ³n" },
-  recepcionista: { email: "recepcion@gymsos.io",  password: "recepcion123",  label: "Recepcionista", desc: "Registro Â· Pagos Â· Acceso" },
-  entrenador:    { email: "entrenador@gymsos.io", password: "entrenador123", label: "Entrenador",    desc: "Clases Â· Clientes Â· Evaluaciones" },
-  miembro:       { email: "miembro@gymsos.io",    password: "miembro123",    label: "Miembro",       desc: "QR · Clases · Progreso" },
-  cliente:       { email: "cliente@gymsos.io",    password: "cliente123",    label: "Cliente",       desc: "Portal personal de entrenamiento" },
-  nutricionista: { email: "nutricion@gymsos.io",  password: "nutricion123",  label: "Nutricionista", desc: "Planes · Evaluaciones · Recetas" },
+// Acceso rápido — cuentas reales en Supabase, útil para demos y testing
+const ROL_DESC: Partial<Record<Rol, string>> = {
+  gerente:       “KPIs · Reportes · Configuración”,
+  recepcionista: “Registro · Pagos · Acceso”,
+  entrenador:    “Clases · Clientes · Evaluaciones”,
+  miembro:       “QR · Clases · Progreso”,
+  cliente:       “Portal personal de entrenamiento”,
+  nutricionista: “Planes · Evaluaciones · Recetas”,
 }
 
-const ROLES: Rol[] = ["gerente", "recepcionista", "entrenador", "nutricionista", "miembro", "cliente"]
-
-// Role accent colors â€” subtle, not aggressive
 const ROL_ACCENT: Record<Rol, string> = {
   gerente:       "var(--accent)",
   recepcionista: "#3B82F6",
@@ -47,7 +45,8 @@ export default function LoginPage() {
   }, [user, loading, router])
 
   function selectRole(rol: Rol) {
-    const c = DEMO_CREDS[rol]
+    const c = USUARIOS_DEMO_CREDS.find((u) => u.rol === rol)
+    if (!c) return
     setEmail(c.email)
     setPassword(c.password)
     setActiveRole(rol)
@@ -209,10 +208,10 @@ export default function LoginPage() {
           {/* Role selector */}
           <div className="mb-6">
             <p className="text-[11px] font-medium uppercase tracking-wider mb-2.5" style={{ color: "var(--text-tertiary)" }}>
-              Acceso demo
+              Acceso rápido
             </p>
             <div className="grid grid-cols-2 gap-1.5">
-              {ROLES.map((rol) => {
+              {USUARIOS_DEMO_CREDS.map(({ rol }) => {
                 const isActive = activeRole === rol
                 const accent   = ROL_ACCENT[rol]
                 return (
@@ -234,14 +233,12 @@ export default function LoginPage() {
                       if (!isActive) e.currentTarget.style.borderColor = "var(--border-subtle)"
                     }}
                   >
-                    <span className="text-xs font-semibold">
-                      {DEMO_CREDS[rol].label}
-                    </span>
+                    <span className="text-xs font-semibold">{ROL_LABELS[rol]}</span>
                     <span
                       className="text-[10px] mt-0.5 leading-snug"
-                      style={{ color: isActive ? `${accent}` : "var(--text-disabled)" }}
+                      style={{ color: isActive ? accent : "var(--text-disabled)" }}
                     >
-                      {DEMO_CREDS[rol].desc}
+                      {ROL_DESC[rol]}
                     </span>
                   </motion.button>
                 )
