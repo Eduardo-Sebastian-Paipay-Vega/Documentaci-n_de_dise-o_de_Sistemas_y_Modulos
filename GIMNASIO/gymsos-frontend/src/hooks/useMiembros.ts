@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useAsyncWithDemoFallback } from "./useAsync"
 import {
   getUsuariosPorGimnasio,
@@ -55,13 +55,18 @@ const DEMO_PAGOS_HOY: PagoDetalle[] = [
 ]
 
 export function usePagosHoy(gymId: string | undefined) {
-  const hoy  = new Date()
-  hoy.setHours(0, 0, 0, 0)
-  const desde = hoy.toISOString()
+  // useMemo: computa 'desde' UNA sola vez al montar el componente.
+  // new Date() en el cuerpo del hook crea una nueva string en CADA render,
+  // lo que antes causaba re-ejecuciones infinitas de la query.
+  const desde = useMemo(() => {
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    return hoy.toISOString()
+  }, [])
 
   return useAsyncWithDemoFallback(
     gymId ? () => getPagosPorGimnasio(gymId, { desde, limit: 50 }) : null,
     DEMO_PAGOS_HOY,
-    [gymId],
+    [gymId, desde],
   )
 }

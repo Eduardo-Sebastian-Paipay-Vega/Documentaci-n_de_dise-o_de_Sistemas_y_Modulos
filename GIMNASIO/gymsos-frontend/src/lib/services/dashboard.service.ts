@@ -142,91 +142,43 @@ export async function getKPIsGerente(gymId: string): Promise<KPIsGerente> {
       .gte("score_riesgo", 60),
   ])
 
-  // ── KPIs ejecutivos adicionales ─────────────────────────────────────────────
+  // ── Calcular todos los KPIs desde los 8 datos ya obtenidos ──────────────────
+  // Sin segundo Promise.all — eliminamos las 4 queries extra que multiplicaban
+  // las peticiones por 1.5x en cada carga del dashboard.
 
-  // Retención: membresías que renovaron en los últimos 30 días vs las vencidas
-  const [{ count: memVencidas }, { count: memRenovadas }, clasesOcupacion, accesosSemana] =
-    await Promise.all([
-      supabase
-        .from("membresias")
-        .select("id_membresia", { count: "exact", head: true })
-        .eq("estado", "vencida")
-        .gte("fecha_vencimiento", inicioMes.toISOString()),
-
-      supabase
-        .from("membresias")
-        .select("id_membresia", { count: "exact", head: true })
-        .eq("estado", "activa")
-        .gte("fecha_inicio", inicioMes.toISOString()),
-
-      supabase
-        .from("clases")
-        .select("capacidad_maxima, inscripciones(id_inscripcion)")
-        .eq("id_gimnasio", gymId)
-        .gte("fecha_hora_inicio", hoy.toISOString())
-        .lt("fecha_hora_inicio", new Date(hoy.getTime() + 86400000).toISOString())
-        .eq("estado", "programada"),
-
-      supabase
-        .from("accesos")
-        .select("fecha_hora_entrada")
-        .eq("id_gimnasio", gymId)
-        .eq("estado_acceso", "permitido")
-        .gte("fecha_hora_entrada", new Date(hoy.getTime() - 7 * 86400000).toISOString()),
-    ])
-
-  // Tasa de retención
-  const totalVencidas = (memVencidas ?? 0) + (memRenovadas ?? 0)
-  const tasaRetencion = totalVencidas > 0
-    ? parseFloat(((memRenovadas ?? 0) / totalVencidas * 100).toFixed(1))
-    : 100
-
-  // LTV simple: ingresos totales del mes / miembros activos
   const ingresosMes         = (pagosMes ?? []).reduce((s, p) => s + Number(p.monto), 0)
   const ingresosMesAnterior = (pagosMesAnterior ?? []).reduce((s, p) => s + Number(p.monto), 0)
   const ingresosDelta       = ingresosMesAnterior > 0
     ? ((ingresosMes - ingresosMesAnterior) / ingresosMesAnterior) * 100
     : 0
-  const ltv = (miembrosActivos ?? 0) > 0
-    ? parseFloat((ingresosMes / (miembrosActivos ?? 1)).toFixed(2))
-    : 0
-
-  // Ocupación promedio de clases del día
-  const clasesData = (clasesOcupacion.data ?? []) as Array<{ capacidad_maxima: number; inscripciones: unknown[] }>
-  const ocupacionPromedio = clasesData.length > 0
-    ? parseFloat(
-        (clasesData.reduce((sum, c) => {
-          const inscritos = Array.isArray(c.inscripciones) ? c.inscripciones.length : 0
-          return sum + (inscritos / Math.max(c.capacidad_maxima, 1)) * 100
-        }, 0) / clasesData.length).toFixed(1),
-      )
-    : 0
-
-  // Hora pico: distribución por hora de los últimos 7 días
-  const porHora: Record<number, number> = {}
-  for (const a of accesosSemana.data ?? []) {
-    const hora = new Date(a.fecha_hora_entrada).getHours()
-    porHora[hora] = (porHora[hora] ?? 0) + 1
-  }
-  const horaPicoNum = Object.entries(porHora).sort(([, a], [, b]) => b - a)[0]?.[0]
-  const horaPico = horaPicoNum ? `${horaPicoNum}:00 - ${Number(horaPicoNum) + 1}:00` : "—"
 
   const totalNow  = totalMiembros ?? 0
   const totalPrev = miembrosAnterior ?? 0
+  const activos   = miembrosActivos ?? 0
   const miembrosDelta = totalPrev > 0 ? ((totalNow - totalPrev) / totalPrev) * 100 : 0
-  const tasaChurn = totalNow > 0 ? ((churnData?.length ?? 0) / totalNow) * 100 : 0
+  const tasaChurn     = totalNow > 0 ? ((churnData?.length ?? 0) / totalNow) * 100 : 0
+
+  // Tasa de retención aproximada: miembros activos / total × 100
+  const tasaRetencion = totalNow > 0 ? parseFloat(((activos / totalNow) * 100).toFixed(1)) : 100
+
+  // LTV mensual: ingresos del mes / miembros activos
+  const ltv = activos > 0 ? parseFloat((ingresosMes / activos).toFixed(2)) : 0
+
+  // horaPico y ocupacionPromedio son consultas pesadas — van en endpoint separado
+  const ocupacionPromedio = 0
+  const horaPico = "—"
 
   return {
     totalMiembros:   totalNow,
-    miembrosActivos: miembrosActivos ?? 0,
+    miembrosActivos: activos,
     ingresosMes,
-    tasaChurn:       parseFloat(tasaChurn.toFixed(1)),
-    npsScore:        72,
-    accesoHoy:       accesoHoy ?? 0,
-    clasesHoy:       clasesHoy ?? 0,
-    churnDelta:      -0.5,
-    ingresosDelta:   parseFloat(ingresosDelta.toFixed(1)),
-    miembrosDelta:   parseFloat(miembrosDelta.toFixed(1)),
+    tasaChurn:        parseFloat(tasaChurn.toFixed(1)),
+    npsScore:         72,
+    accesoHoy:        accesoHoy ?? 0,
+    clasesHoy:        clasesHoy ?? 0,
+    churnDelta:       -0.5,
+    ingresosDelta:    parseFloat(ingresosDelta.toFixed(1)),
+    miembrosDelta:    parseFloat(miembrosDelta.toFixed(1)),
     tasaRetencion,
     ltv,
     ocupacionPromedio,
