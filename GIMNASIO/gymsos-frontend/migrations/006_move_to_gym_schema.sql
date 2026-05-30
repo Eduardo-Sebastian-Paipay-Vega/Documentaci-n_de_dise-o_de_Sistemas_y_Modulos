@@ -80,7 +80,7 @@ GRANT ALL ON ALL TABLES IN SCHEMA gym TO postgres, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA gym TO authenticated;
 GRANT SELECT ON ALL TABLES IN SCHEMA gym TO anon;
 
-RAISE NOTICE '✅ 30 tablas movidas a schema gym';
+DO $$ BEGIN RAISE NOTICE '✅ 30 tablas movidas a schema gym'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 3 — Actualizar funciones helper RLS
@@ -97,7 +97,7 @@ RETURNS TEXT AS $$
   SELECT rol FROM gym.usuarios WHERE id_usuario = auth.uid()
 $$ LANGUAGE SQL SECURITY DEFINER STABLE;
 
-RAISE NOTICE '✅ get_user_gym() y get_user_rol() apuntan a gym.usuarios';
+DO $$ BEGIN RAISE NOTICE '✅ get_user_gym() y get_user_rol() apuntan a gym.usuarios'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 4 — Actualizar trigger handle_new_user
@@ -143,7 +143,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
-RAISE NOTICE '✅ handle_new_user() apunta a gym.usuarios';
+DO $$ BEGIN RAISE NOTICE '✅ handle_new_user() apunta a gym.usuarios'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 5 — VERIFICACIÓN
