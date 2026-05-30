@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useMotionValueEvent } from "framer-motion"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useLenis } from "@/components/providers/lenis-provider"
 
@@ -17,6 +18,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { scrollY } = useScroll()
   const lenis = useLenis()
+  const router = useRouter()
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setScrolled(y > 40)
@@ -71,10 +73,14 @@ export function Navbar() {
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <button className="text-sm text-neutral-400 hover:text-white transition-colors font-medium px-4 py-2">
+          <button
+            onClick={() => router.push("/login")}
+            className="text-sm text-neutral-400 hover:text-white transition-colors font-medium px-4 py-2"
+          >
             Iniciar Sesión
           </button>
           <motion.button
+            onClick={() => router.push("/signup")}
             className="px-5 py-2.5 bg-[#00D084] text-[#070D18] font-bold rounded-xl text-sm hover:bg-[#00E891] transition-colors shadow-[0_0_20px_rgba(0,208,132,0.25)]"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -120,7 +126,16 @@ export function Navbar() {
               {link.label}
             </button>
           ))}
-          <button className="mt-2 px-5 py-3 bg-[#00D084] text-[#070D18] font-bold rounded-xl text-sm w-full">
+          <button
+            onClick={() => { setMenuOpen(false); router.push("/login") }}
+            className="text-sm text-neutral-300 hover:text-white text-left transition-colors"
+          >
+            Iniciar Sesión
+          </button>
+          <button
+            onClick={() => { setMenuOpen(false); router.push("/signup") }}
+            className="mt-2 px-5 py-3 bg-[#00D084] text-[#070D18] font-bold rounded-xl text-sm w-full"
+          >
             Comenzar Gratis
           </button>
         </div>
