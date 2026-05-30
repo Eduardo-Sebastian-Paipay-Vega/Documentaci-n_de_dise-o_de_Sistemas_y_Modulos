@@ -80,12 +80,12 @@ export function Navbar() {
             Iniciar Sesión
           </button>
           <motion.button
-            onClick={() => router.push("/signup")}
+            onClick={() => router.push("/onboarding")}
             className="px-5 py-2.5 bg-[#00D084] text-[#070D18] font-bold rounded-xl text-sm hover:bg-[#00E891] transition-colors shadow-[0_0_20px_rgba(0,208,132,0.25)]"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            Comenzar Gratis
+            Registra tu Gimnasio
           </motion.button>
         </div>
 
@@ -133,10 +133,10 @@ export function Navbar() {
             Iniciar Sesión
           </button>
           <button
-            onClick={() => { setMenuOpen(false); router.push("/signup") }}
+            onClick={() => { setMenuOpen(false); router.push("/onboarding") }}
             className="mt-2 px-5 py-3 bg-[#00D084] text-[#070D18] font-bold rounded-xl text-sm w-full"
           >
-            Comenzar Gratis
+            Registra tu Gimnasio
           </button>
         </div>
       </motion.div>
