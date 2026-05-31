@@ -86,23 +86,8 @@ DO $$ BEGIN RAISE NOTICE '✅ Schema gym preparado'; END $$;
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 4 — Helper: tenant actual para RLS en gym.*
 --           Usa fn_current_tenant_id() de public si existe, sino fallback.
+-- BUG-9 FIX: definición duplicada eliminada — solo queda la versión final.
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION gym.current_tenant_id()
-RETURNS UUID
-LANGUAGE SQL
-STABLE
-SECURITY DEFINER
-AS $$
-  -- Intentar usar fn_current_tenant_id() de la BD Maestra
-  -- Si no existe, buscar desde public.profiles como fallback
-  SELECT COALESCE(
-    (SELECT public.fn_current_tenant_id()),
-    (SELECT tenant_id FROM public.profiles WHERE id = auth.uid())
-  )
-$$ ;
-
--- Versión simple sin depender de fn_current_tenant_id (por si la BD Maestra
--- no está desplegada aún y se usa GYMsos de forma autónoma)
 CREATE OR REPLACE FUNCTION gym.current_tenant_id()
 RETURNS UUID
 LANGUAGE SQL
@@ -386,25 +371,46 @@ DO $$ BEGIN RAISE NOTICE '✅ 16 tablas de dominio GYMsos creadas con FKs correc
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 6 — RLS en tablas gym (usa gym.current_tenant_id())
+-- BUG-2 FIX: CREATE POLICY IF NOT EXISTS no existe en PostgreSQL →
+--            usar DROP POLICY IF EXISTS + CREATE POLICY.
+-- BUG-8 FIX: access_codes necesita dos políticas separadas:
+--            SELECT pública (para lookup en signup) +
+--            ALL con tenant isolation (para escritura).
+--            No alterar la política de tenant isolation porque eso la destruye.
 -- ─────────────────────────────────────────────────────────────────────────────
 DO $$
 DECLARE
   t TEXT;
 BEGIN
   FOR t IN SELECT unnest(ARRAY[
-    'access_codes','planes','membresias','pagos','espacios','maquinas',
+    'planes','membresias','pagos','espacios','maquinas',
     'entrenadores','clases','inscripciones','accesos',
     'gamification_xp','gamification_levels','churn_predictions',
     'digital_twin','ai_recommendations','wearable_sync','promociones'
   ]) LOOP
     EXECUTE format('ALTER TABLE gym.%I ENABLE ROW LEVEL SECURITY', t);
+    EXECUTE format('DROP POLICY IF EXISTS "tenant_isolation" ON gym.%I', t);
     EXECUTE format(
-      'CREATE POLICY IF NOT EXISTS "tenant_isolation" ON gym.%I
+      'CREATE POLICY "tenant_isolation" ON gym.%I
          USING (tenant_id = gym.current_tenant_id())', t
     );
   END LOOP;
-  -- access_codes: también visible para anon (necesario para lookup en signup)
-  ALTER POLICY "tenant_isolation" ON gym.access_codes USING (activo = TRUE);
+
+  -- access_codes: RLS separado — SELECT público para signup + tenant isolation para escritura
+  ALTER TABLE gym.access_codes ENABLE ROW LEVEL SECURITY;
+
+  DROP POLICY IF EXISTS "tenant_isolation"         ON gym.access_codes;
+  DROP POLICY IF EXISTS "access_codes_select_anon" ON gym.access_codes;
+  DROP POLICY IF EXISTS "access_codes_write_tenant" ON gym.access_codes;
+
+  -- Cualquiera puede buscar un código activo (necesario para lookup en /signup)
+  CREATE POLICY "access_codes_select_anon" ON gym.access_codes
+    FOR SELECT USING (activo = TRUE);
+
+  -- Solo el tenant dueño puede insertar, actualizar o eliminar sus propios códigos
+  CREATE POLICY "access_codes_write_tenant" ON gym.access_codes
+    FOR ALL USING (tenant_id = gym.current_tenant_id());
+
   RAISE NOTICE '✅ RLS habilitado en todas las tablas de gym (tenant isolation)';
 END $$;
 

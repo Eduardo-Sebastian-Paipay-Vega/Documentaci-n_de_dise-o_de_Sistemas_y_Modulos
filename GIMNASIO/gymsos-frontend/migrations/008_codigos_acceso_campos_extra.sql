@@ -89,7 +89,7 @@ END $$;
 GRANT ALL ON gym.codigos_acceso TO postgres, service_role;
 GRANT SELECT ON gym.codigos_acceso TO anon;
 GRANT SELECT, INSERT, UPDATE ON gym.codigos_acceso TO authenticated;
-GRANT USAGE ON SEQUENCE gym.codigos_acceso_id_codigo_seq TO authenticated 2>/dev/null; -- puede fallar, es OK
+-- id_codigo es UUID (gen_random_uuid), no usa SEQUENCE — grant omitido
 
 DO $$ BEGIN RAISE NOTICE '✅ Tabla gym.codigos_acceso creada con RLS'; END $$;
 
