@@ -1,614 +1,409 @@
 -- ═══════════════════════════════════════════════════════════════════════════════
--- GYMsos — Migración 009: Reestructurar gym como módulo lego de la BD Maestra
--- Fecha: 2026-05-30
+-- GYMsos — Migración 009: Consolidar arquitectura gym + RPCs post-login
+-- Fecha: 2026-05-30  |  v2.0 (reescrita — sin dependencias BD Maestra)
 -- Ejecutar en: Supabase SQL Editor
+-- Prerequisito: migraciones 001-008 + 008b aplicadas
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- PROBLEMA ARQUITECTURAL:
---   gym.gimnasios duplicaba public.tenants
---   gym.usuarios   duplicaba public.profiles
---   Las FKs apuntaban a tablas gym propias en vez de la infraestructura public
---   Las funciones RLS duplicaban fn_current_tenant_id() de public
+-- ARQUITECTURA REAL (confirmada en supabase-schema.sql):
+--   auth.users          → identidad (Supabase, nunca se toca directamente)
+--   gym.gimnasios       → EL TENANT   (id_gimnasio es el tenant ID)
+--   gym.usuarios        → EL PERFIL   (FK → auth.users via id_usuario)
+--   gym.codigos_acceso  → invitaciones por gimnasio
+--   public.*            → funciones helper RLS solamente
 --
--- SOLUCIÓN:
---   GYMsos vive como módulo lego en la BD Maestra, igual que ONG.
---   - public.tenants  → el gimnasio ES un tenant (industry_type_id='gym')
---   - public.profiles → los usuarios SON profiles (referenciados por auth.users)
---   - public.sedes    → las sucursales del gym
---   - gym.*           → SOLO tablas de dominio GYMsos (no infraestructura)
+-- NO existe ni se necesita public.tenants, public.profiles, public.sedes.
+-- La versión anterior de esta migración asumía una "BD Maestra" que no existe
+-- y fallaba con "relation does not exist" en todas las referencias a esas tablas.
 --
--- PREREQUISITO:
---   La BD Maestra debe estar desplegada (public.tenants, public.profiles, etc.)
---   Las migraciones 001-008 de gymsos pueden ignorarse o ejecutarse antes.
+-- LO QUE AGREGA ESTA MIGRACIÓN:
+--   1. gym.current_gym_id()  — helper canónico para RLS en schema gym
+--   2. RLS completo en TODAS las tablas gym (con tenant isolation correcto)
+--   3. gym.bootstrap_gym_tenant() — RPC post-login para onboarding de dueños
+--   4. gym.join_gym_with_code()   — RPC post-login para ingreso con código
+--   5. Grants finales y verificación
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- PASO 1 — Registrar GYMsos en los catálogos globales de la BD Maestra
+-- PASO 1 — Helper canónico: id del gimnasio del usuario actual
+-- Vive en el schema gym (no en public) para que las políticas del schema
+-- puedan usarla sin search_path tricks.
 -- ─────────────────────────────────────────────────────────────────────────────
-
--- Tipo de industria para gymnios (cat_industry_types vive en public)
-INSERT INTO public.cat_industry_types (id, description)
-VALUES ('gym', 'Gimnasio / Centro Fitness')
-ON CONFLICT (id) DO NOTHING;
-
--- Planes SaaS de GYMsos (cat_plan_types vive en public)
-INSERT INTO public.cat_plan_types (id, description)
-VALUES
-  ('gym_starter',    'GYMsos Starter — hasta 100 miembros'),
-  ('gym_pro',        'GYMsos Pro — hasta 500 miembros'),
-  ('gym_business',   'GYMsos Business — hasta 2,000 miembros'),
-  ('gym_enterprise', 'GYMsos Enterprise — ilimitado, multi-sede')
-ON CONFLICT (id) DO NOTHING;
-
--- Políticas de plan (max_sedes, max_licenses) en public.plan_policies si existe
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables
-             WHERE table_schema='public' AND table_name='plan_policies') THEN
-    INSERT INTO public.plan_policies (plan_id, max_sedes, max_licenses, can_use_terminals)
-    VALUES
-      ('gym_starter',    1,    100,  false),
-      ('gym_pro',        3,    500,  true),
-      ('gym_business',   10,   2000, true),
-      ('gym_enterprise', 999,  99999,true)
-    ON CONFLICT (plan_id) DO NOTHING;
-    RAISE NOTICE '✅ Políticas de plan gym insertadas en public.plan_policies';
-  ELSE
-    RAISE NOTICE 'ℹ️  public.plan_policies no existe aún — omitido';
-  END IF;
-END $$;
-
-DO $$ BEGIN RAISE NOTICE '✅ GYMsos registrado en catálogos globales de la BD Maestra'; END $$;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASO 2 — Extender public.profiles con campos propios de GYMsos
---           (en vez de duplicar en gym.usuarios)
--- ─────────────────────────────────────────────────────────────────────────────
--- Los campos comunes (nombre, documento, genero) ya están en public.profiles.
--- Solo agregamos los específicos de GYMsos si no existen.
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url  TEXT;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS cargo     VARCHAR(100);
-
-DO $$ BEGIN RAISE NOTICE '✅ public.profiles extendido con foto_url, cargo'; END $$;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASO 3 — Crear schema gym limpio como módulo de dominio
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE SCHEMA IF NOT EXISTS gym;
-
-GRANT USAGE ON SCHEMA gym TO postgres, anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA gym GRANT ALL ON TABLES TO postgres, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA gym GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA gym GRANT SELECT ON TABLES TO anon;
-
-DO $$ BEGIN RAISE NOTICE '✅ Schema gym preparado'; END $$;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASO 4 — Helper: tenant actual para RLS en gym.*
---           Usa fn_current_tenant_id() de public si existe, sino fallback.
--- BUG-9 FIX: definición duplicada eliminada — solo queda la versión final.
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION gym.current_tenant_id()
+CREATE OR REPLACE FUNCTION gym.current_gym_id()
 RETURNS UUID
 LANGUAGE SQL
 STABLE
 SECURITY DEFINER
-SET search_path = public, gym
+SET search_path = gym, public, auth
 AS $$
-  SELECT tenant_id FROM public.profiles WHERE id = auth.uid()
-$$ ;
-
-DO $$ BEGIN RAISE NOTICE '✅ gym.current_tenant_id() creada'; END $$;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASO 5 — Tablas de dominio GYMsos
---           FKs correctas: tenant_id → public.tenants, profile_id → public.profiles
--- ─────────────────────────────────────────────────────────────────────────────
-
--- ── 5.1 Códigos de acceso del gimnasio (invitaciones) ────────────────────────
-CREATE TABLE IF NOT EXISTS gym.access_codes (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  code             VARCHAR(12) UNIQUE NOT NULL,
-  tipo             VARCHAR(20) NOT NULL DEFAULT 'general'
-                     CHECK (tipo IN ('general','staff','miembro','invitacion')),
-  descripcion      VARCHAR(255),
-  usos_actuales    INT         NOT NULL DEFAULT 0,
-  usos_max         INT,                       -- NULL = ilimitado
-  activo           BOOLEAN     NOT NULL DEFAULT TRUE,
-  fecha_expiracion TIMESTAMPTZ,
-  created_by       UUID        REFERENCES public.profiles(id) ON DELETE SET NULL,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_access_codes_tenant ON gym.access_codes(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_gym_access_codes_code   ON gym.access_codes(code) WHERE activo;
-
--- ── 5.2 Planes de membresía del gym (para sus clientes) ──────────────────────
---        ≠ plan SaaS de public.cat_plan_types
-CREATE TABLE IF NOT EXISTS gym.planes (
-  id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id       UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  nombre          VARCHAR(100) NOT NULL,
-  descripcion     TEXT,
-  precio_mensual  DECIMAL(10,2) NOT NULL CHECK (precio_mensual >= 0),
-  precio_trimestral DECIMAL(10,2) CHECK (precio_trimestral >= 0),
-  precio_anual    DECIMAL(10,2) CHECK (precio_anual >= 0),
-  duracion_dias   INT         NOT NULL DEFAULT 30,
-  clases_incluidas INT        DEFAULT -1,     -- -1 = ilimitadas
-  horarios_acceso VARCHAR(100) DEFAULT '6-22',
-  todas_las_sedes BOOLEAN     NOT NULL DEFAULT FALSE,
-  activo          BOOLEAN     NOT NULL DEFAULT TRUE,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_planes_tenant ON gym.planes(tenant_id);
-
--- ── 5.3 Membresías de miembros al gym ────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.membresias (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  plan_id          UUID        NOT NULL REFERENCES gym.planes(id),
-  fecha_inicio     DATE        NOT NULL DEFAULT CURRENT_DATE,
-  fecha_vencimiento DATE       NOT NULL,
-  estado           VARCHAR(20) NOT NULL DEFAULT 'activa'
-                     CHECK (estado IN ('activa','vencida','cancelada','suspendida')),
-  motivo_cancelacion VARCHAR(255),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT chk_fechas CHECK (fecha_vencimiento > fecha_inicio),
-  UNIQUE (tenant_id, profile_id, plan_id, fecha_inicio)
-);
-CREATE INDEX IF NOT EXISTS idx_gym_membresias_tenant  ON gym.membresias(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_gym_membresias_profile ON gym.membresias(profile_id, estado);
-
--- ── 5.4 Pagos internos del gym (cash, yape, etc.) ────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.pagos (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  membresia_id     UUID        REFERENCES gym.membresias(id),
-  monto            DECIMAL(10,2) NOT NULL CHECK (monto > 0),
-  moneda           VARCHAR(3)  NOT NULL DEFAULT 'PEN',
-  metodo_pago      VARCHAR(20) NOT NULL DEFAULT 'efectivo'
-                     CHECK (metodo_pago IN ('tarjeta','transferencia','efectivo','yape','plin')),
-  estado           VARCHAR(20) NOT NULL DEFAULT 'completado'
-                     CHECK (estado IN ('pendiente','completado','fallido','reembolsado')),
-  descripcion      VARCHAR(255),
-  fecha_pago       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_pagos_tenant  ON gym.pagos(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_gym_pagos_profile ON gym.pagos(profile_id);
-
--- ── 5.5 Espacios físicos ──────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.espacios (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  sede_id          UUID        REFERENCES public.sedes(id) ON DELETE CASCADE,
-  nombre           VARCHAR(100) NOT NULL,
-  tipo             VARCHAR(30) NOT NULL DEFAULT 'salon'
-                     CHECK (tipo IN ('salon','area_pesas','cardio','yoga','funcional','otros')),
-  capacidad_maxima INT         NOT NULL DEFAULT 20,
-  estado           VARCHAR(30) NOT NULL DEFAULT 'disponible'
-                     CHECK (estado IN ('disponible','en_uso','en_mantenimiento')),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_espacios_tenant ON gym.espacios(tenant_id);
-
--- ── 5.6 Máquinas y equipamiento ───────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.maquinas (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  espacio_id       UUID        REFERENCES gym.espacios(id),
-  nombre           VARCHAR(100) NOT NULL,
-  codigo_qr        VARCHAR(100) UNIQUE,
-  marca            VARCHAR(100),
-  modelo           VARCHAR(100),
-  estado           VARCHAR(30) NOT NULL DEFAULT 'operativa'
-                     CHECK (estado IN ('operativa','en_mantenimiento','dañada','fuera_de_servicio')),
-  fecha_mantenimiento_proximo DATE,
-  url_video_tutorial VARCHAR(255),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_maquinas_tenant ON gym.maquinas(tenant_id);
-
--- ── 5.7 Perfil extendido de entrenador ───────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.entrenadores (
-  profile_id       UUID        PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  especialidades   VARCHAR(255),
-  certificaciones  TEXT,
-  biografia        TEXT,
-  rating_promedio  DECIMAL(3,2) DEFAULT 0.00,
-  total_clases_dictadas INT    DEFAULT 0,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_entrenadores_tenant ON gym.entrenadores(tenant_id);
-
--- ── 5.8 Clases ────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.clases (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  sede_id          UUID        REFERENCES public.sedes(id),
-  entrenador_id    UUID        REFERENCES gym.entrenadores(profile_id),
-  espacio_id       UUID        REFERENCES gym.espacios(id),
-  nombre           VARCHAR(100) NOT NULL,
-  descripcion      TEXT,
-  nivel            VARCHAR(20) CHECK (nivel IN ('principiante','intermedio','avanzado')),
-  capacidad_maxima INT         NOT NULL DEFAULT 15,
-  fecha_hora_inicio TIMESTAMPTZ NOT NULL,
-  duracion_minutos INT         NOT NULL DEFAULT 60,
-  recurrencia      VARCHAR(20) CHECK (recurrencia IN ('unica','diaria','semanal','mensual')),
-  estado           VARCHAR(20) NOT NULL DEFAULT 'programada'
-                     CHECK (estado IN ('programada','en_curso','finalizada','cancelada')),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_clases_tenant ON gym.clases(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_gym_clases_fecha  ON gym.clases(fecha_hora_inicio);
-
--- ── 5.9 Inscripciones a clases ───────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.inscripciones (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  clase_id         UUID        NOT NULL REFERENCES gym.clases(id),
-  estado           VARCHAR(20) NOT NULL DEFAULT 'inscrito'
-                     CHECK (estado IN ('inscrito','asistio','ausente','cancelado')),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (tenant_id, profile_id, clase_id)
-);
-CREATE INDEX IF NOT EXISTS idx_gym_inscripciones_tenant ON gym.inscripciones(tenant_id);
-
--- ── 5.10 Accesos QR ───────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.accesos (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  sede_id          UUID        REFERENCES public.sedes(id),
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  fecha_entrada    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  fecha_salida     TIMESTAMPTZ,
-  tipo_acceso      VARCHAR(20) NOT NULL DEFAULT 'qr'
-                     CHECK (tipo_acceso IN ('qr','biometria','manual')),
-  estado_acceso    VARCHAR(20) NOT NULL DEFAULT 'permitido'
-                     CHECK (estado_acceso IN ('permitido','denegado')),
-  razon_denegacion VARCHAR(255),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_accesos_tenant  ON gym.accesos(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_gym_accesos_profile ON gym.accesos(profile_id);
-CREATE INDEX IF NOT EXISTS idx_gym_accesos_fecha   ON gym.accesos(fecha_entrada DESC);
-
--- ── 5.11 Gamificación ─────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.gamification_xp (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  tipo_evento      VARCHAR(50) NOT NULL,
-  cantidad_xp      INT         NOT NULL CHECK (cantidad_xp > 0),
-  descripcion      VARCHAR(255),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS gym.gamification_levels (
-  profile_id       UUID        PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  xp_total         INT         NOT NULL DEFAULT 0,
-  nivel_actual     INT         NOT NULL DEFAULT 1,
-  xp_proximo_nivel INT         NOT NULL DEFAULT 500,
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ── 5.12 Churn predictions (IA) ───────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.churn_predictions (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  probability_churn DECIMAL(5,4) NOT NULL,
-  score_riesgo     INT         NOT NULL CHECK (score_riesgo BETWEEN 0 AND 100),
-  razon_principal  VARCHAR(255),
-  ultima_sesion    DATE,
-  accion_ejecutada VARCHAR(255),
-  resultado        VARCHAR(20) CHECK (resultado IN ('abandono','retenido','desconocido')),
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_gym_churn_tenant  ON gym.churn_predictions(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_gym_churn_profile ON gym.churn_predictions(profile_id, created_at DESC);
-
--- ── 5.13 Digital Twin ─────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.digital_twin (
-  profile_id        UUID        PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
-  tenant_id         UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  altura_cm         INT,
-  peso_kg           DECIMAL(5,2),
-  peso_kg_inicial   DECIMAL(5,2),
-  porcentaje_grasa  DECIMAL(5,2),
-  configuracion_avatar JSONB   DEFAULT '{"color":"#00D084","estilo":"athletic"}',
-  prediccion_12w    TEXT,
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ── 5.14 AI Recommendations ───────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.ai_recommendations (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  tipo             VARCHAR(50) NOT NULL,
-  contenido_json   JSONB       NOT NULL DEFAULT '{}',
-  score_relevancia DECIMAL(3,2) DEFAULT 0.80,
-  mostrada         BOOLEAN     DEFAULT FALSE,
-  aceptada         BOOLEAN,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ── 5.15 Wearable Sync ────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.wearable_sync (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  profile_id       UUID        NOT NULL REFERENCES public.profiles(id),
-  tipo_wearable    VARCHAR(50) NOT NULL,
-  ultima_sincronizacion TIMESTAMPTZ,
-  datos_salud_json JSONB       DEFAULT '{}',
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- ── 5.16 Promociones ──────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS gym.promociones (
-  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id        UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
-  codigo           VARCHAR(50) UNIQUE NOT NULL,
-  tipo_descuento   VARCHAR(20) NOT NULL CHECK (tipo_descuento IN ('porcentaje','monto_fijo')),
-  valor_descuento  DECIMAL(10,2) NOT NULL CHECK (valor_descuento > 0),
-  descripcion      VARCHAR(255),
-  fecha_inicio     DATE        NOT NULL,
-  fecha_fin        DATE        NOT NULL,
-  limite_uso       INT,
-  usos_realizados  INT         DEFAULT 0,
-  estado           VARCHAR(20) NOT NULL DEFAULT 'activa'
-                     CHECK (estado IN ('activa','pausada','finalizada'))
-);
-CREATE INDEX IF NOT EXISTS idx_gym_promociones_tenant ON gym.promociones(tenant_id);
-
-DO $$ BEGIN RAISE NOTICE '✅ 16 tablas de dominio GYMsos creadas con FKs correctas'; END $$;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASO 6 — RLS en tablas gym (usa gym.current_tenant_id())
--- BUG-2 FIX: CREATE POLICY IF NOT EXISTS no existe en PostgreSQL →
---            usar DROP POLICY IF EXISTS + CREATE POLICY.
--- BUG-8 FIX: access_codes necesita dos políticas separadas:
---            SELECT pública (para lookup en signup) +
---            ALL con tenant isolation (para escritura).
---            No alterar la política de tenant isolation porque eso la destruye.
--- ─────────────────────────────────────────────────────────────────────────────
-DO $$
-DECLARE
-  t TEXT;
-BEGIN
-  FOR t IN SELECT unnest(ARRAY[
-    'planes','membresias','pagos','espacios','maquinas',
-    'entrenadores','clases','inscripciones','accesos',
-    'gamification_xp','gamification_levels','churn_predictions',
-    'digital_twin','ai_recommendations','wearable_sync','promociones'
-  ]) LOOP
-    EXECUTE format('ALTER TABLE gym.%I ENABLE ROW LEVEL SECURITY', t);
-    EXECUTE format('DROP POLICY IF EXISTS "tenant_isolation" ON gym.%I', t);
-    EXECUTE format(
-      'CREATE POLICY "tenant_isolation" ON gym.%I
-         USING (tenant_id = gym.current_tenant_id())', t
-    );
-  END LOOP;
-
-  -- access_codes: RLS separado — SELECT público para signup + tenant isolation para escritura
-  ALTER TABLE gym.access_codes ENABLE ROW LEVEL SECURITY;
-
-  DROP POLICY IF EXISTS "tenant_isolation"         ON gym.access_codes;
-  DROP POLICY IF EXISTS "access_codes_select_anon" ON gym.access_codes;
-  DROP POLICY IF EXISTS "access_codes_write_tenant" ON gym.access_codes;
-
-  -- Cualquiera puede buscar un código activo (necesario para lookup en /signup)
-  CREATE POLICY "access_codes_select_anon" ON gym.access_codes
-    FOR SELECT USING (activo = TRUE);
-
-  -- Solo el tenant dueño puede insertar, actualizar o eliminar sus propios códigos
-  CREATE POLICY "access_codes_write_tenant" ON gym.access_codes
-    FOR ALL USING (tenant_id = gym.current_tenant_id());
-
-  RAISE NOTICE '✅ RLS habilitado en todas las tablas de gym (tenant isolation)';
-END $$;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASO 7 — Función para generar código de acceso único
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION gym.generate_access_code(p_tenant_name TEXT)
-RETURNS TEXT
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_base  TEXT;
-  v_code  TEXT;
-  v_exists BOOLEAN;
-  v_tries INT := 0;
-BEGIN
-  v_base := upper(regexp_replace(p_tenant_name, '[^a-zA-Z]', '', 'g'));
-  v_base := left(v_base, 4);
-  IF length(v_base) < 2 THEN v_base := 'GYM'; END IF;
-  LOOP
-    v_code   := v_base || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 4));
-    SELECT EXISTS(SELECT 1 FROM gym.access_codes WHERE code = v_code) INTO v_exists;
-    EXIT WHEN NOT v_exists OR v_tries >= 20;
-    v_tries := v_tries + 1;
-  END LOOP;
-  RETURN v_code;
-END;
+  SELECT id_gimnasio FROM gym.usuarios WHERE id_usuario = auth.uid()
 $$;
 
+DO $$ BEGIN RAISE NOTICE '✅ gym.current_gym_id() creada (usa gym.usuarios, no public.tenants)'; END $$;
+
 -- ─────────────────────────────────────────────────────────────────────────────
--- PASO 8 — RPC para onboarding: crea tenant gym + profile + access_code
---           Usa la infraestructura de public (fn_bootstrap_tenant si existe)
+-- PASO 2 — RLS en tablas gym que aún no tienen todas sus políticas
+-- Las tablas ya tienen RLS ON desde 002/003, pero algunas solo tienen SELECT.
+-- Completamos con tenant isolation para las tablas de innovación.
+-- DROP IF EXISTS + CREATE para ser idempotentes.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- ── planes ────────────────────────────────────────────────────────────────────
+ALTER TABLE gym.planes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "planes_select_gym"   ON gym.planes;
+DROP POLICY IF EXISTS "planes_write_staff"  ON gym.planes;
+
+CREATE POLICY "planes_select_gym" ON gym.planes
+  FOR SELECT USING (id_gimnasio = gym.current_gym_id());
+
+CREATE POLICY "planes_write_staff" ON gym.planes
+  FOR ALL USING (
+    id_gimnasio = gym.current_gym_id() AND
+    public.get_user_rol() IN ('gerente','admin')
+  );
+
+-- ── codigos_acceso ────────────────────────────────────────────────────────────
+-- Ya tiene RLS desde 008. Reemplazamos las dos políticas para que usen
+-- gym.current_gym_id() consistentemente con el resto.
+ALTER TABLE gym.codigos_acceso ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "codigos_select_public"  ON gym.codigos_acceso;
+DROP POLICY IF EXISTS "codigos_select_gerente" ON gym.codigos_acceso;
+DROP POLICY IF EXISTS "codigos_write_gerente"  ON gym.codigos_acceso;
+
+-- SELECT público: anon y authenticated pueden buscar un código activo (signup)
+CREATE POLICY "codigos_select_public" ON gym.codigos_acceso
+  FOR SELECT USING (activo = TRUE);
+
+-- Write: solo el gerente del gimnasio dueño del código
+CREATE POLICY "codigos_write_gerente" ON gym.codigos_acceso
+  FOR ALL USING (
+    id_gimnasio = gym.current_gym_id() AND
+    public.get_user_rol() IN ('gerente','admin')
+  );
+
+GRANT SELECT ON gym.codigos_acceso TO anon;
+
+-- ── promociones ───────────────────────────────────────────────────────────────
+ALTER TABLE gym.promociones ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "promociones_select_gym"  ON gym.promociones;
+DROP POLICY IF EXISTS "promociones_write_staff" ON gym.promociones;
+
+CREATE POLICY "promociones_select_gym" ON gym.promociones
+  FOR SELECT USING (id_gimnasio = gym.current_gym_id());
+
+CREATE POLICY "promociones_write_staff" ON gym.promociones
+  FOR ALL USING (
+    id_gimnasio = gym.current_gym_id() AND
+    public.get_user_rol() IN ('gerente','admin')
+  );
+
+-- ── maquinas ──────────────────────────────────────────────────────────────────
+-- maquinas → espacios → gimnasios (FK indirecta)
+ALTER TABLE gym.maquinas ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "maquinas_select_gym"  ON gym.maquinas;
+DROP POLICY IF EXISTS "maquinas_write_staff" ON gym.maquinas;
+
+CREATE POLICY "maquinas_select_gym" ON gym.maquinas
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM gym.espacios e
+       WHERE e.id_espacio  = maquinas.id_espacio
+         AND e.id_gimnasio = gym.current_gym_id()
+    )
+  );
+
+CREATE POLICY "maquinas_write_staff" ON gym.maquinas
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM gym.espacios e
+       WHERE e.id_espacio  = maquinas.id_espacio
+         AND e.id_gimnasio = gym.current_gym_id()
+    ) AND public.get_user_rol() IN ('gerente','admin','recepcionista')
+  );
+
+-- ── espacios ─────────────────────────────────────────────────────────────────
+ALTER TABLE gym.espacios ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "espacios_select_gym"  ON gym.espacios;
+DROP POLICY IF EXISTS "espacios_write_staff" ON gym.espacios;
+
+CREATE POLICY "espacios_select_gym" ON gym.espacios
+  FOR SELECT USING (id_gimnasio = gym.current_gym_id());
+
+CREATE POLICY "espacios_write_staff" ON gym.espacios
+  FOR ALL USING (
+    id_gimnasio = gym.current_gym_id() AND
+    public.get_user_rol() IN ('gerente','admin')
+  );
+
+-- ── entrenadores ──────────────────────────────────────────────────────────────
+ALTER TABLE gym.entrenadores ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "entrenadores_select_gym"  ON gym.entrenadores;
+DROP POLICY IF EXISTS "entrenadores_write_staff" ON gym.entrenadores;
+
+CREATE POLICY "entrenadores_select_gym" ON gym.entrenadores
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM gym.usuarios u
+       WHERE u.id_usuario = entrenadores.id_usuario
+         AND u.id_gimnasio = gym.current_gym_id()
+    )
+  );
+
+CREATE POLICY "entrenadores_write_staff" ON gym.entrenadores
+  FOR ALL USING (
+    public.get_user_rol() IN ('gerente','admin')
+  );
+
+DO $$ BEGIN RAISE NOTICE '✅ RLS consolidado en planes, codigos_acceso, promociones, maquinas, espacios, entrenadores'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 3 — RPC: gym.bootstrap_gym_tenant()
+-- Crea un nuevo gimnasio y asigna el usuario autenticado como gerente.
+-- Se llama DESPUÉS del login (el usuario ya existe en auth.users y gym.usuarios).
+-- Útil como respaldo si el trigger handle_new_user no pudo crear el gym.
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION gym.bootstrap_gym_tenant(
-  p_tenant_name    TEXT,
-  p_tax_id         TEXT,         -- RUC
-  p_plan_id        TEXT DEFAULT 'gym_starter',
-  p_city           TEXT DEFAULT 'Lima',
-  p_country        TEXT DEFAULT 'PE',
-  p_profile_nombre TEXT DEFAULT NULL,
-  p_cargo          TEXT DEFAULT 'Gerente General'
+  p_nombre      TEXT,
+  p_ruc         TEXT     DEFAULT NULL,
+  p_ciudad      TEXT     DEFAULT 'Lima',
+  p_pais        TEXT     DEFAULT 'Perú',
+  p_direccion   TEXT     DEFAULT NULL,
+  p_telefono    TEXT     DEFAULT NULL,
+  p_email       TEXT     DEFAULT NULL,
+  p_plan        TEXT     DEFAULT 'mediano',
+  p_cargo       TEXT     DEFAULT 'Gerente General'
 )
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, gym
+SET search_path = gym, public, auth
 AS $$
 DECLARE
-  v_tenant_id  UUID;
-  v_sede_id    UUID;
+  v_user_id    UUID := auth.uid();
+  v_gym_id     UUID;
   v_code       TEXT;
-  v_profile_id UUID := auth.uid();
 BEGIN
-  -- Verificar que el usuario está autenticado
-  IF v_profile_id IS NULL THEN
-    RAISE EXCEPTION 'Usuario no autenticado';
+  -- 1. Verificar autenticación
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
   END IF;
 
-  -- Verificar que el usuario no tenga ya un tenant
-  IF EXISTS (SELECT 1 FROM public.profiles WHERE id = v_profile_id AND tenant_id IS NOT NULL) THEN
+  -- 2. Verificar que el usuario no tenga ya un gym asignado
+  IF EXISTS (
+    SELECT 1 FROM gym.usuarios
+     WHERE id_usuario = v_user_id AND id_gimnasio IS NOT NULL
+  ) THEN
     RAISE EXCEPTION 'El usuario ya tiene un gimnasio registrado';
   END IF;
 
-  -- 1. Crear el tenant en public.tenants
-  INSERT INTO public.tenants (name, tax_id, industry_type_id, plan_id, status_financial_id, max_licenses)
-  VALUES (
-    p_tenant_name,
-    p_tax_id,
-    'gym',
-    p_plan_id,
-    'FIN-PENDING',
-    CASE p_plan_id
-      WHEN 'gym_starter'    THEN 100
-      WHEN 'gym_pro'        THEN 500
-      WHEN 'gym_business'   THEN 2000
-      WHEN 'gym_enterprise' THEN 99999
-      ELSE 100
-    END
+  -- 3. Crear el gimnasio
+  INSERT INTO gym.gimnasios (
+    nombre, ruc, ciudad, pais, direccion, telefono, email,
+    plan_suscripcion, estado
   )
-  RETURNING id INTO v_tenant_id;
+  VALUES (
+    p_nombre, p_ruc, p_ciudad, p_pais, p_direccion,
+    p_telefono, p_email, p_plan, 'activo'
+  )
+  RETURNING id_gimnasio INTO v_gym_id;
 
-  -- 2. Crear sede principal en public.sedes
-  INSERT INTO public.sedes (tenant_id, name, is_active)
-  VALUES (v_tenant_id, p_tenant_name || ' — Sede Principal', TRUE)
-  RETURNING id INTO v_sede_id;
+  -- 4. Generar y registrar código de acceso
+  v_code := public.generate_gym_code(p_nombre);
+  INSERT INTO gym.codigos_acceso (id_gimnasio, codigo, tipo, descripcion, creado_por)
+  VALUES (v_gym_id, v_code, 'general', 'Código principal', v_user_id);
 
-  -- 3. Asignar tenant al profile del dueño
-  UPDATE public.profiles
-     SET tenant_id = v_tenant_id,
-         full_name = COALESCE(p_profile_nombre, full_name),
-         cargo     = p_cargo
-   WHERE id = v_profile_id;
+  -- 5. Actualizar perfil del usuario → asignarlo como gerente del gym
+  UPDATE gym.usuarios
+     SET id_gimnasio = v_gym_id,
+         rol         = 'gerente',
+         cargo       = COALESCE(cargo, p_cargo),
+         estado      = 'activo'
+   WHERE id_usuario = v_user_id;
 
-  -- 4. Generar código de acceso
-  v_code := gym.generate_access_code(p_tenant_name);
-  INSERT INTO gym.access_codes (tenant_id, code, tipo, descripcion, created_by)
-  VALUES (v_tenant_id, v_code, 'general', 'Código principal del gimnasio', v_profile_id);
+  -- Si el usuario aún no tiene fila en gym.usuarios, crearla
+  IF NOT FOUND THEN
+    INSERT INTO gym.usuarios (id_usuario, email, nombre, cargo, id_gimnasio, rol, estado)
+    SELECT
+      v_user_id,
+      au.email,
+      COALESCE(NULLIF(au.raw_user_meta_data->>'nombre', ''), split_part(au.email, '@', 1)),
+      p_cargo,
+      v_gym_id,
+      'gerente',
+      'activo'
+    FROM auth.users au WHERE au.id = v_user_id
+    ON CONFLICT (id_usuario) DO UPDATE
+      SET id_gimnasio = v_gym_id, rol = 'gerente', cargo = p_cargo;
+  END IF;
 
-  -- 5. Retornar resultado
   RETURN jsonb_build_object(
-    'tenant_id',  v_tenant_id,
-    'sede_id',    v_sede_id,
-    'access_code', v_code,
-    'plan_id',    p_plan_id
+    'ok',          true,
+    'id_gimnasio', v_gym_id,
+    'codigo',      v_code,
+    'plan',        p_plan
   );
 
 EXCEPTION WHEN OTHERS THEN
-  RAISE EXCEPTION 'Error en bootstrap_gym_tenant: % (%)', SQLERRM, SQLSTATE;
+  RAISE EXCEPTION 'bootstrap_gym_tenant: % (%)', SQLERRM, SQLSTATE;
 END;
 $$;
 
--- Permiso para que usuarios autenticados llamen la función
 GRANT EXECUTE ON FUNCTION gym.bootstrap_gym_tenant TO authenticated;
 
-DO $$ BEGIN RAISE NOTICE '✅ gym.bootstrap_gym_tenant() lista'; END $$;
+DO $$ BEGIN RAISE NOTICE '✅ gym.bootstrap_gym_tenant() lista (usa gym.gimnasios como tenant)'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- PASO 9 — RPC para signup de miembros/staff: usa access_code para encontrar tenant
+-- PASO 4 — RPC: gym.join_gym_with_code()
+-- Un usuario autenticado se une a un gimnasio usando su código de acceso.
+-- Se llama DESPUÉS del login, cuando el perfil no tiene id_gimnasio asignado.
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION gym.join_gym_with_code(
-  p_code    TEXT,
+  p_codigo  TEXT,
   p_nombre  TEXT  DEFAULT NULL,
   p_cargo   TEXT  DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, gym
+SET search_path = gym, public, auth
 AS $$
 DECLARE
-  v_profile_id UUID := auth.uid();
-  v_tenant_id  UUID;
-  v_code_row   gym.access_codes;
+  v_user_id   UUID := auth.uid();
+  v_gym_id    UUID;
+  v_code_id   UUID;
+  v_max_usos  INT;
+  v_usos_act  INT;
 BEGIN
-  IF v_profile_id IS NULL THEN
-    RAISE EXCEPTION 'Usuario no autenticado';
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
   END IF;
 
-  -- Buscar código activo
-  SELECT * INTO v_code_row
-  FROM gym.access_codes
-  WHERE code = upper(p_code) AND activo = TRUE
-  LIMIT 1;
+  -- Buscar el código activo
+  SELECT id_codigo, id_gimnasio, usos_max, usos_actuales
+    INTO v_code_id, v_gym_id, v_max_usos, v_usos_act
+    FROM gym.codigos_acceso
+   WHERE codigo = upper(trim(p_codigo))
+     AND activo = TRUE
+     AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
+   LIMIT 1;
 
-  IF v_code_row.id IS NULL THEN
-    RAISE EXCEPTION 'Código de acceso inválido o inactivo';
+  IF v_code_id IS NULL THEN
+    RAISE EXCEPTION 'Código inválido, inactivo o expirado';
   END IF;
 
-  v_tenant_id := v_code_row.tenant_id;
+  -- Verificar límite de usos
+  IF v_max_usos IS NOT NULL AND v_usos_act >= v_max_usos THEN
+    RAISE EXCEPTION 'El código ya alcanzó su límite de usos';
+  END IF;
 
-  -- Asignar tenant al profile si no tiene uno
-  UPDATE public.profiles
-     SET tenant_id = v_tenant_id,
-         full_name = COALESCE(p_nombre, full_name),
-         cargo     = COALESCE(p_cargo, cargo)
-   WHERE id = v_profile_id AND tenant_id IS NULL;
+  -- Asignar gym al perfil del usuario (si aún no tiene uno)
+  UPDATE gym.usuarios
+     SET id_gimnasio = v_gym_id,
+         nombre      = COALESCE(NULLIF(p_nombre, ''), nombre),
+         cargo       = COALESCE(NULLIF(p_cargo, ''), cargo),
+         estado      = 'activo'
+   WHERE id_usuario = v_user_id
+     AND id_gimnasio IS NULL;
 
-  -- Incrementar usos del código
-  UPDATE gym.access_codes
+  -- Si no tenía perfil, crearlo
+  IF NOT FOUND THEN
+    INSERT INTO gym.usuarios (id_usuario, email, nombre, cargo, id_gimnasio, rol, estado)
+    SELECT
+      v_user_id,
+      au.email,
+      COALESCE(NULLIF(p_nombre, ''), NULLIF(au.raw_user_meta_data->>'nombre', ''), split_part(au.email, '@', 1)),
+      p_cargo,
+      v_gym_id,
+      'miembro',
+      'activo'
+    FROM auth.users au WHERE au.id = v_user_id
+    ON CONFLICT (id_usuario) DO UPDATE
+      SET id_gimnasio = v_gym_id, estado = 'activo';
+  END IF;
+
+  -- Incrementar contador de usos del código
+  UPDATE gym.codigos_acceso
      SET usos_actuales = usos_actuales + 1
-   WHERE id = v_code_row.id;
+   WHERE id_codigo = v_code_id;
 
   RETURN jsonb_build_object(
-    'tenant_id', v_tenant_id,
-    'code',      p_code
+    'ok',          true,
+    'id_gimnasio', v_gym_id,
+    'codigo',      p_codigo
   );
 
 EXCEPTION WHEN OTHERS THEN
-  RAISE EXCEPTION 'Error en join_gym_with_code: %', SQLERRM;
+  RAISE EXCEPTION 'join_gym_with_code: %', SQLERRM;
 END;
 $$;
 
 GRANT EXECUTE ON FUNCTION gym.join_gym_with_code TO authenticated;
 
-DO $$ BEGIN RAISE NOTICE '✅ gym.join_gym_with_code() lista'; END $$;
+DO $$ BEGIN RAISE NOTICE '✅ gym.join_gym_with_code() lista (usa gym.codigos_acceso)'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- PASO 10 — Grants finales
+-- PASO 5 — Grants finales
 -- ─────────────────────────────────────────────────────────────────────────────
 GRANT ALL ON ALL TABLES IN SCHEMA gym TO postgres, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA gym TO authenticated;
-GRANT SELECT ON gym.access_codes TO anon;
+GRANT SELECT ON gym.codigos_acceso TO anon;
 
+-- Grants en secuencias (UUID4 no usa sequences, pero por si acaso hay alguna)
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA gym TO authenticated;
+
+DO $$ BEGIN RAISE NOTICE '✅ Grants finales aplicados'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 6 — Verificación final
+-- ─────────────────────────────────────────────────────────────────────────────
 DO $$
+DECLARE
+  v_gym_fn   TEXT;
+  v_boot_fn  TEXT;
+  v_join_fn  TEXT;
+  v_gym_count INT;
+  v_usr_count INT;
 BEGIN
-  RAISE NOTICE '═══════════════════════════════════════════════════════';
-  RAISE NOTICE '✅ Migración 009 completada.';
-  RAISE NOTICE '   gym vive como módulo lego en la BD Maestra.';
-  RAISE NOTICE '';
-  RAISE NOTICE '   public.tenants  → el gym ES un tenant (industry=gym)';
-  RAISE NOTICE '   public.profiles → los usuarios son profiles';
-  RAISE NOTICE '   public.sedes    → las sucursales del gym';
-  RAISE NOTICE '   gym.*           → dominio GYMsos únicamente';
-  RAISE NOTICE '';
-  RAISE NOTICE '   FLUJOS:';
-  RAISE NOTICE '   Onboarding → supabase.auth.signUp → login → gym.bootstrap_gym_tenant()';
-  RAISE NOTICE '   Signup     → supabase.auth.signUp → login → gym.join_gym_with_code()';
-  RAISE NOTICE '═══════════════════════════════════════════════════════';
+  -- Verificar que las funciones existen
+  SELECT p.proname INTO v_gym_fn
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'gym' AND p.proname = 'current_gym_id';
+
+  SELECT p.proname INTO v_boot_fn
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'gym' AND p.proname = 'bootstrap_gym_tenant';
+
+  SELECT p.proname INTO v_join_fn
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'gym' AND p.proname = 'join_gym_with_code';
+
+  -- Contar datos existentes
+  SELECT COUNT(*) INTO v_gym_count FROM gym.gimnasios;
+  SELECT COUNT(*) INTO v_usr_count FROM gym.usuarios;
+
+  RAISE NOTICE '══════════════════════════════════════════════════════';
+  RAISE NOTICE '  VERIFICACIÓN MIGRACIÓN 009';
+  RAISE NOTICE '══════════════════════════════════════════════════════';
+  RAISE NOTICE '  gym.current_gym_id()        : %', CASE WHEN v_gym_fn IS NOT NULL THEN '✅ existe' ELSE '❌ FALTA' END;
+  RAISE NOTICE '  gym.bootstrap_gym_tenant()  : %', CASE WHEN v_boot_fn IS NOT NULL THEN '✅ existe' ELSE '❌ FALTA' END;
+  RAISE NOTICE '  gym.join_gym_with_code()    : %', CASE WHEN v_join_fn IS NOT NULL THEN '✅ existe' ELSE '❌ FALTA' END;
+  RAISE NOTICE '  Gimnasios en BD             : %', v_gym_count;
+  RAISE NOTICE '  Usuarios en BD              : %', v_usr_count;
+  RAISE NOTICE '══════════════════════════════════════════════════════';
+  RAISE NOTICE '  ARQUITECTURA CONFIRMADA:';
+  RAISE NOTICE '  auth.users        → identidad (Supabase, intocable)';
+  RAISE NOTICE '  gym.gimnasios     → tenant (id_gimnasio = tenant ID)';
+  RAISE NOTICE '  gym.usuarios      → perfil (FK → auth.users)';
+  RAISE NOTICE '  gym.codigos_acceso → invitaciones por gimnasio';
+  RAISE NOTICE '  public.*          → funciones RLS helper';
+  RAISE NOTICE '  NO se usa public.tenants ni public.profiles';
+  RAISE NOTICE '══════════════════════════════════════════════════════';
 END $$;
 
--- ─── FIN MIGRACIÓN 009 ───────────────────────────────────────────────────────
+-- ─── FIN MIGRACIÓN 009 ────────────────────────────────────────────────────────
