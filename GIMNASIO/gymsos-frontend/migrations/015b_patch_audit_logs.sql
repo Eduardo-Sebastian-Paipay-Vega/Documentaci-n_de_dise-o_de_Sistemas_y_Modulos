@@ -64,6 +64,18 @@ GRANT ALL    ON public.audit_logs TO postgres, service_role;
 DO $$ BEGIN RAISE NOTICE '✅ PASO 1: public.audit_logs creada — trigger fn_trigger_audit_universal() ya puede funcionar'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 1b — Agregar tenant_id a gym.gimnasios
+-- (015 hizo rollback completo — esta columna tampoco se guardó)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+ALTER TABLE gym.gimnasios
+  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_gimnasios_tenant ON gym.gimnasios(tenant_id);
+
+DO $$ BEGIN RAISE NOTICE '✅ PASO 1b: tenant_id agregado a gym.gimnasios'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 2 — Re-ejecutar backfill de tenants (de 015, idempotente)
 -- Los helpers _gym_plan_to_bd/_gym_plan_to_licenses pueden seguir existiendo
 -- de la 015 parcial o necesitar recreación — usamos CREATE OR REPLACE.
