@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/providers/auth-provider"
 import { cn } from "@/lib/utils"
@@ -105,12 +104,13 @@ export default function LoginPage() {
   const { login, user, loading } = useAuth()
   const router = useRouter()
 
-  const [email, setEmail]         = useState("")
-  const [password, setPassword]   = useState("")
-  const [showPass, setShowPass]   = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError]         = useState("")
+  const [email, setEmail]             = useState("")
+  const [password, setPassword]       = useState("")
+  const [showPass, setShowPass]       = useState(false)
+  const [submitting, setSubmitting]   = useState(false)
+  const [error, setError]             = useState("")
   const [loginResult, setLoginResult] = useState<LoginResult | null>(null)
+  const [showModal, setShowModal]     = useState(false)
 
   useEffect(() => {
     if (!loading && user) router.replace(ROL_ROUTES[user.rol])
@@ -139,8 +139,9 @@ export default function LoginPage() {
 
   if (loading) return null
 
-  const showChooseModal  = loginResult?.action === "choose_path"
-  const showWrongSystem  = loginResult?.action === "wrong_system"
+  // Modal se abre: al hacer clic en "Crear cuenta" O cuando login detecta sin gym asignado
+  const showChooseModal = showModal || loginResult?.action === "choose_path"
+  const showWrongSystem = loginResult?.action === "wrong_system"
 
   return (
     <div
@@ -150,7 +151,7 @@ export default function LoginPage() {
       {/* Modal: elegir camino cuando cuenta sin gym */}
       <AnimatePresence>
         {showChooseModal && (
-          <ChoosePathModal onClose={() => setLoginResult(null)} />
+          <ChoosePathModal onClose={() => { setLoginResult(null); setShowModal(false) }} />
         )}
       </AnimatePresence>
       {/* Left — branding panel */}
@@ -416,15 +417,16 @@ export default function LoginPage() {
           {/* Footer */}
           <p className="mt-6 text-center text-[11px]" style={{ color: "var(--text-disabled)" }}>
             {"¿Sin cuenta? "}
-            <Link
-              href="/signup"
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
               className="transition-colors"
               style={{ color: "var(--text-tertiary)" }}
               onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
               onMouseLeave={e => (e.currentTarget.style.color = "var(--text-tertiary)")}
             >
               Crear cuenta
-            </Link>
+            </button>
           </p>
         </motion.div>
       </div>
