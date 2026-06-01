@@ -6,65 +6,132 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/providers/auth-provider"
 import { cn } from "@/lib/utils"
-import { type Rol, ROL_ROUTES, USUARIOS_DEMO_CREDS, ROL_LABELS } from "@/lib/auth"
+import { type Rol, ROL_ROUTES } from "@/lib/auth"
 import { fadeIn, staggerContainer, easings } from "@/lib/motion"
-import { Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react"
+import { Eye, EyeOff, ArrowRight, Loader2, AlertCircle, Building2, Users, X } from "lucide-react"
+import type { LoginResult } from "@/components/providers/auth-provider"
 
-// Acceso rápido — cuentas reales en Supabase, útil para demos y testing
-const ROL_DESC: Partial<Record<Rol, string>> = {
-  gerente:       "KPIs · Reportes · Configuración",
-  recepcionista: "Registro · Pagos · Acceso",
-  entrenador:    "Clases · Clientes · Evaluaciones",
-  miembro:       "QR · Clases · Progreso",
-  cliente:       "Portal personal de entrenamiento",
-  nutricionista: "Planes · Evaluaciones · Recetas",
-}
+// ── Modal: camino a elegir cuando la cuenta existe pero no tiene gym asignado ──
+function ChoosePathModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-sm rounded-2xl p-6 relative"
+        style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 transition-colors"
+          style={{ color: "var(--text-disabled)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--text-secondary)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-disabled)")}
+        >
+          <X size={16} />
+        </button>
 
-const ROL_ACCENT: Record<Rol, string> = {
-  gerente:       "var(--accent)",
-  recepcionista: "#3B82F6",
-  entrenador:    "#F97316",
-  miembro:       "#8B5CF6",
-  cliente:       "#22C55E",
-  nutricionista: "#10B981",
+        <h3 className="text-base font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+          ¿Cómo quieres continuar?
+        </h3>
+        <p className="text-xs mb-5" style={{ color: "var(--text-tertiary)" }}>
+          Tu cuenta existe pero aún no está vinculada a un gimnasio.
+        </p>
+
+        <div className="flex flex-col gap-3">
+          <a
+            href="/onboarding"
+            className="flex items-start gap-3 p-4 rounded-xl transition-all"
+            style={{
+              background: "rgba(0,208,132,0.05)",
+              border: "1px solid rgba(0,208,132,0.2)",
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(0,208,132,0.1)")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(0,208,132,0.05)")}
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+              style={{ background: "rgba(0,208,132,0.15)" }}
+            >
+              <Building2 size={15} style={{ color: "var(--accent)" }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                Soy dueño de un gimnasio
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                Registra tu negocio y obtén tu código de acceso
+              </p>
+            </div>
+          </a>
+
+          <a
+            href="/signup"
+            className="flex items-start gap-3 p-4 rounded-xl transition-all"
+            style={{
+              background: "var(--bg-overlay)",
+              border: "1px solid var(--border-subtle)",
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = "var(--border-subtle)")}
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+              style={{ background: "var(--bg-overlay)", border: "1px solid var(--border-subtle)" }}
+            >
+              <Users size={15} style={{ color: "var(--text-secondary)" }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                Soy miembro o trabajador
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                Tengo un código de acceso de mi gimnasio
+              </p>
+            </div>
+          </a>
+        </div>
+      </motion.div>
+    </div>
+  )
 }
 
 export default function LoginPage() {
   const { login, user, loading } = useAuth()
   const router = useRouter()
 
-  const [email, setEmail]       = useState("")
-  const [password, setPassword] = useState("")
-  const [showPass, setShowPass] = useState(false)
+  const [email, setEmail]         = useState("")
+  const [password, setPassword]   = useState("")
+  const [showPass, setShowPass]   = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError]       = useState("")
-  const [activeRole, setActiveRole] = useState<Rol | null>(null)
+  const [error, setError]         = useState("")
+  const [loginResult, setLoginResult] = useState<LoginResult | null>(null)
 
   useEffect(() => {
     if (!loading && user) router.replace(ROL_ROUTES[user.rol])
   }, [user, loading, router])
-
-  function selectRole(rol: Rol) {
-    const c = USUARIOS_DEMO_CREDS.find((u) => u.rol === rol)
-    if (!c) return
-    setEmail(c.email)
-    setPassword(c.password)
-    setActiveRole(rol)
-    setError("")
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email || !password) return
     setSubmitting(true)
     setError("")
+    setLoginResult(null)
     try {
       const result = await login(email, password)
       if (!result.ok) {
-        setError(result.error ?? "Credenciales incorrectas")
+        setLoginResult(result)
+        if (!result.action) {
+          setError(result.error ?? "Credenciales incorrectas")
+        }
       }
     } catch {
-      setError("Error de conexiÃ³n. Verifica tu internet e intenta de nuevo.")
+      setError("Error de conexión. Verifica tu internet e intenta de nuevo.")
     } finally {
       setSubmitting(false)
     }
@@ -72,12 +139,21 @@ export default function LoginPage() {
 
   if (loading) return null
 
+  const showChooseModal  = loginResult?.action === "choose_path"
+  const showWrongSystem  = loginResult?.action === "wrong_system"
+
   return (
     <div
       className="min-h-screen flex"
       style={{ background: "var(--bg-base)" }}
     >
-      {/* â"€â"€ Left â€" branding panel â"€â"€ */}
+      {/* Modal: elegir camino cuando cuenta sin gym */}
+      <AnimatePresence>
+        {showChooseModal && (
+          <ChoosePathModal onClose={() => setLoginResult(null)} />
+        )}
+      </AnimatePresence>
+      {/* Left — branding panel */}
       <div className="hidden lg:flex lg:w-[52%] relative flex-col justify-between p-12 overflow-hidden">
         {/* Structural grid */}
         <div className="absolute inset-0 line-grid opacity-100 pointer-events-none" />
@@ -90,7 +166,7 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Top â€" logo */}
+        {/* Top — logo */}
         <div className="relative z-10 flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-md flex items-center justify-center"
@@ -103,7 +179,7 @@ export default function LoginPage() {
           </span>
         </div>
 
-        {/* Center â€" headline */}
+        {/* Center — headline */}
         <motion.div
           className="relative z-10 max-w-md"
           variants={staggerContainer}
@@ -136,8 +212,8 @@ export default function LoginPage() {
             className="text-base leading-relaxed max-w-sm"
             style={{ color: "var(--text-tertiary)" }}
           >
-            GestiÃ³n completa por roles, acceso QR, predicciÃ³n de churn,
-            gamificaciÃ³n y mÃ¡s â€" en un solo lugar.
+            Gestión completa por roles, acceso QR, predicción de churn,
+            gamificación y más — en un solo lugar.
           </motion.p>
 
           {/* Stats row */}
@@ -145,7 +221,7 @@ export default function LoginPage() {
             {[
               { value: "2.5M+", label: "Miembros activos" },
               { value: "500+",  label: "Gimnasios" },
-              { value: "89%",   label: "RetenciÃ³n AI" },
+              { value: "89%",   label: "Retención AI" },
             ].map((s) => (
               <div key={s.label}>
                 <p className="text-xl font-black tabular-nums" style={{ color: "var(--text-primary)" }}>
@@ -159,15 +235,15 @@ export default function LoginPage() {
           </motion.div>
         </motion.div>
 
-        {/* Bottom â€" version */}
+        {/* Bottom — version */}
         <div className="relative z-10">
           <span className="text-xs" style={{ color: "var(--text-disabled)" }}>
-            GYMsos v2.0 Â· 2026
+            GYMsos v2.0 · 2026
           </span>
         </div>
       </div>
 
-      {/* â"€â"€ Right â€" login form â"€â"€ */}
+      {/* Right — login form */}
       <div
         className="flex-1 flex items-center justify-center px-6 py-12"
         style={{
@@ -199,59 +275,11 @@ export default function LoginPage() {
             className="text-2xl font-bold tracking-tight mb-1"
             style={{ color: "var(--text-primary)" }}
           >
-            Iniciar sesiÃ³n
+            Iniciar sesión
           </h2>
           <p className="text-sm mb-7" style={{ color: "var(--text-tertiary)" }}>
-            Selecciona tu rol o ingresa tus credenciales
+            Ingresa tus credenciales para acceder
           </p>
-
-          {/* Role selector */}
-          <div className="mb-6">
-            <p className="text-[11px] font-medium uppercase tracking-wider mb-2.5" style={{ color: "var(--text-tertiary)" }}>
-              Acceso rápido
-            </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {USUARIOS_DEMO_CREDS.map(({ rol }) => {
-                const isActive = activeRole === rol
-                const accent   = ROL_ACCENT[rol]
-                return (
-                  <motion.button
-                    key={rol}
-                    type="button"
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => selectRole(rol)}
-                    className="flex flex-col items-start px-3 py-2.5 rounded-lg text-left transition-all duration-150"
-                    style={{
-                      background: isActive ? `${accent}10` : "var(--bg-overlay)",
-                      border: `1px solid ${isActive ? `${accent}30` : "var(--border-subtle)"}`,
-                      color: isActive ? "var(--text-primary)" : "var(--text-tertiary)",
-                    }}
-                    onMouseEnter={e => {
-                      if (!isActive) e.currentTarget.style.borderColor = "var(--border-default)"
-                    }}
-                    onMouseLeave={e => {
-                      if (!isActive) e.currentTarget.style.borderColor = "var(--border-subtle)"
-                    }}
-                  >
-                    <span className="text-xs font-semibold">{ROL_LABELS[rol]}</span>
-                    <span
-                      className="text-[10px] mt-0.5 leading-snug"
-                      style={{ color: isActive ? accent : "var(--text-disabled)" }}
-                    >
-                      {ROL_DESC[rol]}
-                    </span>
-                  </motion.button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px" style={{ background: "var(--border-faint)" }} />
-            <span className="text-[11px]" style={{ color: "var(--text-disabled)" }}>o continÃºa con email</span>
-            <div className="flex-1 h-px" style={{ background: "var(--border-faint)" }} />
-          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -261,12 +289,12 @@ export default function LoginPage() {
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Correo electrÃ³nico
+                Correo electrónico
               </label>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(""); setActiveRole(null) }}
+                onChange={(e) => { setEmail(e.target.value); setError("") }}
                 placeholder="correo@ejemplo.com"
                 required
                 className="input-base"
@@ -280,14 +308,14 @@ export default function LoginPage() {
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: "var(--text-secondary)" }}
               >
-                ContraseÃ±a
+                Contraseña
               </label>
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError("") }}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="••••••••"
                   required
                   className="input-base pr-10"
                   autoComplete="current-password"
@@ -306,7 +334,36 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Error */}
+            {/* Error: cuenta de otro sistema */}
+            <AnimatePresence>
+              {showWrongSystem && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.18, ease: easings.sharp }}
+                  className="overflow-hidden"
+                >
+                  <div
+                    className="rounded-xl p-3.5"
+                    style={{
+                      background: "rgba(234,179,8,0.06)",
+                      border: "1px solid rgba(234,179,8,0.22)",
+                    }}
+                  >
+                    <p className="text-xs font-semibold mb-1" style={{ color: "#ca8a04" }}>
+                      Cuenta habilitada para otro módulo
+                    </p>
+                    <p className="text-[11px] leading-relaxed" style={{ color: "#a16207" }}>
+                      Esta cuenta pertenece a otro sistema de la plataforma (por ejemplo ONG u otro módulo).
+                      Si crees que es un error, contacta al administrador.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Error genérico */}
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -374,4 +431,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

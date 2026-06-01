@@ -56,53 +56,36 @@ const ROL_ROUTES: Record<Rol, string> = {
   admin:         "/dashboard/gerente",
 }
 
+export interface LoginResult {
+  ok:      boolean
+  error?:  string
+  // 'choose_path'  → cuenta BD Maestra sin gym asignado → mostrar modal dueño/miembro
+  // 'wrong_system' → cuenta pertenece a otro sistema (ONG, RRHH, etc.)
+  action?: "choose_path" | "wrong_system"
+}
+
 interface AuthContextValue {
   user:    GymProfile | null
   loading: boolean
-  login:   (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
+  login:   (email: string, password: string) => Promise<LoginResult>
   logout:  () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// ── fetchProfile: BD Maestra (public.profiles) → gym (gym.usuarios + gimnasios) ──
+// ── fetchProfile: gym.usuarios + gym.gimnasios → GymProfile ─────────────────
+// Pre-condición: el llamador ya verificó que existe public.profiles.
+// Solo construye el perfil gym completo para usuarios que tienen gym.usuarios.
 
 async function fetchProfile(authUserId: string, email: string): Promise<GymProfile | null> {
-  // 1. Verificar existencia en BD Maestra — fuente de verdad universal
-  const { data: bdProfile } = await supabasePublic
-    .from("profiles")
-    .select("id, full_name, genero, numero_documento")
-    .eq("id", authUserId)
-    .single()
-
-  // Sin public.profiles → cuenta no configurada en BD Maestra (corrupta o borrada)
-  if (!bdProfile) return null
-
-  // 2. Buscar perfil operativo gym-específico
   const { data: usuario } = await supabase
     .from("usuarios")
     .select("id_usuario, nombre, id_gimnasio, rol, estado, foto_url, cargo, telefono, documento, genero")
     .eq("id_usuario", authUserId)
     .single()
 
-  // Sin gym.usuarios → usuario de BD Maestra sin acceso al módulo gym
-  // Retorna perfil con tenant_id=null → login lo redirige a /onboarding
-  if (!usuario) {
-    return {
-      id:        authUserId,
-      email,
-      full_name: bdProfile.full_name   ?? null,
-      tenant_id: null,
-      foto_url:  null,
-      cargo:     null,
-      telefono:  null,
-      documento: bdProfile.numero_documento ?? null,
-      genero:    bdProfile.genero      ?? null,
-      rol:       "miembro",
-    }
-  }
+  if (!usuario) return null
 
-  // 3. Obtener nombre y plan del gimnasio asignado
   let tenant_name: string | undefined
   let tenant_plan: string | undefined
 
@@ -121,13 +104,13 @@ async function fetchProfile(authUserId: string, email: string): Promise<GymProfi
   return {
     id:          usuario.id_usuario,
     email,
-    full_name:   usuario.nombre      ?? bdProfile.full_name        ?? null,
+    full_name:   usuario.nombre    ?? null,
     tenant_id:   usuario.id_gimnasio ?? null,
-    foto_url:    usuario.foto_url    ?? null,
-    cargo:       usuario.cargo       ?? null,
-    telefono:    usuario.telefono    ?? null,
-    documento:   usuario.documento   ?? bdProfile.numero_documento ?? null,
-    genero:      usuario.genero      ?? bdProfile.genero           ?? null,
+    foto_url:    usuario.foto_url  ?? null,
+    cargo:       usuario.cargo     ?? null,
+    telefono:    usuario.telefono  ?? null,
+    documento:   usuario.documento ?? null,
+    genero:      usuario.genero    ?? null,
     rol,
     tenant_name,
     tenant_plan,
@@ -167,7 +150,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback(
-    async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
+    async (email: string, password: string): Promise<LoginResult> => {
+      // 1. Autenticación Supabase
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
@@ -181,21 +165,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!data.user) return { ok: false, error: "Error al iniciar sesión." }
 
-      const profile = await fetchProfile(data.user.id, data.user.email ?? "")
+      // 2. Verificar BD Maestra vía RPC (SECURITY DEFINER — bypasea RLS y sesión compartida)
+      const { data: bdResult } = await supabasePublic.rpc("fn_get_my_profile")
 
-      if (!profile) {
-        // Sin public.profiles → cuenta no configurada en BD Maestra
+      if (!bdResult?.found) {
+        // No existe en BD Maestra → cuenta huérfana (no debería ocurrir con 012+)
         await supabase.auth.signOut()
         return {
           ok:    false,
-          error: "Cuenta no configurada. Contacta al administrador o crea tu cuenta en /onboarding.",
+          error: "Cuenta no configurada en el sistema. Contacta al administrador.",
         }
       }
 
-      if (!profile.tenant_id) {
-        // Autenticado pero sin gimnasio asignado → completar onboarding
-        router.push("/onboarding")
-        return { ok: true }
+      // 3. Verificar acceso al módulo gym
+      const { data: gymUser } = await supabase
+        .from("usuarios")
+        .select("id_usuario")
+        .eq("id_usuario", data.user.id)
+        .single()
+
+      if (!gymUser) {
+        // Tiene cuenta BD Maestra pero no acceso gym
+        await supabase.auth.signOut()
+
+        if (bdResult.tenant_id) {
+          // Pertenece a otro sistema (ONG, RRHH, etc.) — tenant_id apunta a ese sistema
+          return {
+            ok:     false,
+            error:  "Esta cuenta pertenece a otro sistema de la plataforma (como ONG u otro módulo). Accede desde el sistema correspondiente.",
+            action: "wrong_system",
+          }
+        }
+
+        // Sin sistema asignado → mostrar modal para elegir camino
+        return {
+          ok:     false,
+          error:  "Tu cuenta existe pero aún no está vinculada a un gimnasio.",
+          action: "choose_path",
+        }
+      }
+
+      // 4. Construir perfil completo y redirigir
+      const profile = await fetchProfile(data.user.id, data.user.email ?? "")
+
+      if (!profile) {
+        await supabase.auth.signOut()
+        return { ok: false, error: "Error al cargar el perfil. Intenta de nuevo." }
       }
 
       setUser(profile)
