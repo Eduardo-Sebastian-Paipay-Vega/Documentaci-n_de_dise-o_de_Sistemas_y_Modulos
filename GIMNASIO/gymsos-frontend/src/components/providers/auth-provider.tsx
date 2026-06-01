@@ -4,15 +4,22 @@ import {
   createContext, useContext, useState, useEffect, useCallback, type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
+import { supabase, supabasePublic } from "@/lib/supabase"
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Arquitectura BD:
-//   auth.users       → identidad Supabase (nunca se toca directamente)
-//   gym.usuarios     → perfil del usuario en el gym (id_usuario FK auth.users)
-//   gym.gimnasios    → el tenant del gym (id_gimnasio)
-//   gym.codigos_acceso → invitaciones por gimnasio
-//   supabase client  → db.schema = "gym" por defecto
+// Arquitectura BD Maestra (multi-sistema, multi-tenant):
+//   auth.users        → identidad Supabase (nunca se toca directamente)
+//   public.profiles   → perfil universal BD Maestra (1:1 con auth.users)
+//                        existe para GYM, ONG, RRHH, etc.
+//   gym.usuarios      → perfil operativo del módulo gym únicamente
+//                        quién eres DENTRO del gimnasio: rol, cargo, gym asignado
+//   gym.gimnasios     → el tenant del gym (id_gimnasio)
+//
+// Flujo de fetchProfile:
+//   1. public.profiles → verifica que la cuenta existe en BD Maestra
+//   2. gym.usuarios    → enriquece con datos del módulo gym
+//   Si (1) falla → cuenta no configurada → sign out
+//   Si (2) falla → usuario de BD Maestra sin acceso gym → redirige a onboarding
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type Rol =
@@ -58,19 +65,44 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// ── fetchProfile: lee gym.usuarios + gym.gimnasios ────────────────────────────
+// ── fetchProfile: BD Maestra (public.profiles) → gym (gym.usuarios + gimnasios) ──
 
 async function fetchProfile(authUserId: string, email: string): Promise<GymProfile | null> {
-  // 1. Obtener perfil del usuario en gym.usuarios
-  const { data: usuario, error } = await supabase
+  // 1. Verificar existencia en BD Maestra — fuente de verdad universal
+  const { data: bdProfile } = await supabasePublic
+    .from("profiles")
+    .select("id, full_name, genero, numero_documento")
+    .eq("id", authUserId)
+    .single()
+
+  // Sin public.profiles → cuenta no configurada en BD Maestra (corrupta o borrada)
+  if (!bdProfile) return null
+
+  // 2. Buscar perfil operativo gym-específico
+  const { data: usuario } = await supabase
     .from("usuarios")
     .select("id_usuario, nombre, id_gimnasio, rol, estado, foto_url, cargo, telefono, documento, genero")
     .eq("id_usuario", authUserId)
     .single()
 
-  if (error || !usuario) return null
+  // Sin gym.usuarios → usuario de BD Maestra sin acceso al módulo gym
+  // Retorna perfil con tenant_id=null → login lo redirige a /onboarding
+  if (!usuario) {
+    return {
+      id:        authUserId,
+      email,
+      full_name: bdProfile.full_name   ?? null,
+      tenant_id: null,
+      foto_url:  null,
+      cargo:     null,
+      telefono:  null,
+      documento: bdProfile.numero_documento ?? null,
+      genero:    bdProfile.genero      ?? null,
+      rol:       "miembro",
+    }
+  }
 
-  // 2. Obtener nombre y plan del gimnasio (si tiene uno asignado)
+  // 3. Obtener nombre y plan del gimnasio asignado
   let tenant_name: string | undefined
   let tenant_plan: string | undefined
 
@@ -84,19 +116,18 @@ async function fetchProfile(authUserId: string, email: string): Promise<GymProfi
     tenant_plan = gym?.plan_suscripcion
   }
 
-  // 3. Validar rol
   const rol: Rol = isValidRol(usuario.rol) ? (usuario.rol as Rol) : "miembro"
 
   return {
     id:          usuario.id_usuario,
     email,
-    full_name:   usuario.nombre   ?? null,
-    tenant_id:   usuario.id_gimnasio ?? null,   // id_gimnasio como tenant_id
-    foto_url:    usuario.foto_url ?? null,
-    cargo:       usuario.cargo    ?? null,
-    telefono:    usuario.telefono ?? null,
-    documento:   usuario.documento ?? null,
-    genero:      usuario.genero   ?? null,
+    full_name:   usuario.nombre      ?? bdProfile.full_name        ?? null,
+    tenant_id:   usuario.id_gimnasio ?? null,
+    foto_url:    usuario.foto_url    ?? null,
+    cargo:       usuario.cargo       ?? null,
+    telefono:    usuario.telefono    ?? null,
+    documento:   usuario.documento   ?? bdProfile.numero_documento ?? null,
+    genero:      usuario.genero      ?? bdProfile.genero           ?? null,
     rol,
     tenant_name,
     tenant_plan,
@@ -153,11 +184,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await fetchProfile(data.user.id, data.user.email ?? "")
 
       if (!profile) {
-        // No tiene fila en gym.usuarios → necesita onboarding o signup
+        // Sin public.profiles → cuenta no configurada en BD Maestra
         await supabase.auth.signOut()
         return {
           ok:    false,
-          error: "Perfil no encontrado. Usa /onboarding para crear tu gimnasio o /signup para unirte a uno.",
+          error: "Cuenta no configurada. Contacta al administrador o crea tu cuenta en /onboarding.",
         }
       }
 
