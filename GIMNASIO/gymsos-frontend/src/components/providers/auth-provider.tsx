@@ -166,14 +166,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!data.user) return { ok: false, error: "Error al iniciar sesión." }
 
       // 2. Verificar BD Maestra vía RPC (SECURITY DEFINER — bypasea RLS y sesión compartida)
-      const { data: bdResult } = await supabasePublic.rpc("fn_get_my_profile")
+      const { data: bdResult, error: rpcError } = await supabasePublic.rpc("fn_get_my_profile")
 
-      if (!bdResult?.found) {
-        // No existe en BD Maestra → cuenta huérfana (no debería ocurrir con 012+)
+      if (rpcError) {
+        // El RPC no existe o falló — probablemente migración 012 no ejecutada aún
+        console.error("fn_get_my_profile RPC error:", rpcError.message)
         await supabase.auth.signOut()
         return {
           ok:    false,
-          error: "Cuenta no configurada en el sistema. Contacta al administrador.",
+          error: "Error de configuración del sistema. Asegúrate de haber ejecutado la migración 012 en Supabase.",
+        }
+      }
+
+      if (!bdResult?.found) {
+        // No existe en BD Maestra — cuenta creada antes de las migraciones 011/012
+        await supabase.auth.signOut()
+        return {
+          ok:     false,
+          error:  "Tu cuenta existe pero aún no está vinculada a un gimnasio.",
+          action: "choose_path",
         }
       }
 
