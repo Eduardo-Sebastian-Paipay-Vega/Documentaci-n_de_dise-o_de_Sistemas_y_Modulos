@@ -4,14 +4,15 @@ import {
   createContext, useContext, useState, useEffect, useCallback, type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
-import { supabase, supabasePublic } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase"
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Arquitectura BD Maestra:
-//   public.tenants   → el gimnasio como tenant
-//   public.profiles  → el usuario autenticado
-//   public.sedes     → sucursales del gimnasio
-//   gym.*            → dominio GYMsos
+// Arquitectura BD:
+//   auth.users       → identidad Supabase (nunca se toca directamente)
+//   gym.usuarios     → perfil del usuario en el gym (id_usuario FK auth.users)
+//   gym.gimnasios    → el tenant del gym (id_gimnasio)
+//   gym.codigos_acceso → invitaciones por gimnasio
+//   supabase client  → db.schema = "gym" por defecto
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type Rol =
@@ -19,22 +20,23 @@ export type Rol =
   | "nutricionista" | "miembro" | "cliente" | "admin"
 
 export interface GymProfile {
-  // De public.profiles
-  id:              string
-  tenant_id:       string | null
-  full_name:       string | null
-  tipo_documento:  string | null
-  numero_documento: string | null
-  genero:          string | null
-  foto_url:        string | null
-  cargo:           string | null
-  // De auth.users
-  email:           string
-  // De public.tenants (join)
-  tenant_name?:    string
-  tenant_plan?:    string
-  // Rol en este tenant (de public.user_roles_sedes o metadata de auth)
-  rol:             Rol
+  // Identidad (auth.users)
+  id:           string        // = auth.users.id
+  email:        string
+
+  // Perfil (gym.usuarios)
+  full_name:    string | null // = gym.usuarios.nombre
+  tenant_id:    string | null // = gym.usuarios.id_gimnasio (renombrado para compat.)
+  foto_url:     string | null
+  cargo:        string | null
+  telefono:     string | null
+  documento:    string | null
+  genero:       string | null
+  rol:          Rol
+
+  // Gym info (gym.gimnasios join)
+  tenant_name?: string        // = gym.gimnasios.nombre
+  tenant_plan?: string        // = gym.gimnasios.plan_suscripcion
 }
 
 const ROL_ROUTES: Record<Rol, string> = {
@@ -56,58 +58,48 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── fetchProfile: lee gym.usuarios + gym.gimnasios ────────────────────────────
 
 async function fetchProfile(authUserId: string, email: string): Promise<GymProfile | null> {
-  // 1. Obtener profile de public.profiles
-  const { data: profile, error } = await supabasePublic
-    .from("profiles")
-    .select("id, tenant_id, full_name, tipo_documento, numero_documento, genero, foto_url, cargo")
-    .eq("id", authUserId)
+  // 1. Obtener perfil del usuario en gym.usuarios
+  const { data: usuario, error } = await supabase
+    .from("usuarios")
+    .select("id_usuario, nombre, id_gimnasio, rol, estado, foto_url, cargo, telefono, documento, genero")
+    .eq("id_usuario", authUserId)
     .single()
 
-  if (error || !profile) return null
+  if (error || !usuario) return null
 
-  // 2. Obtener tenant si existe
+  // 2. Obtener nombre y plan del gimnasio (si tiene uno asignado)
   let tenant_name: string | undefined
   let tenant_plan: string | undefined
-  if (profile.tenant_id) {
-    const { data: tenant } = await supabasePublic
-      .from("tenants")
-      .select("name, plan_id")
-      .eq("id", profile.tenant_id)
+
+  if (usuario.id_gimnasio) {
+    const { data: gym } = await supabase
+      .from("gimnasios")
+      .select("nombre, plan_suscripcion")
+      .eq("id_gimnasio", usuario.id_gimnasio)
       .single()
-    tenant_name = tenant?.name
-    tenant_plan = tenant?.plan_id
+    tenant_name = gym?.nombre
+    tenant_plan = gym?.plan_suscripcion
   }
 
-  // 3. Determinar rol (desde user_roles_sedes o metadata de auth)
-  let rol: Rol = "miembro"
-  if (profile.tenant_id) {
-    const { data: roles } = await supabasePublic
-      .from("user_roles_sedes")
-      .select("roles(name)")
-      .eq("user_id", authUserId)
-      .eq("tenant_id", profile.tenant_id)
-      .limit(1)
-
-    const roleName = (roles?.[0]?.roles as { name?: string } | null)?.name
-    if (roleName && isValidRol(roleName)) rol = roleName as Rol
-  }
+  // 3. Validar rol
+  const rol: Rol = isValidRol(usuario.rol) ? (usuario.rol as Rol) : "miembro"
 
   return {
-    id:               profile.id,
-    tenant_id:        profile.tenant_id,
-    full_name:        profile.full_name,
-    tipo_documento:   profile.tipo_documento,
-    numero_documento: profile.numero_documento,
-    genero:           profile.genero,
-    foto_url:         profile.foto_url,
-    cargo:            profile.cargo,
+    id:          usuario.id_usuario,
     email,
+    full_name:   usuario.nombre   ?? null,
+    tenant_id:   usuario.id_gimnasio ?? null,   // id_gimnasio como tenant_id
+    foto_url:    usuario.foto_url ?? null,
+    cargo:       usuario.cargo    ?? null,
+    telefono:    usuario.telefono ?? null,
+    documento:   usuario.documento ?? null,
+    genero:      usuario.genero   ?? null,
+    rol,
     tenant_name,
     tenant_plan,
-    rol,
   }
 }
 
@@ -123,7 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router                = useRouter()
 
   useEffect(() => {
-    // Cargar sesión existente
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session?.user) {
         const profile = await fetchProfile(data.session.user.id, data.session.user.email ?? "")
@@ -162,12 +153,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await fetchProfile(data.user.id, data.user.email ?? "")
 
       if (!profile) {
+        // No tiene fila en gym.usuarios → necesita onboarding o signup
         await supabase.auth.signOut()
-        return { ok: false, error: "Perfil no encontrado. Completa tu registro." }
+        return {
+          ok:    false,
+          error: "Perfil no encontrado. Usa /onboarding para crear tu gimnasio o /signup para unirte a uno.",
+        }
       }
 
       if (!profile.tenant_id) {
-        // Autenticado pero sin gym asignado → ir a onboarding
+        // Autenticado pero sin gimnasio asignado → completar onboarding
         router.push("/onboarding")
         return { ok: true }
       }

@@ -8,7 +8,7 @@ import {
   Eye, EyeOff, ArrowRight, ArrowLeft, Loader2, AlertCircle,
   CheckCircle2, Building2, User, Upload, X,
 } from "lucide-react"
-import { supabase, supabasePublic } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 import { easings } from "@/lib/motion"
 
@@ -167,36 +167,43 @@ export default function OnboardingPage() {
     }
   }
 
-  // ── Obtener código del gimnasio desde gym.access_codes ──────────────────
+  // ── Obtener código del gimnasio desde gym.codigos_acceso ────────────────
+  // Flujo: gym.usuarios(id_usuario) → id_gimnasio → gym.codigos_acceso(codigo)
   async function fetchGymCode(userId: string): Promise<void> {
+    // Pequeño delay para que el trigger de Supabase termine de insertarse
     await new Promise(r => setTimeout(r, 800))
     try {
-      // Buscar tenant_id del profile en public.profiles
-      const { data: profile } = await supabasePublic
-        .from("profiles")
-        .select("tenant_id")
-        .eq("id", userId)
+      // 1. Obtener id_gimnasio del usuario recién creado
+      const { data: usuario } = await supabase
+        .from("usuarios")
+        .select("id_gimnasio")
+        .eq("id_usuario", userId)
         .single()
 
-      if (!profile?.tenant_id) { setGymCode("—"); return }
+      if (!usuario?.id_gimnasio) { setGymCode("—"); return }
 
-      // Buscar código en gym.access_codes
+      // 2. Buscar código activo del gimnasio
       const { data: code } = await supabase
-        .from("access_codes")
-        .select("code")
-        .eq("tenant_id", profile.tenant_id)
+        .from("codigos_acceso")
+        .select("codigo")
+        .eq("id_gimnasio", usuario.id_gimnasio)
         .eq("activo", true)
         .order("created_at", { ascending: false })
         .limit(1)
         .single()
 
-      setGymCode(code?.code ?? "—")
+      setGymCode(code?.codigo ?? "—")
     } catch {
       setGymCode("—")
     }
   }
 
   // ── Submit final ──────────────────────────────────────────────────────────
+  // Flujo:
+  //   1. supabase.auth.signUp() con metadata → trigger handle_new_user (CASO A)
+  //      crea gym.gimnasios + gym.codigos_acceso + gym.usuarios automáticamente
+  //   2. Si sesión activa: fetchGymCode() para mostrar el código al dueño
+  //   3. Si confirmar email: mostrar mensaje de espera
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const err = validateStep2()
@@ -205,20 +212,27 @@ export default function OnboardingPage() {
     setError("")
 
     try {
-      // PASO 1: Crear cuenta en Supabase Auth
-      // El profile en public.profiles se crea via trigger de Supabase Auth.
-      // LUEGO de confirmación/login, llamamos gym.bootstrap_gym_tenant() RPC.
       const { data, error: authErr } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
           data: {
-            // Metadatos básicos del profile (public.profiles los recibe via trigger)
-            full_name:        nombre.trim(),
-            numero_documento: documento.trim()  || null,
-            tipo_documento:   documento ? "DNI" : null,
-            genero:           genero             || null,
-            cargo:            cargo.trim()       || "Gerente General",
+            // ── Datos del dueño → gym.usuarios ──────────────────────────────
+            nombre:        nombre.trim(),
+            telefono:      telefono.trim()  || null,
+            documento:     documento.trim() || null,
+            genero:        genero           || null,
+            cargo:         cargo.trim()     || "Gerente General",
+            foto_url:      null,            // se actualiza después de subir la foto
+            // ── Datos del gym → gym.gimnasios (CASO A en handle_new_user) ───
+            gym_nombre:    gymNombre.trim(),
+            gym_ruc:       gymRuc.trim()        || null,
+            gym_ciudad:    gymCiudad.trim()      || "Lima",
+            gym_pais:      gymPais.trim()        || "Perú",
+            gym_direccion: gymDireccion.trim()   || null,
+            gym_telefono:  gymTelefono.trim()    || null,
+            gym_email:     gymEmail.trim()       || null,
+            gym_plan:      gymPlan,
           },
         },
       })
@@ -240,41 +254,21 @@ export default function OnboardingPage() {
       setGymCreado(gymNombre.trim())
 
       if (data.session) {
-        // PASO 2: Sesión activa → llamar RPC para crear tenant gym + access code
-        const planMap: Record<string, string> = {
-          pequeno: "gym_starter", mediano: "gym_pro",
-          grande: "gym_business", enterprise: "gym_enterprise",
-        }
-        const { data: bootstrap, error: bErr } = await supabase
-          .rpc("bootstrap_gym_tenant", {
-            p_tenant_name:    gymNombre.trim(),
-            p_tax_id:         gymRuc.trim() || `TEMP-${Date.now()}`,
-            p_plan_id:        planMap[gymPlan] ?? "gym_starter",
-            p_city:           gymCiudad.trim()    || "Lima",
-            p_country:        "PE",
-            p_profile_nombre: nombre.trim(),
-            p_cargo:          cargo.trim()         || "Gerente General",
-          })
-
-        if (bErr) {
-          setError("Cuenta creada. Error al configurar el gimnasio: " + bErr.message)
-        } else {
-          setGymCode((bootstrap as { access_code?: string })?.access_code ?? "—")
-        }
-
-        // Subir foto si eligió una
+        // Sesión activa → el trigger ya creó el gym.
+        // Subir foto de perfil si el dueño eligió una.
         const fotoUrl = await uploadFoto(data.user.id)
         if (fotoUrl) {
-          await supabasePublic
-            .from("profiles")
+          await supabase
+            .from("usuarios")
             .update({ foto_url: fotoUrl })
-            .eq("id", data.user.id)
+            .eq("id_usuario", data.user.id)
         }
 
+        // Obtener el código de acceso del gym recién creado.
+        await fetchGymCode(data.user.id)
         setNeedsEmail(false)
       } else {
-        // Email confirmation pendiente → guarda datos del gym para después
-        // El usuario deberá configurar el gym al hacer login por primera vez
+        // Email confirmation habilitado → el trigger correrá después del confirm.
         setNeedsEmail(true)
       }
 
