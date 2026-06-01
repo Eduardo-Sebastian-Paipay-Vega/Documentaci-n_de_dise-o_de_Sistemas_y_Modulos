@@ -29,12 +29,12 @@
 --   - Tablas de infraestructura de la BD Maestra
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-BEGIN;
-
-RAISE NOTICE '═══════════════════════════════════════════════════════';
-RAISE NOTICE '  GYMSOS ROLLBACK 001→008 — INICIANDO';
-RAISE NOTICE '  Estado objetivo: igual a supabase-schema.sql';
-RAISE NOTICE '═══════════════════════════════════════════════════════';
+DO $$ BEGIN
+  RAISE NOTICE '═══════════════════════════════════════════════════════';
+  RAISE NOTICE '  GYMSOS ROLLBACK 001-008 — INICIANDO';
+  RAISE NOTICE '  Estado objetivo: igual a supabase-schema.sql';
+  RAISE NOTICE '═══════════════════════════════════════════════════════';
+END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 1 — ROLLBACK 008: Eliminar gym.codigos_acceso y columnas extra
@@ -47,16 +47,15 @@ ALTER TABLE IF EXISTS gym.gimnasios DROP COLUMN IF EXISTS logo_url;
 ALTER TABLE IF EXISTS gym.usuarios   DROP COLUMN IF EXISTS foto_url;
 ALTER TABLE IF EXISTS gym.usuarios   DROP COLUMN IF EXISTS cargo;
 
-RAISE NOTICE '✅ ROLLBACK 008 completado: gym.codigos_acceso eliminada, columnas extra removidas';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 008: gym.codigos_acceso eliminada, columnas extra removidas'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 2 — ROLLBACK 007: Eliminar generate_gym_code
--- (handle_new_user se restaura en paso 4 junto con 005)
 -- ─────────────────────────────────────────────────────────────────────────────
 
 DROP FUNCTION IF EXISTS public.generate_gym_code(TEXT);
 
-RAISE NOTICE '✅ ROLLBACK 007 completado: generate_gym_code() eliminada';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 007: generate_gym_code() eliminada'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 3 — ROLLBACK 006: Mover TODAS las tablas de gym → public
@@ -108,11 +107,10 @@ $$ LANGUAGE SQL SECURITY DEFINER STABLE;
 -- Eliminar el schema gym (ya debe estar vacío)
 DROP SCHEMA IF EXISTS gym CASCADE;
 
-RAISE NOTICE '✅ ROLLBACK 006 completado: todas las tablas movidas a public, schema gym eliminado';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 006: todas las tablas movidas a public, schema gym eliminado'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 4 — ROLLBACK 005: Eliminar codigo_acceso y policies nuevas
--- (Tablas ya están en public después del paso anterior)
 -- ─────────────────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "gimnasios_public_select" ON public.gimnasios;
@@ -121,52 +119,36 @@ DROP POLICY IF EXISTS "users_insert_own"         ON public.usuarios;
 DROP INDEX IF EXISTS public.idx_gimnasios_codigo;
 ALTER TABLE IF EXISTS public.gimnasios DROP COLUMN IF EXISTS codigo_acceso;
 
--- Restaurar handle_new_user a la versión ORIGINAL vacía (supabase-schema.sql)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- El perfil completo se crea desde la app (incluye rol, gimnasio, etc.)
-  -- Este trigger solo guarda la referencia mínima si se necesita
   RETURN NEW;
 END;
 $$;
 
-RAISE NOTICE '✅ ROLLBACK 005 completado: codigo_acceso eliminada, handle_new_user restaurado';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 005: codigo_acceso eliminada, handle_new_user restaurado'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 5 — ROLLBACK 004: Eliminar datos seed creados por la migración
--- NOTA: Las cuentas de auth.users deben eliminarse manualmente en el Dashboard
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Eliminar registros en tabla usuarios creados por la migración 004
--- (solo los que tienen el UUID conocido del seed)
 DELETE FROM public.usuarios
- WHERE id_usuario = '00000000-0000-0000-0000-000000000006'  -- gerente@gymsos.io seed
+ WHERE id_usuario = '00000000-0000-0000-0000-000000000006'
     OR email = 'gerente@gymsos.io';
 
--- Eduardo: revertir rol a estado previo si fue modificado por 004
--- Solo si fue creado/modificado por la migración (marcado con gimnasio demo)
--- Se deja su cuenta intacta si existe por otros medios
 DO $$
 BEGIN
-  RAISE NOTICE '⚠️  ROLLBACK 004: Eliminar gerente@gymsos.io de auth.users manualmente:';
-  RAISE NOTICE '   Supabase Dashboard → Authentication → Users → buscar gerente@gymsos.io → Delete';
-  RAISE NOTICE '   (No se puede hacer desde SQL sin service_role key)';
+  RAISE NOTICE '✅ ROLLBACK 004: registro gerente@gymsos.io eliminado de public.usuarios';
+  RAISE NOTICE '⚠️  ACCION MANUAL: eliminar gerente@gymsos.io de auth.users en Supabase Dashboard';
 END $$;
-
-RAISE NOTICE '✅ ROLLBACK 004 completado: registro de gerente@gymsos.io eliminado de public.usuarios';
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 6 — ROLLBACK 003: Restaurar tablas eliminadas + limpiar RLS
--- Tablas a recrear: battle_pass_progression, clanes, clan_miembros,
--- torneos_semanales, marketplace_vendors, marketplace_transactions,
--- corporate_clients, corporate_leaderboards, dynamic_pricing_log
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Eliminar policies que 003 agregó a tablas que seguían existiendo
 DROP POLICY IF EXISTS "xp_select_own"              ON public.gamification_xp;
 DROP POLICY IF EXISTS "xp_select_staff"             ON public.gamification_xp;
 DROP POLICY IF EXISTS "xp_insert_system"            ON public.gamification_xp;
@@ -187,8 +169,6 @@ DROP POLICY IF EXISTS "intervention_insert_gerente" ON public.churn_intervention
 DROP POLICY IF EXISTS "twin_select_own"             ON public.digital_twin;
 DROP POLICY IF EXISTS "twin_update_own"             ON public.digital_twin;
 
--- Deshabilitar RLS en tablas que 003 habilitó
--- (estas tablas no tenían RLS en el supabase-schema.sql original)
 ALTER TABLE IF EXISTS public.gamification_xp      DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.gamification_levels  DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.health_alerts        DISABLE ROW LEVEL SECURITY;
@@ -197,14 +177,11 @@ ALTER TABLE IF EXISTS public.ai_recommendations   DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.churn_interventions  DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.digital_twin         DISABLE ROW LEVEL SECURITY;
 
--- Eliminar índices que 003 agregó
 DROP INDEX IF EXISTS public.idx_xp_usuario_fecha;
 DROP INDEX IF EXISTS public.idx_alerts_usuario_leida;
 DROP INDEX IF EXISTS public.idx_ai_rec_usuario;
 
--- ── Recrear las 9 tablas que 003 eliminó ──────────────────────────────────────
--- (copiadas exactamente de supabase-schema.sql)
-
+-- Recrear las 9 tablas que 003 eliminó (tomadas de supabase-schema.sql)
 CREATE TABLE IF NOT EXISTS public.marketplace_vendors (
   id_vendor           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   tipo                VARCHAR(30)   NOT NULL
@@ -311,102 +288,83 @@ CREATE TABLE IF NOT EXISTS public.dynamic_pricing_log (
   actividad           VARCHAR(20)   CHECK (actividad IN ('aplicada','revertida'))
 );
 
-RAISE NOTICE '✅ ROLLBACK 003 completado: 9 tablas restauradas, RLS adicional removida';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 003: 9 tablas restauradas, RLS adicional removida'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 7 — ROLLBACK 002: Eliminar audit_logs gym-específica + policies
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Detectar si audit_logs en public es la versión gym (tiene id_gimnasio)
--- o la versión BD Maestra (tiene tenant_id). Solo eliminar la versión gym.
 DO $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
      WHERE table_schema = 'public'
        AND table_name   = 'audit_logs'
-       AND column_name  = 'id_gimnasio'  -- columna exclusiva de la versión gym
+       AND column_name  = 'id_gimnasio'
   ) THEN
     EXECUTE 'DROP TABLE IF EXISTS public.audit_logs CASCADE';
-    RAISE NOTICE '✅ public.audit_logs (versión gym) eliminada';
+    RAISE NOTICE '✅ public.audit_logs (version gym) eliminada';
   ELSIF EXISTS (
     SELECT 1 FROM information_schema.tables
      WHERE table_schema = 'public' AND table_name = 'audit_logs'
   ) THEN
-    RAISE NOTICE 'ℹ️  public.audit_logs NO es la versión gym (BD Maestra) → NO eliminada';
+    RAISE NOTICE 'ℹ️  public.audit_logs NO es version gym (BD Maestra) — NO eliminada';
   ELSE
     RAISE NOTICE 'ℹ️  public.audit_logs no existe — omitido';
   END IF;
 END $$;
 
--- Eliminar función de auditoría gym
 DROP FUNCTION IF EXISTS public.log_audit_event(TEXT, TEXT, UUID, JSONB, JSONB);
 
--- Eliminar índices de audit_logs
 DROP INDEX IF EXISTS public.idx_audit_logs_gimnasio;
 DROP INDEX IF EXISTS public.idx_audit_logs_actor;
 DROP INDEX IF EXISTS public.idx_audit_logs_entidad;
 
--- Eliminar policies que 002 agregó a tablas existentes
--- inscripciones
 DROP POLICY IF EXISTS "inscripciones_select_own"     ON public.inscripciones;
 DROP POLICY IF EXISTS "inscripciones_select_staff"   ON public.inscripciones;
 DROP POLICY IF EXISTS "inscripciones_insert_miembro" ON public.inscripciones;
 DROP POLICY IF EXISTS "inscripciones_update_staff"   ON public.inscripciones;
 DROP POLICY IF EXISTS "inscripciones_delete_own"     ON public.inscripciones;
--- asistencias
-DROP POLICY IF EXISTS "asistencias_select_own"   ON public.asistencias;
-DROP POLICY IF EXISTS "asistencias_select_staff" ON public.asistencias;
-DROP POLICY IF EXISTS "asistencias_insert_staff" ON public.asistencias;
-DROP POLICY IF EXISTS "asistencias_update_staff" ON public.asistencias;
--- usuarios (solo las de 002, no las del supabase-schema.sql original)
-DROP POLICY IF EXISTS "usuarios_insert_staff"  ON public.usuarios;
-DROP POLICY IF EXISTS "usuarios_update_own"    ON public.usuarios;
-DROP POLICY IF EXISTS "usuarios_update_staff"  ON public.usuarios;
-DROP POLICY IF EXISTS "usuarios_delete_admin"  ON public.usuarios;
--- membresias (solo las de 002)
-DROP POLICY IF EXISTS "membresias_insert_staff"  ON public.membresias;
-DROP POLICY IF EXISTS "membresias_update_staff"  ON public.membresias;
-DROP POLICY IF EXISTS "membresias_delete_admin"  ON public.membresias;
--- pagos (solo las de 002)
-DROP POLICY IF EXISTS "pagos_insert_staff"   ON public.pagos;
-DROP POLICY IF EXISTS "pagos_update_gerente" ON public.pagos;
-DROP POLICY IF EXISTS "pagos_delete_admin"   ON public.pagos;
--- clases (solo las de 002)
-DROP POLICY IF EXISTS "clases_insert_staff"   ON public.clases;
-DROP POLICY IF EXISTS "clases_update_staff"   ON public.clases;
-DROP POLICY IF EXISTS "clases_delete_gerente" ON public.clases;
--- accesos (solo las de 002)
-DROP POLICY IF EXISTS "accesos_insert_staff"  ON public.accesos;
-DROP POLICY IF EXISTS "accesos_update_salida" ON public.accesos;
--- churn (solo la de 002)
-DROP POLICY IF EXISTS "churn_insert_admin" ON public.churn_predictions;
+DROP POLICY IF EXISTS "asistencias_select_own"       ON public.asistencias;
+DROP POLICY IF EXISTS "asistencias_select_staff"     ON public.asistencias;
+DROP POLICY IF EXISTS "asistencias_insert_staff"     ON public.asistencias;
+DROP POLICY IF EXISTS "asistencias_update_staff"     ON public.asistencias;
+DROP POLICY IF EXISTS "usuarios_insert_staff"        ON public.usuarios;
+DROP POLICY IF EXISTS "usuarios_update_own"          ON public.usuarios;
+DROP POLICY IF EXISTS "usuarios_update_staff"        ON public.usuarios;
+DROP POLICY IF EXISTS "usuarios_delete_admin"        ON public.usuarios;
+DROP POLICY IF EXISTS "membresias_insert_staff"      ON public.membresias;
+DROP POLICY IF EXISTS "membresias_update_staff"      ON public.membresias;
+DROP POLICY IF EXISTS "membresias_delete_admin"      ON public.membresias;
+DROP POLICY IF EXISTS "pagos_insert_staff"           ON public.pagos;
+DROP POLICY IF EXISTS "pagos_update_gerente"         ON public.pagos;
+DROP POLICY IF EXISTS "pagos_delete_admin"           ON public.pagos;
+DROP POLICY IF EXISTS "clases_insert_staff"          ON public.clases;
+DROP POLICY IF EXISTS "clases_update_staff"          ON public.clases;
+DROP POLICY IF EXISTS "clases_delete_gerente"        ON public.clases;
+DROP POLICY IF EXISTS "accesos_insert_staff"         ON public.accesos;
+DROP POLICY IF EXISTS "accesos_update_salida"        ON public.accesos;
+DROP POLICY IF EXISTS "churn_insert_admin"           ON public.churn_predictions;
 
-RAISE NOTICE '✅ ROLLBACK 002 completado: audit_logs eliminada (si era gym), policies 002 removidas';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 002: audit_logs gym eliminada, policies 002 removidas'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 8 — ROLLBACK 001: Eliminar policies y funciones
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Policies que 001 agregó
 DROP POLICY IF EXISTS "gimnasios_select_propio"        ON public.gimnasios;
 DROP POLICY IF EXISTS "admin_select_all_gimnasios"     ON public.gimnasios;
 DROP POLICY IF EXISTS "nutricionista_select_miembros"  ON public.usuarios;
 DROP POLICY IF EXISTS "entrenador_select_gym_users"    ON public.usuarios;
 
--- Funciones RPC que 001 agregó
 DROP FUNCTION IF EXISTS public.rpc_registrar_nuevo_miembro(
   UUID, TEXT, TEXT, UUID, UUID, DECIMAL, TEXT, TEXT, TEXT, INT, TEXT
 );
 DROP FUNCTION IF EXISTS public.rpc_verificar_y_registrar_acceso(UUID, UUID, TEXT);
 
--- Índice que 001 agregó
 DROP INDEX IF EXISTS public.idx_membresias_vencimiento;
 
--- Nota: el CHECK constraint de rol (añadir 'cliente','nutricionista') no se
--- revierte porque supabase-schema.sql original ya los incluía en su definición.
-
-RAISE NOTICE '✅ ROLLBACK 001 completado: policies y funciones de 001 eliminadas';
+DO $$ BEGIN RAISE NOTICE '✅ ROLLBACK 001: policies y funciones RPC eliminadas'; END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- VERIFICACIÓN FINAL
@@ -414,60 +372,46 @@ RAISE NOTICE '✅ ROLLBACK 001 completado: policies y funciones de 001 eliminada
 
 DO $$
 DECLARE
-  v_gym_schema_exists   BOOLEAN;
-  v_table_gimnasios     TEXT;
-  v_codigos_exists      BOOLEAN;
-  v_handle_new_user_def TEXT;
-  v_audit_schema        TEXT;
-  v_cnt_gym_policies    INT;
+  v_gym_schema_exists BOOLEAN;
+  v_table_gimnasios   TEXT;
+  v_codigos_exists    BOOLEAN;
+  v_audit_schema      TEXT;
+  v_cnt_policies      INT;
 BEGIN
-  -- ¿El schema gym fue eliminado?
   SELECT EXISTS (
     SELECT 1 FROM information_schema.schemata WHERE schema_name = 'gym'
   ) INTO v_gym_schema_exists;
 
-  -- ¿gimansios está en public?
   SELECT table_schema INTO v_table_gimnasios
-  FROM information_schema.tables
-  WHERE table_name = 'gimnasios' LIMIT 1;
+  FROM information_schema.tables WHERE table_name = 'gimnasios' LIMIT 1;
 
-  -- ¿codigos_acceso fue eliminada?
   SELECT EXISTS (
-    SELECT 1 FROM information_schema.tables
-     WHERE table_name = 'codigos_acceso'
+    SELECT 1 FROM information_schema.tables WHERE table_name = 'codigos_acceso'
   ) INTO v_codigos_exists;
 
-  -- ¿En qué schema está audit_logs?
   SELECT table_schema INTO v_audit_schema
-  FROM information_schema.tables
-  WHERE table_name = 'audit_logs' LIMIT 1;
+  FROM information_schema.tables WHERE table_name = 'audit_logs' LIMIT 1;
 
-  -- Contar policies con nombres de migraciones 001-002
-  SELECT COUNT(*) INTO v_cnt_gym_policies
+  SELECT COUNT(*) INTO v_cnt_policies
   FROM pg_policies
   WHERE policyname IN (
     'gimnasios_select_propio','admin_select_all_gimnasios',
     'nutricionista_select_miembros','entrenador_select_gym_users',
-    'inscripciones_select_own','inscripciones_select_staff',
-    'usuarios_insert_staff','usuarios_update_own'
+    'inscripciones_select_own','usuarios_insert_staff'
   );
 
   RAISE NOTICE '══════════════════════════════════════════════════════';
-  RAISE NOTICE '  VERIFICACIÓN FINAL ROLLBACK';
+  RAISE NOTICE '  VERIFICACION FINAL ROLLBACK';
   RAISE NOTICE '══════════════════════════════════════════════════════';
-  RAISE NOTICE '  Schema gym eliminado     : %', CASE WHEN NOT v_gym_schema_exists THEN '✅ SÍ' ELSE '❌ NO (revisar)' END;
-  RAISE NOTICE '  gimnasios en public      : %', CASE WHEN v_table_gimnasios = 'public' THEN '✅ SÍ' ELSE '❌ NO (schema: ' || COALESCE(v_table_gimnasios,'NULL') || ')' END;
-  RAISE NOTICE '  codigos_acceso eliminada : %', CASE WHEN NOT v_codigos_exists THEN '✅ SÍ' ELSE '❌ AÚN EXISTE' END;
-  RAISE NOTICE '  audit_logs               : %', COALESCE(v_audit_schema, 'No existe (OK si no era gym)');
-  RAISE NOTICE '  Policies 001-002 activas : % (esperado: 0)', v_cnt_gym_policies;
+  RAISE NOTICE '  Schema gym eliminado     : %', CASE WHEN NOT v_gym_schema_exists THEN '✅ SI' ELSE '❌ NO (revisar)' END;
+  RAISE NOTICE '  gimnasios en public      : %', CASE WHEN v_table_gimnasios = 'public' THEN '✅ SI' ELSE '❌ NO — schema: ' || COALESCE(v_table_gimnasios,'NULL') END;
+  RAISE NOTICE '  codigos_acceso eliminada : %', CASE WHEN NOT v_codigos_exists THEN '✅ SI' ELSE '❌ AUN EXISTE' END;
+  RAISE NOTICE '  audit_logs schema        : %', COALESCE(v_audit_schema, 'no existe (OK)');
+  RAISE NOTICE '  Policies 001-002 activas : % (esperado: 0)', v_cnt_policies;
   RAISE NOTICE '';
-  RAISE NOTICE '  ⚠️  ACCIÓN MANUAL REQUERIDA:';
-  RAISE NOTICE '  Eliminar cuentas auth.users desde Supabase Dashboard:';
-  RAISE NOTICE '  → gerente@gymsos.io (si fue creado por migración 004)';
-  RAISE NOTICE '  → Cualquier otra cuenta seed que no sea tuya';
+  RAISE NOTICE '  ACCION MANUAL REQUERIDA:';
+  RAISE NOTICE '  Eliminar gerente@gymsos.io de auth.users en Supabase Dashboard';
   RAISE NOTICE '══════════════════════════════════════════════════════';
-  RAISE NOTICE '  BD restaurada al estado: supabase-schema.sql ✅';
+  RAISE NOTICE '  BD restaurada al estado supabase-schema.sql ✅';
   RAISE NOTICE '══════════════════════════════════════════════════════';
 END $$;
-
-COMMIT;
