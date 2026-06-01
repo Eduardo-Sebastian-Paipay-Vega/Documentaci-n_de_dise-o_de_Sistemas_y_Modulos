@@ -1,33 +1,292 @@
 -- ═══════════════════════════════════════════════════════════════════════════════
--- GYMsos — Migración 009: Consolidar arquitectura gym + RPCs post-login
--- Fecha: 2026-05-30  |  v2.0 (reescrita — sin dependencias BD Maestra)
+-- GYMsos — Migración 009: Schema gym + RLS completo + RPCs
+-- Fecha: 2026-05-31  |  v3.0 (auto-contenida — funciona desde estado rollback)
 -- Ejecutar en: Supabase SQL Editor
--- Prerequisito: migraciones 001-008 + 008b aplicadas
+-- Prerequisito: supabase-schema.sql aplicado (tablas gym en schema public)
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- ARQUITECTURA REAL (confirmada en supabase-schema.sql):
---   auth.users          → identidad (Supabase, nunca se toca directamente)
---   gym.gimnasios       → EL TENANT   (id_gimnasio es el tenant ID)
---   gym.usuarios        → EL PERFIL   (FK → auth.users via id_usuario)
+-- ARQUITECTURA:
+--   auth.users          → identidad (Supabase, nunca se toca)
+--   gym.gimnasios       → el tenant  (id_gimnasio = tenant ID)
+--   gym.usuarios        → el perfil  (FK → auth.users via id_usuario)
 --   gym.codigos_acceso  → invitaciones por gimnasio
 --   public.*            → funciones helper RLS solamente
 --
--- NO existe ni se necesita public.tenants, public.profiles, public.sedes.
--- La versión anterior de esta migración asumía una "BD Maestra" que no existe
--- y fallaba con "relation does not exist" en todas las referencias a esas tablas.
---
--- LO QUE AGREGA ESTA MIGRACIÓN:
---   1. gym.current_gym_id()  — helper canónico para RLS en schema gym
---   2. RLS completo en TODAS las tablas gym (con tenant isolation correcto)
---   3. gym.bootstrap_gym_tenant() — RPC post-login para onboarding de dueños
---   4. gym.join_gym_with_code()   — RPC post-login para ingreso con código
---   5. Grants finales y verificación
+-- ESTA MIGRACIÓN ES AUTO-CONTENIDA:
+--   Funciona si las tablas están en public (estado post-rollback) o en gym.
+--   Paso 0 crea el schema gym y mueve las tablas si hace falta.
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 0 — Crear schema gym y mover tablas desde public (si no están ya en gym)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE SCHEMA IF NOT EXISTS gym;
+
+GRANT USAGE ON SCHEMA gym TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA gym
+  GRANT ALL ON TABLES TO postgres, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA gym
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA gym
+  GRANT SELECT ON TABLES TO anon;
+
+-- Mover tablas de public → gym (IF EXISTS evita error si ya están en gym)
+-- Orden: padres antes que hijos para no romper FKs durante el movimiento
+-- Nivel 0 — raíz
+ALTER TABLE IF EXISTS public.gimnasios              SET SCHEMA gym;
+
+-- Nivel 1 — dependen de gimnasios
+ALTER TABLE IF EXISTS public.usuarios               SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.planes                 SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.espacios               SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.promociones            SET SCHEMA gym;
+
+-- Nivel 2 — dependen de usuarios / espacios
+ALTER TABLE IF EXISTS public.membresias             SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.pagos                  SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.accesos                SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.asistencias            SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.gamification_xp        SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.gamification_levels    SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.digital_twin           SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.ai_recommendations     SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.churn_predictions      SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.wearable_sync          SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.health_alerts          SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.maquinas               SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.entrenadores           SET SCHEMA gym;
+ALTER TABLE IF EXISTS public.churn_interventions    SET SCHEMA gym;
+
+-- Nivel 3 — dependen de entrenadores / espacios
+ALTER TABLE IF EXISTS public.clases                 SET SCHEMA gym;
+
+-- Nivel 4 — dependen de clases
+ALTER TABLE IF EXISTS public.inscripciones          SET SCHEMA gym;
+
+-- Grants explícitos en las tablas ya movidas
+GRANT ALL ON ALL TABLES IN SCHEMA gym TO postgres, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA gym TO authenticated;
+GRANT SELECT ON ALL TABLES IN SCHEMA gym TO anon;
+
+DO $$ BEGIN RAISE NOTICE '✅ PASO 0: schema gym creado y tablas movidas desde public'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 0b — Agregar columnas nuevas (si no existen ya de migraciones previas)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+ALTER TABLE gym.gimnasios ADD COLUMN IF NOT EXISTS ruc      VARCHAR(11) UNIQUE;
+ALTER TABLE gym.gimnasios ADD COLUMN IF NOT EXISTS logo_url TEXT;
+ALTER TABLE gym.usuarios  ADD COLUMN IF NOT EXISTS foto_url TEXT;
+ALTER TABLE gym.usuarios  ADD COLUMN IF NOT EXISTS cargo    VARCHAR(100);
+ALTER TABLE gym.gimnasios ADD COLUMN IF NOT EXISTS codigo_acceso VARCHAR(20) UNIQUE;
+
+CREATE INDEX IF NOT EXISTS idx_gimnasios_codigo ON gym.gimnasios(codigo_acceso);
+
+-- Asignar código al gimnasio demo si no tiene uno
+UPDATE gym.gimnasios
+   SET codigo_acceso = 'GYMFIT'
+ WHERE id_gimnasio = '00000000-0000-0000-0000-000000000001'
+   AND codigo_acceso IS NULL;
+
+DO $$ BEGIN RAISE NOTICE '✅ PASO 0b: columnas y codigo_acceso agregados'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 0c — Tabla gym.codigos_acceso (si no existe)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS gym.codigos_acceso (
+  id_codigo        UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id_gimnasio      UUID         NOT NULL REFERENCES gym.gimnasios(id_gimnasio) ON DELETE CASCADE,
+  codigo           VARCHAR(12)  UNIQUE NOT NULL,
+  tipo             VARCHAR(20)  NOT NULL DEFAULT 'general'
+                     CHECK (tipo IN ('general','staff','miembro','invitacion')),
+  descripcion      VARCHAR(255),
+  usos_actuales    INT          NOT NULL DEFAULT 0,
+  usos_max         INT,
+  activo           BOOLEAN      NOT NULL DEFAULT TRUE,
+  fecha_expiracion TIMESTAMPTZ,
+  creado_por       UUID         REFERENCES gym.usuarios(id_usuario),
+  created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_codigos_acceso_gimnasio ON gym.codigos_acceso(id_gimnasio);
+CREATE INDEX IF NOT EXISTS idx_codigos_acceso_codigo   ON gym.codigos_acceso(codigo) WHERE activo = TRUE;
+
+-- Migrar códigos existentes de gimnasios.codigo_acceso → codigos_acceso
+INSERT INTO gym.codigos_acceso (id_gimnasio, codigo, tipo)
+SELECT id_gimnasio, codigo_acceso, 'general'
+FROM gym.gimnasios
+WHERE codigo_acceso IS NOT NULL
+ON CONFLICT (codigo) DO NOTHING;
+
+DO $$ BEGIN RAISE NOTICE '✅ PASO 0c: gym.codigos_acceso lista'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- PASO 0d — Función generate_gym_code + handle_new_user actualizado
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE OR REPLACE FUNCTION public.generate_gym_code(p_nombre TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_base   TEXT;
+  v_code   TEXT;
+  v_exists BOOLEAN;
+  v_tries  INT := 0;
+BEGIN
+  v_base := upper(regexp_replace(p_nombre, '[^a-zA-Z]', '', 'g'));
+  v_base := left(v_base, 4);
+  IF length(v_base) < 2 THEN v_base := 'GYM'; END IF;
+  LOOP
+    v_code := v_base || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 4));
+    SELECT EXISTS(SELECT 1 FROM gym.codigos_acceso WHERE codigo = v_code) INTO v_exists;
+    EXIT WHEN NOT v_exists OR v_tries >= 20;
+    v_tries := v_tries + 1;
+  END LOOP;
+  RETURN v_code;
+END;
+$$;
+
+-- Actualizar funciones helper para usar gym schema
+CREATE OR REPLACE FUNCTION public.get_user_gym()
+RETURNS UUID AS $$
+  SELECT id_gimnasio FROM gym.usuarios WHERE id_usuario = auth.uid()
+$$ LANGUAGE SQL SECURITY DEFINER STABLE;
+
+CREATE OR REPLACE FUNCTION public.get_user_rol()
+RETURNS TEXT AS $$
+  SELECT rol FROM gym.usuarios WHERE id_usuario = auth.uid()
+$$ LANGUAGE SQL SECURITY DEFINER STABLE;
+
+-- handle_new_user completo con soporte onboarding y signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = gym, public
+AS $$
+DECLARE
+  v_nombre        TEXT;
+  v_telefono      TEXT;
+  v_documento     TEXT;
+  v_fecha_nac     DATE;
+  v_genero        TEXT;
+  v_cargo         TEXT;
+  v_foto_url      TEXT;
+  v_rol           TEXT;
+  v_gym_nombre    TEXT;
+  v_gym_ruc       TEXT;
+  v_gym_ciudad    TEXT;
+  v_gym_pais      TEXT;
+  v_gym_direccion TEXT;
+  v_gym_telefono  TEXT;
+  v_gym_email     TEXT;
+  v_gym_plan      TEXT;
+  v_id_gimnasio   UUID;
+  v_codigo        TEXT;
+BEGIN
+  v_nombre     := COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'nombre'),    ''), split_part(NEW.email, '@', 1));
+  v_telefono   := NULLIF(TRIM(NEW.raw_user_meta_data->>'telefono'),  '');
+  v_documento  := NULLIF(TRIM(NEW.raw_user_meta_data->>'documento'), '');
+  v_genero     := NULLIF(NEW.raw_user_meta_data->>'genero',  '');
+  v_cargo      := NULLIF(TRIM(NEW.raw_user_meta_data->>'cargo'),     '');
+  v_foto_url   := NULLIF(TRIM(NEW.raw_user_meta_data->>'foto_url'),  '');
+  v_rol        := COALESCE(NULLIF(NEW.raw_user_meta_data->>'rol', ''), 'miembro');
+
+  BEGIN
+    v_fecha_nac := (NEW.raw_user_meta_data->>'fecha_nacimiento')::DATE;
+  EXCEPTION WHEN OTHERS THEN
+    v_fecha_nac := NULL;
+  END;
+
+  IF v_genero NOT IN ('M', 'F', 'Otro') THEN v_genero := NULL; END IF;
+
+  v_gym_nombre := NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_nombre'), '');
+
+  -- CASO A: Onboarding — el dueño registra su propio gym
+  IF v_gym_nombre IS NOT NULL THEN
+    v_gym_ruc       := NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_ruc'),       '');
+    v_gym_ciudad    := COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_ciudad'), ''), 'Lima');
+    v_gym_pais      := COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_pais'),   ''), 'Peru');
+    v_gym_direccion := NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_direccion'),  '');
+    v_gym_telefono  := NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_telefono'),   '');
+    v_gym_email     := NULLIF(TRIM(NEW.raw_user_meta_data->>'gym_email'),      '');
+    v_gym_plan      := COALESCE(NULLIF(NEW.raw_user_meta_data->>'gym_plan',    ''), 'mediano');
+
+    v_codigo := public.generate_gym_code(v_gym_nombre);
+
+    INSERT INTO gym.gimnasios (
+      nombre, ruc, ciudad, pais, direccion, telefono, email, plan_suscripcion, estado
+    )
+    VALUES (
+      v_gym_nombre, v_gym_ruc, v_gym_ciudad, v_gym_pais, v_gym_direccion,
+      v_gym_telefono, v_gym_email, v_gym_plan, 'activo'
+    )
+    RETURNING id_gimnasio INTO v_id_gimnasio;
+
+    INSERT INTO gym.codigos_acceso (id_gimnasio, codigo, tipo, descripcion)
+    VALUES (v_id_gimnasio, v_codigo, 'general', 'Codigo principal del gimnasio');
+
+    INSERT INTO gym.usuarios (
+      id_usuario, email, nombre, telefono, documento, fecha_nacimiento,
+      genero, foto_url, cargo, id_gimnasio, rol, estado
+    )
+    VALUES (
+      NEW.id, NEW.email, v_nombre, v_telefono, v_documento, v_fecha_nac,
+      v_genero, v_foto_url, COALESCE(v_cargo, 'Gerente General'), v_id_gimnasio, 'gerente', 'activo'
+    )
+    ON CONFLICT (id_usuario) DO NOTHING;
+
+  -- CASO B: Signup de miembro/staff con codigo de acceso
+  ELSIF NEW.raw_user_meta_data->>'id_gimnasio' IS NOT NULL THEN
+    v_id_gimnasio := (NEW.raw_user_meta_data->>'id_gimnasio')::uuid;
+
+    INSERT INTO gym.usuarios (
+      id_usuario, email, nombre, telefono, documento, fecha_nacimiento,
+      genero, foto_url, id_gimnasio, rol, estado
+    )
+    VALUES (
+      NEW.id, NEW.email, v_nombre, v_telefono, v_documento, v_fecha_nac,
+      v_genero, v_foto_url, v_id_gimnasio, v_rol, 'activo'
+    )
+    ON CONFLICT (id_usuario) DO NOTHING;
+
+  -- CASO C: Usuario manual desde Dashboard (sin metadata)
+  ELSE
+    NULL;
+  END IF;
+
+  RETURN NEW;
+
+EXCEPTION WHEN OTHERS THEN
+  RAISE WARNING 'handle_new_user error: % — %', SQLERRM, SQLSTATE;
+  RETURN NEW;
+END;
+$$;
+
+-- Asegurar que el trigger existe
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+     WHERE tgname  = 'on_auth_user_created'
+       AND tgrelid = 'auth.users'::regclass
+  ) THEN
+    CREATE TRIGGER on_auth_user_created
+      AFTER INSERT ON auth.users
+      FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+    RAISE NOTICE '✅ Trigger on_auth_user_created creado';
+  ELSE
+    RAISE NOTICE 'ℹ️  Trigger on_auth_user_created ya existe — funcion actualizada';
+  END IF;
+END $$;
+
+DO $$ BEGIN RAISE NOTICE '✅ PASO 0d: generate_gym_code, get_user_gym, get_user_rol, handle_new_user actualizados'; END $$;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 1 — Helper canónico: id del gimnasio del usuario actual
--- Vive en el schema gym (no en public) para que las políticas del schema
--- puedan usarla sin search_path tricks.
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION gym.current_gym_id()
 RETURNS UUID
@@ -64,8 +323,6 @@ CREATE POLICY "planes_write_staff" ON gym.planes
   );
 
 -- ── codigos_acceso ────────────────────────────────────────────────────────────
--- Ya tiene RLS desde 008. Reemplazamos las dos políticas para que usen
--- gym.current_gym_id() consistentemente con el resto.
 ALTER TABLE gym.codigos_acceso ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "codigos_select_public"  ON gym.codigos_acceso;
