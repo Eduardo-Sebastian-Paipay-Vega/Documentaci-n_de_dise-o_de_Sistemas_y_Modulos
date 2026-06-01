@@ -8,7 +8,7 @@ import {
   Eye, EyeOff, ArrowRight, ArrowLeft, Loader2, AlertCircle,
   CheckCircle2, Building2, User, Upload, X,
 } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { supabase, supabasePublic } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 import { easings } from "@/lib/motion"
 
@@ -258,10 +258,8 @@ export default function OnboardingPage() {
         // Subir foto de perfil si el dueño eligió una.
         const fotoUrl = await uploadFoto(data.user.id)
         if (fotoUrl) {
-          await supabase
-            .from("usuarios")
-            .update({ foto_url: fotoUrl })
-            .eq("id_usuario", data.user.id)
+          // fn_update_my_avatar actualiza public.profiles.avatar_url + gym.usuarios.foto_url
+          await supabasePublic.rpc("fn_update_my_avatar", { p_url: fotoUrl })
         }
 
         // Obtener el código de acceso del gym recién creado.

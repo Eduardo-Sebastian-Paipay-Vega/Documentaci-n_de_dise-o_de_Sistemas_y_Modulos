@@ -77,7 +77,11 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 // Pre-condición: el llamador ya verificó que existe public.profiles.
 // Solo construye el perfil gym completo para usuarios que tienen gym.usuarios.
 
-async function fetchProfile(authUserId: string, email: string): Promise<GymProfile | null> {
+async function fetchProfile(
+  authUserId: string,
+  email: string,
+  bdAvatarUrl?: string | null,
+): Promise<GymProfile | null> {
   const { data: usuario } = await supabase
     .from("usuarios")
     .select("id_usuario, nombre, id_gimnasio, rol, estado, foto_url, cargo, telefono, documento, genero")
@@ -104,13 +108,14 @@ async function fetchProfile(authUserId: string, email: string): Promise<GymProfi
   return {
     id:          usuario.id_usuario,
     email,
-    full_name:   usuario.nombre    ?? null,
-    tenant_id:   usuario.id_gimnasio ?? null,
-    foto_url:    usuario.foto_url  ?? null,
-    cargo:       usuario.cargo     ?? null,
-    telefono:    usuario.telefono  ?? null,
-    documento:   usuario.documento ?? null,
-    genero:      usuario.genero    ?? null,
+    full_name:   usuario.nombre       ?? null,
+    tenant_id:   usuario.id_gimnasio  ?? null,
+    // gym.usuarios.foto_url tiene prioridad; si es null usar avatar universal de public.profiles
+    foto_url:    usuario.foto_url     ?? bdAvatarUrl ?? null,
+    cargo:       usuario.cargo        ?? null,
+    telefono:    usuario.telefono     ?? null,
+    documento:   usuario.documento    ?? null,
+    genero:      usuario.genero       ?? null,
     rol,
     tenant_name,
     tenant_plan,
@@ -131,7 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session?.user) {
-        const profile = await fetchProfile(data.session.user.id, data.session.user.email ?? "")
+        const { data: bd } = await supabasePublic.rpc("fn_get_my_profile")
+        const profile = await fetchProfile(data.session.user.id, data.session.user.email ?? "", bd?.avatar_url)
         setUser(profile)
       }
       setLoading(false)
@@ -139,7 +145,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const profile = await fetchProfile(session.user.id, session.user.email ?? "")
+        const { data: bd } = await supabasePublic.rpc("fn_get_my_profile")
+        const profile = await fetchProfile(session.user.id, session.user.email ?? "", bd?.avatar_url)
         setUser(profile)
       } else {
         setUser(null)
@@ -217,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // 4. Construir perfil completo y redirigir
-      const profile = await fetchProfile(data.user.id, data.user.email ?? "")
+      const profile = await fetchProfile(data.user.id, data.user.email ?? "", bdResult.avatar_url)
 
       if (!profile) {
         await supabase.auth.signOut()
