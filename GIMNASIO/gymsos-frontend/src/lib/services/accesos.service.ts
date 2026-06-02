@@ -39,11 +39,14 @@ export async function getAccesosRecientes(
   if (error) handleSupabaseError(error)
 
   return (data ?? []).map((a) => {
-    const usuario = a.usuarios as {
-      nombre: string
-      membresias: Array<{ estado: string; planes: { nombre: string } | null }>
-    } | null
-    const memActiva = usuario?.membresias?.find((m) => m.estado === "activa")
+    // PostgREST puede devolver relaciones como objeto o arreglo según el FK.
+    const usuarioRaw = (a as unknown as { usuarios?: unknown }).usuarios
+    const usuario = Array.isArray(usuarioRaw) ? usuarioRaw[0] : usuarioRaw
+    const membresiasRaw = usuario ? (usuario as { membresias?: unknown }).membresias : undefined
+    const membresias = Array.isArray(membresiasRaw) ? membresiasRaw : []
+    const memActiva = (membresias as Array<{ estado?: string; planes?: unknown }>).find((m) => m.estado === "activa")
+    const planesRaw = memActiva?.planes
+    const planObj = Array.isArray(planesRaw) ? planesRaw[0] : planesRaw
 
     return {
       id_acceso:          a.id_acceso,
@@ -54,8 +57,8 @@ export async function getAccesosRecientes(
       tipo_acceso:        a.tipo_acceso as AccesoDetalle["tipo_acceso"],
       estado_acceso:      a.estado_acceso as AccesoDetalle["estado_acceso"],
       razon_denegacion:   a.razon_denegacion,
-      nombre_usuario:     usuario?.nombre,
-      plan_usuario:       memActiva?.planes?.nombre,
+      nombre_usuario:     (usuario as { nombre?: string } | undefined)?.nombre,
+      plan_usuario:       (planObj as { nombre?: string } | undefined)?.nombre,
     }
   })
 }

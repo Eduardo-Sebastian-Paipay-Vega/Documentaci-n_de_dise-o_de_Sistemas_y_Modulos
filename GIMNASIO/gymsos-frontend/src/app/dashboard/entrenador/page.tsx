@@ -1,8 +1,9 @@
 "use client"
 // REEMPLAZADO: datos reales desde Supabase via hooks
 import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { useAuth } from "@/components/providers/auth-provider"
+import { cn } from "@/lib/utils"
 import { fadeUp, staggerContainer, fadeIn, staggerFast, easings } from "@/lib/motion"
 import { useClasesEntrenador } from "@/hooks/useClases"
 import { Loader2, Users, CalendarCheck, Star } from "lucide-react"

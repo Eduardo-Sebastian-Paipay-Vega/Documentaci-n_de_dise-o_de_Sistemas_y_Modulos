@@ -70,9 +70,18 @@ export async function getClasesPorGimnasio(
     nivel: c.nivel as ClaseDetalle["nivel"],
     recurrencia: c.recurrencia as ClaseDetalle["recurrencia"],
     estado: c.estado as ClaseDetalle["estado"],
-    nombre_entrenador:
-      (c.entrenadores as { usuarios: { nombre: string } | null } | null)?.usuarios?.nombre,
-    nombre_espacio: (c.espacios as { nombre: string } | null)?.nombre,
+    nombre_entrenador: (() => {
+      const entRaw = (c as unknown as { entrenadores?: unknown }).entrenadores
+      const ent = Array.isArray(entRaw) ? entRaw[0] : entRaw
+      const userRaw = ent ? (ent as { usuarios?: unknown }).usuarios : undefined
+      const u = Array.isArray(userRaw) ? userRaw[0] : userRaw
+      return (u as { nombre?: string } | undefined)?.nombre
+    })(),
+    nombre_espacio: (() => {
+      const espRaw = (c as unknown as { espacios?: unknown }).espacios
+      const esp = Array.isArray(espRaw) ? espRaw[0] : espRaw
+      return (esp as { nombre?: string } | undefined)?.nombre
+    })(),
   }))
 }
 
@@ -107,7 +116,11 @@ export async function getClasesDelEntrenador(entrenadorId: string): Promise<Clas
     nivel: c.nivel as ClaseDetalle["nivel"],
     recurrencia: c.recurrencia as ClaseDetalle["recurrencia"],
     estado: c.estado as ClaseDetalle["estado"],
-    nombre_espacio: (c.espacios as { nombre: string } | null)?.nombre,
+    nombre_espacio: (() => {
+      const espRaw = (c as unknown as { espacios?: unknown }).espacios
+      const esp = Array.isArray(espRaw) ? espRaw[0] : espRaw
+      return (esp as { nombre?: string } | undefined)?.nombre
+    })(),
     inscritos: Array.isArray(c.inscripciones) ? c.inscripciones.length : 0,
   }))
 }

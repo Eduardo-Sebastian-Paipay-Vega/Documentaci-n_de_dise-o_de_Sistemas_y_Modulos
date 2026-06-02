@@ -25,8 +25,9 @@ export default function MiembrosPage() {
   const [busqueda, setBusqueda]  = useState("")
   const [filtro, setFiltro]      = useState<FiltroEstado>("todos")
   const [seleccionado, setSeleccionado] = useState<string | null>(null)
+  const [modalNuevo, setModalNuevo] = useState(false)
 
-  const { miembros, total, loading, refetch } = useMiembros(gymId, { busqueda })
+  const { miembros, total, loading, error, refetch } = useMiembros(gymId, { busqueda })
 
   const filtrados = miembros.filter((m) => {
     if (filtro === "todos") return true
@@ -114,6 +115,15 @@ export default function MiembrosPage() {
 
       {/* Tabla de miembros */}
       <div className="glass-card rounded-2xl overflow-hidden">
+        {error && (
+          <div className="px-5 py-4 border-b border-white/5">
+            <p className="text-sm font-semibold text-[#EF4444]">No se pudo cargar datos reales de Supabase</p>
+            <p className="text-xs mt-1 text-neutral-400">{error}</p>
+            <p className="text-[11px] mt-2 text-neutral-500">
+              Tip: suele ser una policy RLS faltante en alguna tabla relacionada (por ejemplo `membresias`, `planes` o `churn_predictions`).
+            </p>
+          </div>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 size={20} className="animate-spin text-neutral-500" />
@@ -232,6 +242,41 @@ export default function MiembrosPage() {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {modalNuevo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setModalNuevo(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              className="w-full max-w-md glass-card rounded-2xl p-5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-white font-semibold">Nuevo miembro</p>
+                  <p className="text-neutral-500 text-xs mt-1">
+                    Pantalla en construccion. Por ahora crea usuarios desde Supabase Auth + tabla `usuarios`.
+                  </p>
+                </div>
+                <button
+                  className="text-neutral-400 hover:text-white text-sm"
+                  onClick={() => setModalNuevo(false)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

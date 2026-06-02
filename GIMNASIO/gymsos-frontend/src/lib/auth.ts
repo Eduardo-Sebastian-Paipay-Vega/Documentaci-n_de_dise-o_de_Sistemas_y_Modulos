@@ -55,16 +55,6 @@ export const ROL_COLOR: Record<Rol, string> = {
   admin:         "#8B5CF6",
 }
 
-// Credenciales de los usuarios reales en Supabase (solo para quick-fill en login)
-export const USUARIOS_DEMO_CREDS = [
-  { rol: "gerente"       as Rol, email: "gerente@gymsos.io",    password: "gerente123"    },
-  { rol: "recepcionista" as Rol, email: "recepcion@gymsos.io",  password: "recepcion123"  },
-  { rol: "entrenador"    as Rol, email: "entrenador@gymsos.io", password: "entrenador123" },
-  { rol: "nutricionista" as Rol, email: "nutricion@gymsos.io",  password: "nutricion123"  },
-  { rol: "miembro"       as Rol, email: "miembro@gymsos.io",    password: "miembro123"    },
-  { rol: "cliente"       as Rol, email: "cliente@gymsos.io",    password: "cliente123"    },
-]
-
 const STORAGE_KEY = "gymsos_session"
 
 export function saveSession(user: Usuario): void {

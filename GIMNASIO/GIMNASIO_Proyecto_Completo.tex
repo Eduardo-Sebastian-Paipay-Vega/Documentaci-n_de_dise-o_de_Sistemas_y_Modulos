@@ -1,0 +1,1145 @@
+\documentclass[11pt,a4paper]{article}
+% =========================================================
+%                   PAQUETES PRINCIPALES
+% =========================================================
+\usepackage[spanish, es-tabla]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{tocloft}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{url}
+\usepackage{titlesec}
+\usepackage{lastpage}
+\usepackage{tabularx}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, calc}
+\pgfplotsset{compat=1.18}
+
+% =========================================================
+%                  CONFIGURACIÓN GENERAL
+% =========================================================
+\geometry{
+    top=2.8cm,
+    bottom=2.8cm,
+    left=3cm,
+    right=3cm
+}
+\setstretch{1.35}
+\captionsetup{
+    font=small,
+    labelfont=bf
+}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={GIMNASIO: GYMsos - Operating System Inteligente para Gimnasios},
+    pdfauthor={Paipay Vega, Eduardo Sebastian}
+}
+\shorthandoff{"}
+
+% =========================================================
+%                        COLORES
+% =========================================================
+\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.9,0,0}
+\definecolor{graynumbers}{rgb}{0.5,0.5,0.5}
+\definecolor{lightgray}{rgb}{0.96,0.96,0.96}
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{accent}{RGB}{0,102,204}
+\definecolor{success}{RGB}{46,125,50}
+\definecolor{warning}{RGB}{251,140,0}
+
+% =========================================================
+%                  CONFIGURACIÓN DE CÓDIGO
+% =========================================================
+\lstset{
+    language=bash,
+    showspaces=false,
+    showtabs=false,
+    breaklines=true,
+    showstringspaces=false,
+    breakatwhitespace=true,
+    commentstyle=\color{greencomments},
+    keywordstyle=\color{bluekeywords}\bfseries,
+    stringstyle=\color{redstrings},
+    basicstyle=\ttfamily\footnotesize,
+    frame=single,
+    backgroundcolor=\color{lightgray},
+    numbers=left,
+    numberstyle=\tiny\color{graynumbers},
+    stepnumber=1,
+    tabsize=4,
+    captionpos=b
+}
+
+% =========================================================
+%                 ESTILO DE TÍTULOS
+% =========================================================
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{darkblue}}
+{\thesection.}{0.5em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{accent}}
+{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}
+{\normalfont\normalsize\bfseries}
+{\thesubsubsection.}{0.5em}{}
+
+% =========================================================
+%                ENCABEZADO Y PIE DE PÁGINA
+% =========================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{GYMsos - Operating System para Gimnasios}}
+\fancyhead[R]{\small\textit{Proyecto GIMNASIO}}
+\fancyfoot[L]{\small Documento Técnico v3.0}
+\fancyfoot[R]{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% =========================================================
+%               ENTORNO DE DEFINICIONES
+% =========================================================
+\newmdenv[
+  backgroundcolor=blue!5,
+  linecolor=accent,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt
+]{definicion}
+
+\newmdenv[
+  backgroundcolor=green!5,
+  linecolor=success,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt
+]{beneficio}
+
+\newmdenv[
+  backgroundcolor=orange!5,
+  linecolor=warning,
+  linewidth=1.5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt
+]{alerta}
+
+% =========================================================
+%                       DOCUMENTO
+% =========================================================
+\begin{document}
+
+% =========================================================
+%                         PORTADA
+% =========================================================
+\begin{titlepage}
+\centering
+\vspace*{1cm}
+{\Large \textbf{PROYECTO GIMNASIO}}\\[0.4cm]
+{\large Documento Técnico y Estratégico}\\[1cm]
+\vspace{1cm}
+{\Huge \textbf{GYMsos}}\\[0.5cm]
+\rule{15cm}{0.8pt}\\[0.4cm]
+{\LARGE \textbf{Operating System Inteligente para Gimnasios}}\\[0.4cm]
+\rule{15cm}{0.8pt}
+\vspace{2cm}
+{\large \textbf{Documento Técnico - Versión 3.0}}\\[1.5cm]
+{\large \textbf{Especificaciones Funcionales, Requisitos y Arquitectura}}\\[2cm]
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{5cm}|p{7cm}|}
+\hline
+\textbf{Estudiante} & Paipay Vega, Eduardo Sebastian \\ \hline
+\textbf{Código} & 27222136 \\ \hline
+\textbf{Universidad} & Universidad Nacional de San Cristóbal de Huamanga \\ \hline
+\textbf{Versión} & 3.0 - UNICORN LEVEL \\ \hline
+\textbf{Fecha} & Mayo 2026 \\ \hline
+\textbf{Estado} & 100\% Completado \\ \hline
+\end{tabular}
+\end{table}
+\vfill
+{\large Ayacucho -- Perú}\\[0.2cm]
+{\large 2026}
+\end{titlepage}
+
+% =========================================================
+%              TABLA DE CONTENIDOS
+% =========================================================
+\newpage
+\tableofcontents
+\newpage
+
+% =========================================================
+%                RESUMEN EJECUTIVO
+% =========================================================
+\section*{Resumen Ejecutivo}
+\addcontentsline{toc}{section}{Resumen Ejecutivo}
+
+\subsection*{Visión General}
+
+GYMsos es el \textbf{Operating System inteligente para gimnasios} — una plataforma integral que transforma la gestión tradicional basada en Excel hacia un ecosistema digital automatizado, inteligente y escalable.
+
+\subsection*{Objetivos Principales}
+
+\begin{itemize}
+    \item Automatizar procesos administrativos de gestión de gimnasios
+    \item Proporcionar análisis de datos en tiempo real
+    \item Mejorar experiencia de usuario mediante interfaz moderna
+    \item Integrar múltiples canales de comunicación
+    \item Permitir escalabilidad a múltiples sucursales
+    \item Implementar control de acceso moderno (QR + biometría)
+\end{itemize}
+
+\subsection*{La Solución: 13 Innovaciones Tecnológicas}
+
+GYMsos integra 13 innovaciones tecnológicas:
+
+\begin{enumerate}
+    \item \textbf{Netflix Fitness} — Motor de recomendaciones con IA basado en historial
+    \item \textbf{Churn AI} — Sistema de detección predictiva de patrones
+    \item \textbf{Digital Twin} — Representación virtual del gimnasio en tiempo real
+    \item \textbf{Gamificación Masiva} — Sistema de puntuación y competencias
+    \item \textbf{Social Network} — Red social integrada de miembros
+    \item \textbf{Smart Gym OS} — Control inteligente de espacios y máquinas
+    \item \textbf{Autonomous Growth Engine} — Sistema de crecimiento automático
+    \item \textbf{Preventive Health} — Análisis de salud con integración de wearables
+    \item \textbf{B2B2C Corporate} — Módulo de gestión empresarial
+    \item \textbf{AI Copilot para Trainers} — Asistente inteligente para entrenadores
+    \item \textbf{Spotify Recommendations} — Integración de música personalizada
+    \item \textbf{Marketplace} — Plataforma integrada de productos y servicios
+    \item \textbf{Tesla Moment} — Experiencia de usuario premium
+\end{enumerate}
+
+% =========================================================
+%              DESCRIPCIÓN DEL PROYECTO
+% =========================================================
+\section{Descripción del Proyecto}
+
+\subsection{¿Qué es GYMsos?}
+
+GYMsos no es solo un software de gestión de gimnasios. Es un \textbf{ecosistema completo} que integra:
+
+\begin{itemize}
+    \item \textbf{Aplicación Web} — Dashboard para gerentes y administradores
+    \item \textbf{Aplicación Móvil} — App para miembros (iOS, Android)
+    \item \textbf{Aplicación Desktop} — Herramientas para recepcionistas y staff
+    \item \textbf{Integración WhatsApp} — Comunicación automática con miembros
+    \item \textbf{Control de Acceso} — QR + biometría integrada
+    \item \textbf{Análisis de Datos} — Dashboards en tiempo real con IA
+    \item \textbf{Marketplace} — Plataforma de productos y servicios complementarios
+    \item \textbf{API Abierta} — Para integraciones con terceros
+\end{itemize}
+
+\subsection{Actores del Sistema}
+
+\begin{table}[H]
+\centering
+\caption{Actores Principales del Sistema}
+\begin{tabular}{|l|p{6cm}|l|}
+\hline
+\textbf{Actor} & \textbf{Funcionalidades Acceso} & \textbf{Plataforma} \\ \hline
+Miembro & Ver perfil, historial, logros, marketplace & Mobile App \\ \hline
+Recepcionista & Gestión de acceso, atención al cliente & Desktop + Web \\ \hline
+Entrenador & Visualizar clientes, recomendaciones & Mobile + Dashboard \\ \hline
+Gerente & Dashboards, reportes, configuración & Web Dashboard \\ \hline
+Administrador & Control total del sistema & Web Admin Panel \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Especificaciones de Escala}
+
+\begin{itemize}
+    \item \textbf{Capacidad}: 5,000+ miembros por sucursal
+    \item \textbf{Arquitectura}: Microservicios distribuidos
+    \item \textbf{Base de datos}: PostgreSQL con replicación
+    \item \textbf{Caché}: Redis para sesiones y datos frecuentes
+    \item \textbf{Disponibilidad}: 99.9\% uptime SLA
+    \item \textbf{Latencia}: < 2 segundos en 95\% de requests
+    \item \textbf{Backups}: Diarios, con RTO < 4 horas
+\end{itemize}
+
+% =========================================================
+%            ANÁLISIS DE REQUISITOS INICIALES
+% =========================================================
+\section{Análisis de Requisitos Iniciales}
+
+\subsection{Necesidades del Sistema}
+
+\subsubsection{Gestión Automatizada}
+
+El sistema debe automatizar:
+\begin{itemize}
+    \item Registro de membresías
+    \item Renovaciones de membresías
+    \item Control de pagos
+    \item Reportes de asistencia
+    \item Generación de reportes administrativos
+\end{itemize}
+
+\subsubsection{Control de Acceso}
+
+Implementar:
+\begin{itemize}
+    \item Control de acceso mediante QR
+    \item Integración con biometría
+    \item Trazabilidad completa de accesos
+    \item Integración con datos de miembros
+    \item Análisis de patrones de uso
+\end{itemize}
+
+\subsubsection{Análisis de Datos}
+
+El sistema debe proporcionar:
+\begin{itemize}
+    \item Dashboards en tiempo real
+    \item Análisis predictivo de patrones
+    \item Reportes automáticos
+    \item Segmentación de usuarios
+    \item Estadísticas de uso
+\end{itemize}
+
+\subsubsection{Escalabilidad Multi-Sucursal}
+
+Arquitectura que soporte:
+\begin{itemize}
+    \item Múltiples sucursales con gestión centralizada
+    \item Sincronización de datos entre ubicaciones
+    \item Gestión de permisos y roles por sucursal
+    \item Reportes consolidados
+\end{itemize>
+
+\subsection{Mapa de Soluciones}
+
+\begin{table}[H]
+\centering
+\caption{Requisitos vs Módulos de Solución}
+\begin{tabularx}{\textwidth}{|l|X|l|}
+\hline
+\textbf{\#} & \textbf{Requisito} & \textbf{Módulo} \\ \hline
+1 & Gestión automatizada & Member Service \\ \hline
+2 & Control de acceso & Attendance Service \\ \hline
+3 & Análisis de datos & Analytics Service \\ \hline
+4 & Multi-sucursal & Architecture Centralized \\ \hline
+5 & Notificaciones & Notification Service \\ \hline
+6 & Integración pagos & Payment Service \\ \hline
+7 & Marketplace & Marketplace Service \\ \hline
+8 & IA y Predicción & AI Service \\ \hline
+\end{tabularx}
+\end{table}
+
+% =========================================================
+%              LAS 13 INNOVACIONES
+% =========================================================
+\section{Las 13 Disruptivas Innovaciones}
+
+\subsection{1. Netflix Fitness — Motor de Recomendaciones}
+
+\begin{definicion}
+\textbf{Concepto}: Sistema de recomendación de ejercicios basado en IA que analiza historial y preferencias.
+\end{definicion}
+
+\textbf{Componentes técnicos}:
+\begin{itemize}
+    \item Base de datos de preferencias y historial de usuario
+    \item Algoritmo de recomendación basado en machine learning
+    \item Tracking de progresión y feedback
+    \item API de recomendaciones en tiempo real
+\end{itemize}
+
+\textbf{Integraciones}: AI Service, Member Service
+
+\subsection{2. Churn AI — Detección Predictiva}
+
+\begin{definicion}
+\textbf{Concepto}: Sistema de predicción basado en análisis de patrones de comportamiento
+\end{definicion}
+
+\textbf{Técnicas implementadas}:
+\begin{itemize}
+    \item Análisis de patrones de asistencia
+    \item Machine learning para detección de anomalías
+    \item Alertas automáticas basadas en modelos predictivos
+    \item Sistema de notificaciones integrado
+\end{itemize}
+
+\textbf{Integraciones}: Analytics Service, Notification Service
+
+\subsection{3. Digital Twin — Representación Virtual}
+
+\begin{definicion}
+\textbf{Concepto}: Modelo virtual sincronizado con estado del gimnasio
+\end{definicion}
+
+\textbf{Componentes}:
+\begin{itemize}
+    \item Estado en tiempo real de máquinas y espacios
+    \item Sensor de ocupación por zona
+    \item Disponibilidad de equipamiento
+    \item Base de datos de inventario
+\end{itemize}
+
+\subsection{4. Gamificación — Sistema de Puntuación}
+
+\begin{definicion}
+\textbf{Concepto}: Sistema de gamificación integrado en la plataforma
+\end{definicion}
+
+\textbf{Elementos técnicos}:
+\begin{itemize}
+    \item Módulo de cálculo de puntos y logros
+    \item Sistema de leaderboards en base de datos
+    \item Gestión de badges y recompensas
+    \item APIs para interacción gamificada
+\end{itemize}
+
+\subsection{5. Social Network — Red Social Integrada}
+
+\begin{definicion}
+\textbf{Concepto}: Funcionalidades de red social dentro de la aplicación
+\end{definicion}
+
+\textbf{Funcionalidades}:
+\begin{itemize}
+    \item Sistema de seguimiento de usuarios
+    \item Feed de actividades
+    \item Mensajería privada
+    \item Grupos y desafíos colaborativos
+\end{itemize}
+
+\subsection{6. Smart Gym OS — Control de Espacios}
+
+\begin{definicion}
+\textbf{Concepto}: Integración de IoT y control automatizado de recursos
+\end{definicion}
+
+\textbf{Integraciones IoT}:
+\begin{itemize}
+    \item APIs para máquinas conectadas
+    \item Sistemas de control de ambiente (HVAC, iluminación)
+    \item Sensores de ocupación
+    \item Sistema de reservas en tiempo real
+\end{itemize}
+
+\subsection{7. Autonomous Growth Engine — Sistema de Referrals}
+
+\begin{definicion}
+\textbf{Concepto}: Sistema automatizado de referrals y crecimiento
+\end{definicion}
+
+\textbf{Implementación}:
+\begin{itemize}
+    \item Módulo de invitaciones automáticas
+    \item Tracking de referrals en BD
+    \item Sistema de incentivos automático
+    \item Análisis de viral loops
+\end{itemize}
+
+\subsection{8. Preventive Health — Integración Biométrica}
+
+\begin{definicion}
+\textbf{Concepto}: Integración con wearables y dispositivos de salud
+\end{definicion}
+
+\textbf{Integraciones}:
+\begin{itemize}
+    \item APIs de Apple Health, Google Fit
+    \item Sincronización de datos biométricos
+    \item Análisis de métricas de salud
+    \item Alertas basadas en umbrales
+\end{itemize}
+
+\subsection{9. B2B2C Corporate — Módulo Empresarial}
+
+\begin{definicion}
+\textbf{Concepto}: Funcionalidades para gestión de programas corporativos
+\end{definicion}
+
+\textbf{Características técnicas}:
+\begin{itemize}
+    \item Dashboard dedicado para administradores corporativos
+    \item Gestión de empleados en lotes
+    \item Reportes específicos para empresas
+    \item Sistema de autorización multi-nivel
+\end{itemize}
+
+\subsection{10. AI Copilot para Trainers — Asistente IA}
+
+\begin{definicion}
+\textbf{Concepto}: Sistema de recomendación asistido por IA para entrenadores
+\end{definicion}
+
+\textbf{Tecnologías}:
+\begin{itemize}
+    \item Modelos de IA para personalización
+    \item Computer vision para análisis de forma
+    \item Generación automática de reportes
+    \item Integración con historial de entrenamientos
+\end{itemize}
+
+\subsection{11. Spotify Recommendations — Integración Musical}
+
+\begin{definicion}
+\textbf{Concepto}: Integración con servicios de música para crear listas personalizadas
+\end{definicion}
+
+\textbf{Implementación}:
+\begin{itemize}
+    \item APIs de Spotify/Apple Music
+    \item Algoritmo de matching música-ejercicio
+    \item Historial de preferencias musicales
+    \item Generación de playlists basadas en tempo
+\end{itemize}
+
+\subsection{12. Marketplace — Plataforma de E-commerce}
+
+\begin{definicion}
+\textbf{Concepto}: Plataforma integrada de productos y servicios
+\end{definicion}
+
+\textbf{Componentes técnicos}:
+\begin{itemize}
+    \item Catálogo de productos en BD
+    \item Carrito de compras
+    \item Integración con Payment Service
+    \item Sistema de pedidos y tracking
+\end{itemize}
+
+\subsection{13. Tesla Moment — Experiencia de Usuario}
+
+\begin{definicion}
+\textbf{Concepto}: Interfaz moderna y fluida con experiencia premium
+\end{definicion}
+
+\textbf{Aspectos técnicos}:
+\begin{itemize}
+    \item Diseño responsive (web + mobile)
+    \item Animaciones y transiciones fluidas
+    \item Personalización de interfaz por usuario
+    \item Integración con sensores biométricos
+\end{itemize}
+
+% =========================================================
+%              ESPECIFICACIONES FUNCIONALES
+% =========================================================
+\section{Especificaciones Funcionales}
+
+\subsection{Requisitos Funcionales Principales (RF)}
+
+GYMsos debe implementar los siguientes requisitos funcionales:
+
+\subsubsection{Módulo de Gestión de Membresías}
+
+\begin{itemize}
+    \item RF-001: Registrar nuevo miembro con datos personales
+    \item RF-002: Actualizar información de miembro
+    \item RF-003: Renovar membresía automáticamente
+    \item RF-004: Registrar tipo de membresía (mensual, trimestral, anual)
+    \item RF-005: Historial de cambios de membresía
+\end{itemize}
+
+\subsubsection{Módulo de Control de Acceso}
+
+\begin{itemize}
+    \item RF-010: Generar código QR único por miembro
+    \item RF-011: Validar QR en entrada del gimnasio
+    \item RF-012: Registrar hora y fecha de asistencia
+    \item RF-013: Integración con sistemas biométricos
+    \item RF-014: Auditoría completa de accesos
+\end{itemize}
+
+\subsubsection{Módulo de Analytics}
+
+\begin{itemize}
+    \item RF-020: Generar dashboard de ocupación en tiempo real
+    \item RF-021: Reporte de asistencia por período
+    \item RF-022: Análisis de máquinas más utilizadas
+    \item RF-023: Horas pico de ocupación
+    \item RF-024: Exportar reportes en PDF/Excel
+\end{itemize}
+
+\subsubsection{Módulo de Notificaciones}
+
+\begin{itemize}
+    \item RF-030: Enviar notificaciones push a miembros
+    \item RF-031: Enviar emails automáticos
+    \item RF-032: Integración con WhatsApp
+    \item RF-033: Gestión de preferencias de notificación
+    \item RF-034: Log de notificaciones enviadas
+\end{itemize}
+
+\subsubsection{Módulo de Gamificación}
+
+\begin{itemize}
+    \item RF-040: Calcular puntos por asistencia
+    \item RF-041: Mantener leaderboards
+    \item RF-042: Gestionar badges y logros
+    \item RF-043: Sistema de competencias
+    \item RF-044: Historial de puntos del usuario
+\end{itemize}
+
+\subsubsection{Módulo de Marketplace}
+
+\begin{itemize}
+    \item RF-050: Catálogo de productos
+    \item RF-051: Carrito de compras
+    \item RF-052: Procesamiento de transacciones
+    \item RF-053: Historial de compras
+    \item RF-054: Disponibilidad de inventario
+\end{itemize}
+
+\subsection{Requisitos No Funcionales (RNF)}
+
+\begin{itemize}
+    \item RNF-001: Disponibilidad: 99.9\% uptime
+    \item RNF-002: Rendimiento: Carga de página < 2 segundos
+    \item RNF-003: Escalabilidad: Soportar 5,000+ miembros
+    \item RNF-004: Seguridad: Encriptación end-to-end
+    \item RNF-005: Cumplimiento: GDPR, normativas locales
+    \item RNF-006: Compatibilidad: Web, iOS, Android
+    \item RNF-007: Respaldo: Backup automático diario
+    \item RNF-008: Recuperación: RTO < 4 horas
+\end{itemize}
+
+% =========================================================
+%            ARQUITECTURA TÉCNICA
+% =========================================================
+\section{Arquitectura Técnica}
+
+\subsection{Stack Tecnológico}
+
+\begin{table}[H]
+\centering
+\caption{Tecnologías Utilizadas}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Componente} & \textbf{Tecnología} \\ \hline
+Frontend Web & React 18, TypeScript, Tailwind CSS \\ \hline
+Frontend Mobile & React Native / Flutter \\ \hline
+Backend API & Node.js + Express / Python + FastAPI \\ \hline
+Base de Datos & PostgreSQL (relacional), Redis (caché) \\ \hline
+IA/ML & TensorFlow, scikit-learn, OpenAI API \\ \hline
+Autenticación & Auth0, OAuth 2.0, JWT \\ \hline
+Pagos & Stripe, PayU, MercadoPago APIs \\ \hline
+Comunicaciones & Twilio (WhatsApp), Firebase (push) \\ \hline
+Hosting & AWS (EC2, S3, RDS), Docker, Kubernetes \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Arquitectura de Microservicios}
+
+La plataforma está dividida en servicios independientes:
+
+\begin{itemize}
+    \item \textbf{Authentication Service} — Gestión de usuarios y permisos
+    \item \textbf{Member Service} — CRUD de miembros y membresías
+    \item \textbf{Payment Service} — Procesamiento de pagos integrado
+    \item \textbf{Attendance Service} — Control de acceso y asistencia
+    \item \textbf{Analytics Service} — Dashboards y reportes IA
+    \item \textbf{Notification Service} — Email, SMS, push, WhatsApp
+    \item \textbf{Marketplace Service} — Plataforma de e-commerce
+    \item \textbf{AI Service} — Modelos predictivos, recomendaciones
+\end{itemize}
+
+\subsection{Seguridad}
+
+\begin{alerta}
+\textbf{Cumplimiento}: GDPR, CCPA, normativas locales de datos
+\end{alerta}
+
+\begin{itemize}
+    \item Encriptación end-to-end para datos sensibles
+    \item Auditoría de accesos completamente logueada
+    \item Backup automático y disaster recovery
+    \item Penetration testing trimestral
+    \item Certificados SSL/TLS para todas las comunicaciones
+\end{itemize}
+
+% =========================================================
+%              ROADMAP Y FASES
+% =========================================================
+\section{Roadmap de Implementación}
+
+\subsection{Fase 1: Problemas y Oportunidades (Completada)}
+
+\textbf{Objetivo}: Identificar y cuantificar problemas del mercado
+
+\begin{itemize}
+    \item Análisis de gestión manual e ineficiencia
+    \item Cuantificación de churn y costo
+    \item Identificación de stakeholders
+    \item Definición de restricciones
+\end{itemize}
+
+\subsection{Fase 2: Valor Agregado (Completada)}
+
+\textbf{Objetivo}: Definir 13 innovaciones que crean valor
+
+\begin{itemize}
+    \item Netflix Fitness, Churn AI, Digital Twin
+    \item Gamificación, Social Network
+    \item Smart Gym OS, Growth Engine
+    \item 6 innovaciones más
+\end{itemize}
+
+\subsection{Fase 3: Requisitos Funcionales y Casos de Uso (Próxima)}
+
+\textbf{Objetivo}: Especificar exactamente qué construir
+
+\begin{itemize}
+    \item 50+ Requisitos Funcionales
+    \item 30+ Casos de Uso
+    \item Diagramas de flujo
+    \item Especificación de APIs
+\end{itemize}
+
+\subsection{Fase 4: Plan de Negocio (Completada)}
+
+\textbf{Objetivo}: Modelo de negocio y proyecciones
+
+\begin{itemize}
+    \item Modelo de ingresos multi-stream
+    \item Proyecciones 3 años
+    \item Análisis de TAM/SAM/SOM
+    \item ROI y breakeven
+\end{itemize}
+
+\subsection{Fase 5: Diseño de Base de Datos (Próxima)}
+
+\textbf{Objetivo}: Estructura de datos optimizada
+
+\begin{itemize}
+    \item Tablas normalizadas
+    \item Índices y relaciones
+    \item Esquema para 5000+ miembros
+\end{itemize}
+
+\subsection{Fase 6: UX/UI Design (Próxima)}
+
+\textbf{Objetivo}: Experiencia de usuario intuitiva
+
+\begin{itemize}
+    \item Wireframes de 25+ pantallas
+    \item Flujos de usuario
+    \item Guía de diseño
+    \item Prototipo interactivo
+\end{itemize}
+
+\subsection{Fase 7: Desarrollo e Implementación (Próxima)}
+
+\textbf{Objetivo}: Construcción del producto
+
+\begin{itemize}
+    \item MVP con 5 innovaciones core
+    \item Beta testing con 3-5 gimnasios
+    \item Iteración rápida
+    \item Lanzamiento público
+\end{itemize}
+
+% =========================================================
+%              CASOS DE USO (CU)
+% =========================================================
+\section{Casos de Uso Principales}
+
+\subsection{Actor: Miembro}
+
+\subsubsection{CU-001: Registrarse en la Plataforma}
+
+\begin{definicion}
+\textbf{Descripción}: El miembro crea su cuenta en GYMsos proporcionando datos personales.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Actor accede a la aplicación
+    \item Sistema presenta formulario de registro
+    \item Actor ingresa email, contraseña, datos personales
+    \item Sistema valida datos y crea cuenta
+    \item Sistema genera código QR único
+\end{itemize}
+
+\textbf{Precondición}: Miembro no registrado previamente
+
+\textbf{Postcondición}: Cuenta creada, código QR generado
+\end{definicion}
+
+\subsubsection{CU-002: Realizar Check-in}
+
+\begin{definicion}
+\textbf{Descripción}: El miembro registra su entrada al gimnasio mediante QR.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Actor presenta código QR en entrada
+    \item Sistema escanea y valida QR
+    \item Sistema registra fecha/hora de acceso
+    \item Sistema otorga acceso a gimnasio
+    \item Sistema actualiza leaderboard
+\end{itemize}
+
+\textbf{Alternativo}: Si QR inválido, denegar acceso y alertar
+
+\textbf{Postcondición}: Asistencia registrada
+\end{definicion}
+
+\subsection{Actor: Entrenador}
+
+\subsubsection{CU-010: Consultar Datos de Miembro}
+
+\begin{definicion}
+\textbf{Descripción}: El entrenador accede al perfil y historial de un miembro.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Actor selecciona miembro de lista
+    \item Sistema muestra perfil completo
+    \item Sistema presenta historial de ejercicios
+    \item Sistema muestra progresión (pesos, repeticiones)
+\end{itemize}
+
+\textbf{Precondición}: Entrenador autenticado
+
+\textbf{Postcondición}: Datos mostrados
+\end{definicion}
+
+\subsubsection{CU-011: Recibir Recomendaciones de IA}
+
+\begin{definicion}
+\textbf{Descripción}: El entrenador recibe sugerencias de ejercicios del AI Copilot.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Actor selecciona miembro
+    \item Sistema analiza perfil y objetivos
+    \item AI Service genera recomendaciones
+    \item Sistema presenta opciones de ejercicios
+\end{itemize}
+
+\textbf{Postcondición}: Recomendaciones mostradas
+\end{definicion}
+
+\subsection{Actor: Gerente}
+
+\subsubsection{CU-020: Visualizar Dashboard de Ocupación}
+
+\begin{definicion}
+\textbf{Descripción}: El gerente accede a dashboard en tiempo real de ocupación.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Actor autenticado ingresa a dashboard
+    \item Sistema obtiene datos de occupación actual
+    \item Sistema muestra gráficos en tiempo real
+    \item Sistema presenta alertas de anomalías
+\end{itemize}
+
+\textbf{Precondición}: Gerente autenticado
+
+\textbf{Postcondición}: Dashboard actualizado
+\end{definicion}
+
+\subsubsection{CU-021: Generar Reportes}
+
+\begin{definicion}
+\textbf{Descripción}: El gerente genera reportes de operación.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Actor selecciona tipo de reporte
+    \item Sistema solicita parámetros (fechas, filtros)
+    \item Sistema calcula datos
+    \item Sistema exporta en PDF/Excel
+\end{itemize}
+
+\textbf{Postcondición}: Reporte generado y descargado
+\end{definicion}
+
+\subsection{Actor: Sistema}
+
+\subsubsection{CU-030: Ejecutar Predicciones de Churn}
+
+\begin{definicion}
+\textbf{Descripción}: El sistema automáticamente detecta miembros en riesgo.
+
+\textbf{Flujo Principal}:
+\begin{itemize}
+    \item Sistema analiza patrones de asistencia
+    \item AI Service ejecuta modelo predictivo
+    \item Sistema identifica usuarios en riesgo
+    \item Sistema crea alertas para gerencia
+\end{itemize}
+
+\textbf{Frecuencia}: Diaria a las 00:00
+
+\textbf{Postcondición}: Alertas generadas
+\end{definicion}
+
+% =========================================================
+%                 CONCLUSIONES TÉCNICAS
+% =========================================================
+\section{Conclusiones Técnicas}
+
+\subsection{Viabilidad Técnica}
+
+\begin{itemize}
+    \item \textbf{Stack}: Tecnologías maduras y probadas en producción
+    \item \textbf{Escalabilidad}: Arquitectura microservicios permite crecimiento
+    \item \textbf{Disponibilidad}: 99.9\% uptime alcanzable con cloud moderno
+    \item \textbf{Seguridad}: Implementable cumpliendo estándares GDPR/CCPA
+\end{itemize}
+
+\subsection{Requisitos Satisfechos}
+
+\begin{itemize}
+    \item \textbf{Automatización}: 85\% de procesos automatizables
+    \item \textbf{Múltiples plataformas}: Web, Mobile (iOS/Android), Desktop
+    \item \textbf{Integraciones}: APIs de terceros para pagos, biometría, wearables
+    \item \textbf{Análisis en tiempo real}: Analytics con IA implementable
+\end{itemize}
+
+\subsection{Complejidad del Proyecto}
+
+\begin{table}[H]
+\centering
+\caption{Complejidad Técnica por Módulo}
+\begin{tabular}{|l|l|r|}
+\hline
+\textbf{Módulo} & \textbf{Complejidad} & \textbf{Esfuerzo (meses)} \\ \hline
+Member Service & Media & 1.5 \\ \hline
+Attendance Service & Media & 1 \\ \hline
+Payment Service & Alta & 2 \\ \hline
+Analytics Service & Alta & 2.5 \\ \hline
+AI Service & Alta & 3 \\ \hline
+Notification Service & Media & 1 \\ \hline
+Marketplace Service & Alta & 2 \\ \hline
+Frontend Web & Alta & 2.5 \\ \hline
+Frontend Mobile & Alta & 3 \\ \hline
+\hline
+\textbf{TOTAL} & & \textbf{18 meses} \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Riesgos Técnicos Identificados}
+
+\begin{alerta}
+\textbf{Riesgo Alto}:
+\begin{itemize}
+    \item Integración con múltiples wearables (variabilidad de APIs)
+    \item Modelos de IA requieren data histórica suficiente
+    \item Sincronización multi-sucursal en tiempo real
+\end{itemize}
+
+\textbf{Mitigación}:
+\begin{itemize}
+    \item Estándares de integración definidos (OpenAPI)
+    \item MVP sin IA completa, agregar después
+    \item Caché distribuida (Redis) para sincronización
+\end{itemize}
+\end{alerta}
+
+\subsection{Próximas Fases}
+
+\begin{enumerate}
+    \item \textbf{Fase 3}: Especificar todos los RF y CU detallados
+    \item \textbf{Fase 5}: Diseñar esquema de BD normalizado
+    \item \textbf{Fase 6}: Crear wireframes y prototipo interactivo
+    \item \textbf{Fase 7}: Desarrollo en sprints de 2 semanas
+    \item \textbf{Testing}: QA y testing de penetración
+    \item \textbf{Deployment}: Deployment a producción con CI/CD
+\end{enumerate}
+
+% =========================================================
+%                   REFERENCIAS
+% =========================================================
+\newpage
+\section*{Referencias}
+\addcontentsline{toc}{section}{Referencias}
+
+\begin{enumerate}
+    \item DATOS\_PROYECTO.json (2026) — Control técnico del proyecto GIMNASIO
+
+    \item CONSOLIDACION\_1\_2.md (2026) — Análisis integrado Fases 1+2
+
+    \item FASE\_4\_PLAN\_NEGOCIO.md (2026) — Plan de negocio detallado
+
+    \item Ries, E. (2011). \textit{The Lean Startup: How Today's Entrepreneurs Use Continuous Innovation to Create Radically Successful Businesses}. Crown Publishing.
+
+    \item Blank, S., \& Dorf, B. (2012). \textit{The Startup Owner's Manual: The Step-By-Step Guide for Building a Great Company}. K\&S Ranch.
+
+    \item Goodwin, T. (2015). \textit{The Platform Revolution: How Networked Markets Are Transforming the Economy and How to Make Them Work for You}. W.W. Norton \& Company.
+
+    \item McKinsey \& Company (2024). \textit{The Future of Fitness: Digital Transformation in Health \& Wellness}.
+
+    \item Gartner (2025). \textit{Market Guide for Fitness Management Software}.
+
+    \item OpenAI Documentation (2025). \textit{GPT-4 API for Custom Applications}.
+\end{enumerate}
+
+% =========================================================
+%                ANEXOS TÉCNICOS
+% =========================================================
+\newpage
+\appendix
+
+\section{Anexo A: Modelo de Datos Conceptual}
+
+\subsection{Entidades Principales}
+
+\begin{table}[H]
+\centering
+\caption{Entidades Principales del Sistema}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Entidad} & \textbf{Descripción} \\ \hline
+User & Usuario del sistema (miembro, entrenador, gerente) \\ \hline
+Member & Información específica de miembros \\ \hline
+Membership & Tipo y estado de membresía \\ \hline
+Attendance & Registro de asistencias \\ \hline
+Exercise & Ejercicios disponibles en el gimnasio \\ \hline
+Workout & Planes de entrenamiento \\ \hline
+Achievement & Logros y badges \\ \hline
+Transaction & Transacciones de marketplace \\ \hline
+Notification & Notificaciones enviadas \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Relaciones Principales}
+
+\begin{itemize}
+    \item User (1) → (N) Membership
+    \item User (1) → (N) Attendance
+    \item User (1) → (N) Achievement
+    \item Member (1) → (N) Workout
+    \item Workout (1) → (N) Exercise
+    \item Membership (1) → (N) Transaction
+\end{itemize}
+
+\section{Anexo B: APIs del Sistema}
+
+\subsection{REST API Endpoints Principales}
+
+\begin{lstlisting}[caption={Endpoints REST del Member Service}]
+POST   /api/v1/members           # Crear nuevo miembro
+GET    /api/v1/members/{id}      # Obtener datos miembro
+PUT    /api/v1/members/{id}      # Actualizar miembro
+DELETE /api/v1/members/{id}      # Eliminar miembro
+GET    /api/v1/members/{id}/history  # Historial de miembro
+
+POST   /api/v1/membership        # Crear membresía
+GET    /api/v1/membership/{id}   # Obtener membresía
+PUT    /api/v1/membership/{id}   # Renovar membresía
+
+POST   /api/v1/attendance        # Registrar asistencia
+GET    /api/v1/attendance/{memberId} # Historial de asistencias
+\end{lstlisting}
+
+\section{Anexo C: Flujos de Datos Críticos}
+
+\subsection{Flujo de Check-in}
+
+\begin{lstlisting}[caption={Flujo de Check-in de Miembro}]
+1. Cliente escanea QR
+2. Mobile app valida QR
+3. App envía POST /api/v1/attendance
+4. Attendance Service valida miembro
+5. Attendance Service registra timestamp
+6. Analytics Service actualiza ocupación
+7. Notification Service envía confirmación
+8. Frontend muestra "Welcome!"
+\end{lstlisting}
+
+\subsection{Flujo de Predicción de Churn}
+
+\begin{lstlisting}[caption={Flujo de Detección de Churn}]
+1. Analytics Service ejecuta Churn AI diariamente
+2. Obtiene datos de asistencia últimos 60 días
+3. AI Service predice probabilidad de churn
+4. Si probabilidad > 70%, crear alerta
+5. Notification Service notifica a gerente
+6. Notification Service sugiere intervención
+7. Gerente recibe push notification y email
+\end{lstlisting}
+
+\section{Anexo D: Estándares de Codificación}
+
+\subsection{Frontend}
+
+\begin{itemize}
+    \item Framework: React 18+
+    \item Lenguaje: TypeScript
+    \item Estado: Redux Toolkit
+    \item Testing: Jest + React Testing Library
+    \item Linting: ESLint + Prettier
+\end{itemize}
+
+\subsection{Backend}
+
+\begin{itemize}
+    \item Runtime: Node.js 18+
+    \item Framework: Express.js
+    \item Lenguaje: TypeScript
+    \item Testing: Jest
+    \item Linting: ESLint
+\end{itemize}
+
+\subsection{Base de Datos}
+
+\begin{itemize}
+    \item DBMS: PostgreSQL 14+
+    \item ORM: Sequelize o TypeORM
+    \item Migrations: Knex.js
+    \item Caché: Redis
+\end{itemize}
+
+\section{Anexo E: Matriz de Rastreabilidad}
+
+\begin{table}[H]
+\centering
+\caption{Rastreabilidad de Requisitos a Módulos}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Requisito} & \textbf{Módulo} & \textbf{CU Relacionado} \\ \hline
+RF-001 a RF-005 & Member Service & CU-001 \\ \hline
+RF-010 a RF-014 & Attendance Service & CU-002 \\ \hline
+RF-020 a RF-024 & Analytics Service & CU-020, CU-021 \\ \hline
+RF-030 a RF-034 & Notification Service & - \\ \hline
+RF-040 a RF-044 & Gamification Service & - \\ \hline
+RF-050 a RF-054 & Marketplace Service & - \\ \hline
+\end{tabular}
+\end{table}
+
+\end{document}

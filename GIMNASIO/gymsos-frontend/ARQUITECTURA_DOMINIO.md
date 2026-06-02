@@ -221,10 +221,9 @@ gimnasios → usuarios → planes → membresias → pagos
 
 ```
 1. supabase-schema.sql          ← Schema base v2.0 (30 tablas + RLS base + índices)
-2. migrations/001_fix_roles_rls_atomic.sql  ← ESTE ARCHIVO (roles, RLS, RPCs)
-3. seed-datos-demo.sql          ← 10 miembros + staff + clases + pagos + churn
-4. seed-mi-cuenta.sql           ← Cuenta personal del desarrollador
-5. seed-nuevos-roles.sql        ← nutricionista + cliente (funciona DESPUÉS de 001)
+2. migrations/001_fix_roles_rls_atomic.sql  ← Roles, RLS, RPCs
+3. migrations/002_rls_full_matrix_audit.sql ← Matrix de permisos completa
+4. migrations/003_orphan_tables_decision.sql ← Limpieza de tablas huérfanas
 ```
 
 ---

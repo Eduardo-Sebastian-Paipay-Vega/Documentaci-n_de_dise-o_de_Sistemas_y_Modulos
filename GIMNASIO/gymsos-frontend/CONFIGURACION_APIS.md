@@ -33,8 +33,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 2. migrations/001_fix_roles_rls_atomic.sql
 3. migrations/002_rls_full_matrix_audit.sql
 4. migrations/003_orphan_tables_decision.sql ← DROP 9 tablas + RLS restantes
-5. seed-datos-demo.sql
-6. seed-nuevos-roles.sql
 ```
 
 ---
@@ -128,7 +126,6 @@ Para `wearable_sync` tabla — integración con Garmin/Fitbit/Apple Health.
 ✅ Supabase configurado
 □  Gemini API key → obtener en aistudio.google.com (5 minutos, gratis)
 □  Supabase RLS migración 003 ejecutada
-□  seed-datos-demo.sql + seed-nuevos-roles.sql ejecutados
 □  Stripe (solo si se necesitan pagos con tarjeta)
 □  Web Push VAPID (opcional, para notificaciones)
 □  Dominio custom en Vercel/hosting

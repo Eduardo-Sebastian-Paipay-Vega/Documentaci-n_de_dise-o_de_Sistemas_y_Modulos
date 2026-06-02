@@ -2,1776 +2,2126 @@
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\DATOS_PROYECTO.json": {
     "mtime": 1779203838.454044,
     "ast_hash": "f4e0b5cf50fa1c9ee3397f3c69378bfa",
-    "semantic_hash": ""
+    "semantic_hash": "f4e0b5cf50fa1c9ee3397f3c69378bfa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.markdownlint.json": {
     "mtime": 1779140002.495369,
     "ast_hash": "1a6d6a6cd11b66862f8621a74cd9e66f",
-    "semantic_hash": ""
+    "semantic_hash": "1a6d6a6cd11b66862f8621a74cd9e66f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\book.json": {
     "mtime": 1779140002.6563685,
     "ast_hash": "f58e3b23644df10b730c855fc680b4dd",
-    "semantic_hash": ""
+    "semantic_hash": "f58e3b23644df10b730c855fc680b4dd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\markdown-link-check-config.json": {
     "mtime": 1779140002.7033694,
     "ast_hash": "84ed1f797b6e29dc2f6638a8157e26fb",
-    "semantic_hash": ""
+    "semantic_hash": "84ed1f797b6e29dc2f6638a8157e26fb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\package.json": {
     "mtime": 1779140002.70437,
     "ast_hash": "69174dacc273a0e5a64587c3068fa4fb",
-    "semantic_hash": ""
+    "semantic_hash": "69174dacc273a0e5a64587c3068fa4fb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Apply_Link_Check.sh": {
     "mtime": 1779140002.7053692,
     "ast_hash": "a5928f32cd71c88b0ee2f5ec654b83d5",
-    "semantic_hash": ""
+    "semantic_hash": "a5928f32cd71c88b0ee2f5ec654b83d5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Generate_CheatSheets_TOC.py": {
     "mtime": 1779140002.7053692,
     "ast_hash": "c06e1cdb9c4221c5a8cd99905d4ee94f",
-    "semantic_hash": ""
+    "semantic_hash": "c06e1cdb9c4221c5a8cd99905d4ee94f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Generate_RSS_Feed.py": {
     "mtime": 1779140002.7053692,
     "ast_hash": "2bb66a0588595d1cdad7e3d7f2292069",
-    "semantic_hash": ""
+    "semantic_hash": "2bb66a0588595d1cdad7e3d7f2292069"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Generate_Site.sh": {
     "mtime": 1779140002.7063696,
     "ast_hash": "0ea98f6319505473510845a922661f0b",
-    "semantic_hash": ""
+    "semantic_hash": "0ea98f6319505473510845a922661f0b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Generate_Site_mkDocs.sh": {
     "mtime": 1779140002.7063696,
     "ast_hash": "ce3c79db69ff6e5e2949f305210eb8a3",
-    "semantic_hash": ""
+    "semantic_hash": "ce3c79db69ff6e5e2949f305210eb8a3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Generate_Technologies_JSON.py": {
     "mtime": 1779140002.7063696,
     "ast_hash": "d4f0c76f51a6c2363b991c3792652090",
-    "semantic_hash": ""
+    "semantic_hash": "d4f0c76f51a6c2363b991c3792652090"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Identify_Old_Issue_And_PR.py": {
     "mtime": 1779140002.7063696,
     "ast_hash": "5970afe5477f2354a8514ac319e457a3",
-    "semantic_hash": ""
+    "semantic_hash": "5970afe5477f2354a8514ac319e457a3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\Update_CheatSheets_Index.py": {
     "mtime": 1779140002.707369,
     "ast_hash": "b7674c8e9e16c87ca88a93d255085fe4",
-    "semantic_hash": ""
+    "semantic_hash": "b7674c8e9e16c87ca88a93d255085fe4"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\next-env.d.ts": {
-    "mtime": 1779200507.8116968,
+    "mtime": 1779803628.4508228,
     "ast_hash": "29f60a376e12bf72b67d4994fcc84214",
-    "semantic_hash": ""
+    "semantic_hash": "29f60a376e12bf72b67d4994fcc84214"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\next.config.mjs": {
     "mtime": 1779206276.5763397,
     "ast_hash": "c79f2f7bc3e161aa3b66cb7cf77697a8",
-    "semantic_hash": ""
+    "semantic_hash": "c79f2f7bc3e161aa3b66cb7cf77697a8"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\package.json": {
-    "mtime": 1779385671.6936502,
-    "ast_hash": "8b3dbe0eecf60656619e0677d42961ca",
-    "semantic_hash": ""
+    "mtime": 1779789666.778276,
+    "ast_hash": "c7c9478d276dcbe7069f5be3f283c5c0",
+    "semantic_hash": "c7c9478d276dcbe7069f5be3f283c5c0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\postcss.config.mjs": {
     "mtime": 1779206276.5848918,
     "ast_hash": "a7f354cc191ff44214caa69257d23b8f",
-    "semantic_hash": ""
+    "semantic_hash": "a7f354cc191ff44214caa69257d23b8f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\supabase-schema.sql": {
-    "mtime": 1779363904.771657,
-    "ast_hash": "81b193023102ad231a8b5df57f3519b5",
-    "semantic_hash": ""
+    "mtime": 1780064824.6093724,
+    "ast_hash": "6079bb155dc9f90b04932c1c868d5f48",
+    "semantic_hash": "6079bb155dc9f90b04932c1c868d5f48"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\tailwind.config.ts": {
     "mtime": 1779206276.632763,
     "ast_hash": "ad28e24d7b0c325a837f2b930f538517",
-    "semantic_hash": ""
+    "semantic_hash": "ad28e24d7b0c325a837f2b930f538517"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\tsconfig.json": {
     "mtime": 1779206276.6337807,
     "ast_hash": "8364449be0c0c6299923ca250eaedf94",
-    "semantic_hash": ""
+    "semantic_hash": "8364449be0c0c6299923ca250eaedf94"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\proxy.ts": {
-    "mtime": 1779381380.7318416,
-    "ast_hash": "c198b40a24e70c39d0f68077cda33866",
-    "semantic_hash": ""
+    "mtime": 1780082059.8836687,
+    "ast_hash": "2868945785ed38472c6b9b42594c5581",
+    "semantic_hash": "2868945785ed38472c6b9b42594c5581"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\layout.tsx": {
     "mtime": 1779274907.571861,
     "ast_hash": "acd37559c007f0843794b80ff1c57d73",
-    "semantic_hash": ""
+    "semantic_hash": "acd37559c007f0843794b80ff1c57d73"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\page.tsx": {
     "mtime": 1779206276.5934417,
     "ast_hash": "a4f01d27275014ed2cc98ece1a677739",
-    "semantic_hash": ""
+    "semantic_hash": "a4f01d27275014ed2cc98ece1a677739"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\template.tsx": {
     "mtime": 1779206276.595461,
     "ast_hash": "be7f78de9bf9adab9aa564941cb013b3",
-    "semantic_hash": ""
+    "semantic_hash": "be7f78de9bf9adab9aa564941cb013b3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\layout.tsx": {
     "mtime": 1779385854.9862328,
     "ast_hash": "4381acb174fc14cc0fc737354123e341",
-    "semantic_hash": ""
+    "semantic_hash": "4381acb174fc14cc0fc737354123e341"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\entrenador\\page.tsx": {
-    "mtime": 1779274822.263753,
-    "ast_hash": "760d1ec10fd00737aa572782c2bb9532",
-    "semantic_hash": ""
+    "mtime": 1779795786.383716,
+    "ast_hash": "75eca9f87efcec208feb62ec1ce5269f",
+    "semantic_hash": "75eca9f87efcec208feb62ec1ce5269f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\entrenador\\asistencia\\page.tsx": {
     "mtime": 1779371266.9299965,
     "ast_hash": "3fa9935c0e092b0f360856340b2b467d",
-    "semantic_hash": ""
+    "semantic_hash": "3fa9935c0e092b0f360856340b2b467d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\entrenador\\clases\\page.tsx": {
     "mtime": 1779371179.1952262,
     "ast_hash": "22741be941424beebe9bcf5647ccec80",
-    "semantic_hash": ""
+    "semantic_hash": "22741be941424beebe9bcf5647ccec80"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\entrenador\\clientes\\page.tsx": {
     "mtime": 1779371227.031211,
     "ast_hash": "df05f57a7d58a6c6804079910c99dd3d",
-    "semantic_hash": ""
+    "semantic_hash": "df05f57a7d58a6c6804079910c99dd3d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\entrenador\\evaluaciones\\page.tsx": {
     "mtime": 1779371323.0442626,
     "ast_hash": "382315e9df8c26f3afd0c91a36d3c692",
-    "semantic_hash": ""
+    "semantic_hash": "382315e9df8c26f3afd0c91a36d3c692"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\gerente\\page.tsx": {
-    "mtime": 1779385934.4083326,
-    "ast_hash": "b31fa243e24c8643947535b687a24bbd",
-    "semantic_hash": ""
+    "mtime": 1779787489.5894592,
+    "ast_hash": "f02fdc350d243feb0c889e7ce0697e81",
+    "semantic_hash": "f02fdc350d243feb0c889e7ce0697e81"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\gerente\\clases\\page.tsx": {
-    "mtime": 1779364151.8207474,
-    "ast_hash": "39d7ea900f772eaaeb6bc3a4165624fa",
-    "semantic_hash": ""
+    "mtime": 1779788623.6564934,
+    "ast_hash": "edb53560491ad3f460d92aa4619f0fd4",
+    "semantic_hash": "edb53560491ad3f460d92aa4619f0fd4"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\gerente\\configuracion\\page.tsx": {
     "mtime": 1779364377.4672403,
     "ast_hash": "fe9132ea7bddccb6cb9ad8f1013ff746",
-    "semantic_hash": ""
+    "semantic_hash": "fe9132ea7bddccb6cb9ad8f1013ff746"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\gerente\\miembros\\page.tsx": {
-    "mtime": 1779364093.9275792,
-    "ast_hash": "88ea7af154979868634b295ed5e3b6b8",
-    "semantic_hash": ""
+    "mtime": 1779799099.254735,
+    "ast_hash": "8df41bc35d64a1f422ada5f1450c1d21",
+    "semantic_hash": "8df41bc35d64a1f422ada5f1450c1d21"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\gerente\\promociones\\page.tsx": {
     "mtime": 1779364352.6064134,
     "ast_hash": "e0eef89e75fbbba5e98b3a54530bad1e",
-    "semantic_hash": ""
+    "semantic_hash": "e0eef89e75fbbba5e98b3a54530bad1e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\gerente\\reportes\\page.tsx": {
     "mtime": 1779364205.6013455,
     "ast_hash": "8adbbf384097fdba3606fc16f16451ba",
-    "semantic_hash": ""
+    "semantic_hash": "8adbbf384097fdba3606fc16f16451ba"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\miembro\\page.tsx": {
-    "mtime": 1779385991.167609,
-    "ast_hash": "f9730147707b8aa54307a7e4cfa2254f",
-    "semantic_hash": ""
+    "mtime": 1779787782.8328345,
+    "ast_hash": "0c3bee54e4a8d028598bc3f41065bccf",
+    "semantic_hash": "0c3bee54e4a8d028598bc3f41065bccf"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\miembro\\clases\\page.tsx": {
     "mtime": 1779364500.437188,
     "ast_hash": "d9f523c4a3f5c1ac9573d64b2c89693f",
-    "semantic_hash": ""
+    "semantic_hash": "d9f523c4a3f5c1ac9573d64b2c89693f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\miembro\\membresia\\page.tsx": {
     "mtime": 1779364436.9597962,
     "ast_hash": "16069d7f8ccbfcd6621988bb48c6cc1b",
-    "semantic_hash": ""
+    "semantic_hash": "16069d7f8ccbfcd6621988bb48c6cc1b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\miembro\\progreso\\page.tsx": {
-    "mtime": 1779364583.0264285,
-    "ast_hash": "e57b83700e569294f222739fc6ce11a2",
-    "semantic_hash": ""
+    "mtime": 1780072889.405197,
+    "ast_hash": "ed7f9d0eaabd3f2c7042b6bfea6982a4",
+    "semantic_hash": "ed7f9d0eaabd3f2c7042b6bfea6982a4"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\miembro\\qr\\page.tsx": {
-    "mtime": 1779364537.6663935,
-    "ast_hash": "832e0674d524f7ee99db4e368e30f344",
-    "semantic_hash": ""
+    "mtime": 1779795432.5288062,
+    "ast_hash": "378b29647ad656b698c557e3ef2365ee",
+    "semantic_hash": "378b29647ad656b698c557e3ef2365ee"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\recepcionista\\page.tsx": {
-    "mtime": 1779386046.8596694,
-    "ast_hash": "93134bb364afeda998bb812c82b33d57",
-    "semantic_hash": ""
+    "mtime": 1779787609.6880326,
+    "ast_hash": "dda08250103f1104ad07d1433006d277",
+    "semantic_hash": "dda08250103f1104ad07d1433006d277"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\recepcionista\\acceso\\page.tsx": {
-    "mtime": 1779364688.5455527,
-    "ast_hash": "9cfe59575af93c6e2a1cf2cd633b837d",
-    "semantic_hash": ""
+    "mtime": 1779788817.6019905,
+    "ast_hash": "d1dba0488c05f5fb88f8a3ab5b4d1348",
+    "semantic_hash": "d1dba0488c05f5fb88f8a3ab5b4d1348"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\recepcionista\\pagos\\page.tsx": {
-    "mtime": 1779364870.9237273,
-    "ast_hash": "cc8ce643a78a14a889f14bdae8289755",
-    "semantic_hash": ""
+    "mtime": 1779788702.1859283,
+    "ast_hash": "79584527a84c4513ba750d8f8533228d",
+    "semantic_hash": "79584527a84c4513ba750d8f8533228d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\recepcionista\\registro\\page.tsx": {
-    "mtime": 1779364642.5572977,
-    "ast_hash": "03d4cb0c7fa49ae34963374a0ea2facd",
-    "semantic_hash": ""
+    "mtime": 1779788763.373624,
+    "ast_hash": "e445131a0cb26c2c56862bbbb8a7eb8e",
+    "semantic_hash": "e445131a0cb26c2c56862bbbb8a7eb8e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\recepcionista\\soporte\\page.tsx": {
     "mtime": 1779371128.5000906,
     "ast_hash": "12c283d2ed9034f646f1d35c821a523f",
-    "semantic_hash": ""
+    "semantic_hash": "12c283d2ed9034f646f1d35c821a523f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\login\\page.tsx": {
-    "mtime": 1779385842.8456986,
-    "ast_hash": "c9319568000e2cb27b5a237f70dc1bd2",
-    "semantic_hash": ""
+    "mtime": 1780148984.2648501,
+    "ast_hash": "37a5d3ceb6dfe48cc651a77ac7e61c63",
+    "semantic_hash": "37a5d3ceb6dfe48cc651a77ac7e61c63"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\app\\sidebar.tsx": {
-    "mtime": 1779385787.7263837,
-    "ast_hash": "6784f2f42ebfd6912388c722cdfc6b75",
-    "semantic_hash": ""
+    "mtime": 1780066379.9364545,
+    "ast_hash": "52a52d38d1553a837d13a5b855a6dfb5",
+    "semantic_hash": "52a52d38d1553a837d13a5b855a6dfb5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\layout\\footer.tsx": {
     "mtime": 1779206276.598456,
     "ast_hash": "38582e8fd551e16a8fcbbb62b6d9ccc6",
-    "semantic_hash": ""
+    "semantic_hash": "38582e8fd551e16a8fcbbb62b6d9ccc6"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\layout\\navbar.tsx": {
-    "mtime": 1779206276.6004622,
-    "ast_hash": "637dc8e43cb0050dece0552966493c31",
-    "semantic_hash": ""
+    "mtime": 1780148840.2691915,
+    "ast_hash": "9864e7c36be514ddc00f266d3b483c23",
+    "semantic_hash": "9864e7c36be514ddc00f266d3b483c23"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\providers\\auth-provider.tsx": {
-    "mtime": 1779364003.30644,
-    "ast_hash": "5ff4721f6d85a7f4c9aebc2ecf50f005",
-    "semantic_hash": ""
+    "mtime": 1780142122.5047944,
+    "ast_hash": "3fb9ae8fdece358f14fe3e97230e1edc",
+    "semantic_hash": "3fb9ae8fdece358f14fe3e97230e1edc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\providers\\lenis-provider.tsx": {
     "mtime": 1779206276.6050174,
     "ast_hash": "424f0b212264a6d7bd97239f44b34306",
-    "semantic_hash": ""
+    "semantic_hash": "424f0b212264a6d7bd97239f44b34306"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\cta.tsx": {
     "mtime": 1779206276.6080177,
     "ast_hash": "8019be9c385f200eceb2f7fd6695fd92",
-    "semantic_hash": ""
+    "semantic_hash": "8019be9c385f200eceb2f7fd6695fd92"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\dashboard-preview.tsx": {
     "mtime": 1779206276.6110187,
     "ast_hash": "a851b163cd75f96bfb282f16f94db573",
-    "semantic_hash": ""
+    "semantic_hash": "a851b163cd75f96bfb282f16f94db573"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\features.tsx": {
     "mtime": 1779206276.6125321,
     "ast_hash": "f66bc2f2dddb85634e751933b345a25e",
-    "semantic_hash": ""
+    "semantic_hash": "f66bc2f2dddb85634e751933b345a25e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\hero.tsx": {
     "mtime": 1779206276.616682,
     "ast_hash": "c53f7b4d1ae15e83d6130785fcf27e6c",
-    "semantic_hash": ""
+    "semantic_hash": "c53f7b4d1ae15e83d6130785fcf27e6c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\phone-showcase.tsx": {
     "mtime": 1779206276.620701,
     "ast_hash": "f73975b477a5a1da2acfab836931b5bd",
-    "semantic_hash": ""
+    "semantic_hash": "f73975b477a5a1da2acfab836931b5bd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\stats.tsx": {
     "mtime": 1779206276.6232336,
     "ast_hash": "fffe682bebf2263d6c0a33dc7e3afa04",
-    "semantic_hash": ""
+    "semantic_hash": "fffe682bebf2263d6c0a33dc7e3afa04"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\components\\sections\\ticker.tsx": {
     "mtime": 1779206276.6252544,
     "ast_hash": "cb7029cf7a7971e358aa8973f874bf3f",
-    "semantic_hash": ""
+    "semantic_hash": "cb7029cf7a7971e358aa8973f874bf3f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\auth.ts": {
-    "mtime": 1779363935.6161137,
-    "ast_hash": "6cd2d80cbfb2a26f04b01773f059189d",
-    "semantic_hash": ""
+    "mtime": 1780142095.2441435,
+    "ast_hash": "4f3acd472e6c1cd77f9f01c2cd7f99aa",
+    "semantic_hash": "4f3acd472e6c1cd77f9f01c2cd7f99aa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\motion.ts": {
     "mtime": 1779385746.972585,
     "ast_hash": "c1295082b15adb1e640e6313839a7090",
-    "semantic_hash": ""
+    "semantic_hash": "c1295082b15adb1e640e6313839a7090"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\supabase.ts": {
-    "mtime": 1779363791.0820687,
-    "ast_hash": "9862b35ff728a947a23517f7506a7044",
-    "semantic_hash": ""
+    "mtime": 1780149932.0087502,
+    "ast_hash": "2a1682eec70452863170dbbbf93812bc",
+    "semantic_hash": "2a1682eec70452863170dbbbf93812bc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\utils.ts": {
     "mtime": 1779206276.6302521,
     "ast_hash": "6e7a2d4f1fa6b69ad722be7d66f8d57f",
-    "semantic_hash": ""
+    "semantic_hash": "6e7a2d4f1fa6b69ad722be7d66f8d57f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\CONSOLIDACION_1_2.md": {
     "mtime": 1779203838.4520276,
     "ast_hash": "15073d4728ab8631f9e87acb6ead0c97",
-    "semantic_hash": ""
+    "semantic_hash": "15073d4728ab8631f9e87acb6ead0c97"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\framer-motion\\SKILL.md": {
     "mtime": 1779136860.0344493,
     "ast_hash": "770eba7fac5b5cc602de586b6606e4e0",
-    "semantic_hash": ""
+    "semantic_hash": "770eba7fac5b5cc602de586b6606e4e0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\frontend-design-pro\\SKILL.md": {
     "mtime": 1779137233.213207,
     "ast_hash": "931e553dd619bf6175ff09bf31961af2",
-    "semantic_hash": ""
+    "semantic_hash": "931e553dd619bf6175ff09bf31961af2"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\gsap\\SKILL.md": {
     "mtime": 1779137109.4988818,
     "ast_hash": "8ff9fb1bba77ba5241989bcfaf5b76ca",
-    "semantic_hash": ""
+    "semantic_hash": "8ff9fb1bba77ba5241989bcfaf5b76ca"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\CODE_OF_CONDUCT.md": {
     "mtime": 1779140002.4963796,
     "ast_hash": "9ce5a6e24164576200e75f5980b87a27",
-    "semantic_hash": ""
+    "semantic_hash": "9ce5a6e24164576200e75f5980b87a27"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\CONTRIBUTING.md": {
     "mtime": 1779140002.4963796,
     "ast_hash": "aa0b4daaa39d83aa3f627cb0db3da0fb",
-    "semantic_hash": ""
+    "semantic_hash": "aa0b4daaa39d83aa3f627cb0db3da0fb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\CONTRIBUTOR-V1.md": {
     "mtime": 1779140002.4973722,
     "ast_hash": "c2bdabd39be624fea1a7f8b0bdefe53d",
-    "semantic_hash": ""
+    "semantic_hash": "c2bdabd39be624fea1a7f8b0bdefe53d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\GUIDELINE.md": {
     "mtime": 1779140002.4983704,
     "ast_hash": "1e4a96c509539c537effa82e27ac9414",
-    "semantic_hash": ""
+    "semantic_hash": "1e4a96c509539c537effa82e27ac9414"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\HelpGuide.md": {
     "mtime": 1779140002.4983704,
     "ast_hash": "b20ac258557a1b8c836a1c13e98595b5",
-    "semantic_hash": ""
+    "semantic_hash": "b20ac258557a1b8c836a1c13e98595b5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\Index.md": {
     "mtime": 1779140002.4983704,
     "ast_hash": "56acfec8ee88484a409bc19d15641351",
-    "semantic_hash": ""
+    "semantic_hash": "56acfec8ee88484a409bc19d15641351"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\IndexASVS.md": {
     "mtime": 1779140002.499389,
     "ast_hash": "eae430328156aa9c4094cd2442813758",
-    "semantic_hash": ""
+    "semantic_hash": "eae430328156aa9c4094cd2442813758"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\IndexASVS4.md": {
     "mtime": 1779140002.499389,
     "ast_hash": "d0f070dc24122f84e7e7d8ed663621c8",
-    "semantic_hash": ""
+    "semantic_hash": "d0f070dc24122f84e7e7d8ed663621c8"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\IndexMASVS.md": {
     "mtime": 1779140002.5003717,
     "ast_hash": "d5a32d0a90ad4243a52dab2061546189",
-    "semantic_hash": ""
+    "semantic_hash": "d5a32d0a90ad4243a52dab2061546189"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\IndexProactiveControls.md": {
     "mtime": 1779140002.5003717,
     "ast_hash": "301a5471e9b5db7c258cad2efb828084",
-    "semantic_hash": ""
+    "semantic_hash": "301a5471e9b5db7c258cad2efb828084"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\IndexTopTen.md": {
     "mtime": 1779140002.5003717,
     "ast_hash": "ea85c2f60d311e59377862dc3bda15fc",
-    "semantic_hash": ""
+    "semantic_hash": "ea85c2f60d311e59377862dc3bda15fc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\LICENSE.md": {
     "mtime": 1779140002.5013711,
     "ast_hash": "12d3b6ffb1d7673f4e6b0ddab1b0feea",
-    "semantic_hash": ""
+    "semantic_hash": "12d3b6ffb1d7673f4e6b0ddab1b0feea"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\mkdocs.yml": {
     "mtime": 1779140002.7033694,
     "ast_hash": "d31ba70b5f8b0c81f32f00166f6e4023",
-    "semantic_hash": ""
+    "semantic_hash": "d31ba70b5f8b0c81f32f00166f6e4023"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\Preface.md": {
     "mtime": 1779140002.5013711,
     "ast_hash": "0e0a42b43c7d16dde5b1983121bfb47e",
-    "semantic_hash": ""
+    "semantic_hash": "0e0a42b43c7d16dde5b1983121bfb47e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\README.md": {
     "mtime": 1779140002.5023706,
     "ast_hash": "8499c2c68acec5085137bd0c2d20585d",
-    "semantic_hash": ""
+    "semantic_hash": "8499c2c68acec5085137bd0c2d20585d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\requirements.txt": {
     "mtime": 1779140002.70437,
     "ast_hash": "624812ad73331279d1f62172ef12bcbc",
-    "semantic_hash": ""
+    "semantic_hash": "624812ad73331279d1f62172ef12bcbc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\SECURITY.md": {
     "mtime": 1779140002.50337,
     "ast_hash": "79e58e531a266a1c3800a4e6e01208cb",
-    "semantic_hash": ""
+    "semantic_hash": "79e58e531a266a1c3800a4e6e01208cb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\dependabot.yml": {
     "mtime": 1779140002.4933693,
     "ast_hash": "dd93ee1cada7d15811426d41fd01266f",
-    "semantic_hash": ""
+    "semantic_hash": "dd93ee1cada7d15811426d41fd01266f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\pull_request_template.md": {
     "mtime": 1779140002.4933693,
     "ast_hash": "12c656ac941c581b8518ceed16b90150",
-    "semantic_hash": ""
+    "semantic_hash": "12c656ac941c581b8518ceed16b90150"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\ISSUE_TEMPLATE\\new_cheatsheet_proposal.md": {
     "mtime": 1779140002.492373,
     "ast_hash": "23e6057229368b8ae71a133a25957339",
-    "semantic_hash": ""
+    "semantic_hash": "23e6057229368b8ae71a133a25957339"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\ISSUE_TEMPLATE\\update_cheatsheet_proposal.md": {
     "mtime": 1779140002.492373,
     "ast_hash": "c6bdbc7c1f21c062c1df9a033003bc3e",
-    "semantic_hash": ""
+    "semantic_hash": "c6bdbc7c1f21c062c1df9a033003bc3e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\build-and-deploy-website.yml": {
     "mtime": 1779140002.4933693,
     "ast_hash": "1a672871f6029ee0efb1ad6b4ba90c26",
-    "semantic_hash": ""
+    "semantic_hash": "1a672871f6029ee0efb1ad6b4ba90c26"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\citation-check.yml": {
     "mtime": 1779140002.4933693,
     "ast_hash": "46645845a1b0227f0698245b4e182cc5",
-    "semantic_hash": ""
+    "semantic_hash": "46645845a1b0227f0698245b4e182cc5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\identify-old-issues-and-pr.yml": {
     "mtime": 1779140002.4943686,
     "ast_hash": "716ecc98723f1ddae6eb010fbb4e2f2c",
-    "semantic_hash": ""
+    "semantic_hash": "716ecc98723f1ddae6eb010fbb4e2f2c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\md-link-check.yml": {
     "mtime": 1779140002.4943686,
     "ast_hash": "8dbbdad7ea627c22aba3b6f10e5298bc",
-    "semantic_hash": ""
+    "semantic_hash": "8dbbdad7ea627c22aba3b6f10e5298bc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\md_lint_check.yml": {
     "mtime": 1779140002.4943686,
     "ast_hash": "084d023256046d216ad7e969bb7f3f29",
-    "semantic_hash": ""
+    "semantic_hash": "084d023256046d216ad7e969bb7f3f29"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\pr-scope-check.yml": {
     "mtime": 1779140002.4943686,
     "ast_hash": "0e143a8e1106d5df7ebb16107ac12519",
-    "semantic_hash": ""
+    "semantic_hash": "0e143a8e1106d5df7ebb16107ac12519"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\.github\\workflows\\publishing-check.yml": {
     "mtime": 1779140002.495369,
     "ast_hash": "9f57fed15abf8ed5214d3900875bd1c6",
-    "semantic_hash": ""
+    "semantic_hash": "9f57fed15abf8ed5214d3900875bd1c6"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Abuse_Case_Cheat_Sheet.md": {
     "mtime": 1779140002.6573699,
     "ast_hash": "9d1908eb3ca351701462496353abef4e",
-    "semantic_hash": ""
+    "semantic_hash": "9d1908eb3ca351701462496353abef4e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Access_Control_Cheat_Sheet.md": {
     "mtime": 1779140002.6583695,
     "ast_hash": "bfd6882f7d0a03fae1ce05f141b6e621",
-    "semantic_hash": ""
+    "semantic_hash": "bfd6882f7d0a03fae1ce05f141b6e621"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\AI_Agent_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6573699,
     "ast_hash": "0e571cfc139c3461ad787a63cb3cfedb",
-    "semantic_hash": ""
+    "semantic_hash": "0e571cfc139c3461ad787a63cb3cfedb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\AJAX_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6573699,
     "ast_hash": "c3a26fc3d9d85fce607b381bb73cbd83",
-    "semantic_hash": ""
+    "semantic_hash": "c3a26fc3d9d85fce607b381bb73cbd83"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Attack_Surface_Analysis_Cheat_Sheet.md": {
     "mtime": 1779140002.6583695,
     "ast_hash": "7b4ff9b66086ba2e8fe4f9849579333f",
-    "semantic_hash": ""
+    "semantic_hash": "7b4ff9b66086ba2e8fe4f9849579333f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Authentication_Cheat_Sheet.md": {
     "mtime": 1779140002.6583695,
     "ast_hash": "4a4a4a71c6df9ef2b7b31616a93e6072",
-    "semantic_hash": ""
+    "semantic_hash": "4a4a4a71c6df9ef2b7b31616a93e6072"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Authorization_Cheat_Sheet.md": {
     "mtime": 1779140002.6593695,
     "ast_hash": "8103b56cf80ac9a83987d97f129289ec",
-    "semantic_hash": ""
+    "semantic_hash": "8103b56cf80ac9a83987d97f129289ec"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Authorization_Testing_Automation_Cheat_Sheet.md": {
     "mtime": 1779140002.6593695,
     "ast_hash": "2136f716db8d0e6a973f987caacee040",
-    "semantic_hash": ""
+    "semantic_hash": "2136f716db8d0e6a973f987caacee040"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Automotive_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6593695,
     "ast_hash": "8a6521512f97fa3b7567f791e655981c",
-    "semantic_hash": ""
+    "semantic_hash": "8a6521512f97fa3b7567f791e655981c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Bean_Validation_Cheat_Sheet.md": {
     "mtime": 1779140002.6603687,
     "ast_hash": "93ca0240be88cbb3d0329afdb914db25",
-    "semantic_hash": ""
+    "semantic_hash": "93ca0240be88cbb3d0329afdb914db25"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Bot_Management_and_Anti-Automation_Cheat_Sheet.md": {
     "mtime": 1779140002.6603687,
     "ast_hash": "7d88cfad01fab13226fa2658c8987ee8",
-    "semantic_hash": ""
+    "semantic_hash": "7d88cfad01fab13226fa2658c8987ee8"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Browser_Extension_Vulnerabilities_Cheat_Sheet.md": {
     "mtime": 1779140002.6613681,
     "ast_hash": "3071d62f5bcfaa3dfb6346054b6be02e",
-    "semantic_hash": ""
+    "semantic_hash": "3071d62f5bcfaa3dfb6346054b6be02e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Business_Logic_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6613681,
     "ast_hash": "fcdfb0dc32553de09d6be83ce3f14dcc",
-    "semantic_hash": ""
+    "semantic_hash": "fcdfb0dc32553de09d6be83ce3f14dcc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\C-Based_Toolchain_Hardening_Cheat_Sheet.md": {
     "mtime": 1779140002.6613681,
     "ast_hash": "bb4e844ebc52a29129c82c855ea83cf5",
-    "semantic_hash": ""
+    "semantic_hash": "bb4e844ebc52a29129c82c855ea83cf5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Choosing_and_Using_Security_Questions_Cheat_Sheet.md": {
     "mtime": 1779140002.6623688,
     "ast_hash": "eba95d4305cada18217086d69df6d4c0",
-    "semantic_hash": ""
+    "semantic_hash": "eba95d4305cada18217086d69df6d4c0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\CI_CD_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6623688,
     "ast_hash": "4c78e6e205d553bf6071f3aa11ca0064",
-    "semantic_hash": ""
+    "semantic_hash": "4c78e6e205d553bf6071f3aa11ca0064"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Clickjacking_Defense_Cheat_Sheet.md": {
     "mtime": 1779140002.6623688,
     "ast_hash": "6d8d796bc4a8dd8d7017fc9f887201f7",
-    "semantic_hash": ""
+    "semantic_hash": "6d8d796bc4a8dd8d7017fc9f887201f7"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Content_Security_Policy_Cheat_Sheet.md": {
     "mtime": 1779140002.6633682,
     "ast_hash": "27f4750583655ad424c3609d137a7ecd",
-    "semantic_hash": ""
+    "semantic_hash": "27f4750583655ad424c3609d137a7ecd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Cookie_Theft_Mitigation_Cheat_Sheet.md": {
     "mtime": 1779140002.6633682,
     "ast_hash": "a7dc8c55e618c555c2a0ff8d1d4ad765",
-    "semantic_hash": ""
+    "semantic_hash": "a7dc8c55e618c555c2a0ff8d1d4ad765"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.664369,
     "ast_hash": "9283afbeb5dd8da8df49f0487e8d10fa",
-    "semantic_hash": ""
+    "semantic_hash": "9283afbeb5dd8da8df49f0487e8d10fa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Cross_Site_Scripting_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6653686,
     "ast_hash": "51eba139b58f894784640c8a871a8546",
-    "semantic_hash": ""
+    "semantic_hash": "51eba139b58f894784640c8a871a8546"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Cryptographic_Storage_Cheat_Sheet.md": {
     "mtime": 1779140002.6653686,
     "ast_hash": "b4f41217a0d263fc37e6d2a8edbf9d6f",
-    "semantic_hash": ""
+    "semantic_hash": "b4f41217a0d263fc37e6d2a8edbf9d6f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Database_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.666368,
     "ast_hash": "0c1b31dd7793bf116eb1b1016ad1a18f",
-    "semantic_hash": ""
+    "semantic_hash": "0c1b31dd7793bf116eb1b1016ad1a18f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Denial_of_Service_Cheat_Sheet.md": {
     "mtime": 1779140002.666368,
     "ast_hash": "31aa514a9540716edaefa526191fce5a",
-    "semantic_hash": ""
+    "semantic_hash": "31aa514a9540716edaefa526191fce5a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Dependency_Graph_SBOM_Cheat_Sheet.md": {
     "mtime": 1779140002.666368,
     "ast_hash": "d72dbfe16d09b80c5f53b86f9eee5cdb",
-    "semantic_hash": ""
+    "semantic_hash": "d72dbfe16d09b80c5f53b86f9eee5cdb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Deserialization_Cheat_Sheet.md": {
     "mtime": 1779140002.6673694,
     "ast_hash": "11c899a68494c26d8f89c27db64ed8cc",
-    "semantic_hash": ""
+    "semantic_hash": "11c899a68494c26d8f89c27db64ed8cc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Django_REST_Framework_Cheat_Sheet.md": {
     "mtime": 1779140002.6673694,
     "ast_hash": "52e87e0224dbe1f082e9c2857f05436c",
-    "semantic_hash": ""
+    "semantic_hash": "52e87e0224dbe1f082e9c2857f05436c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Django_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6673694,
     "ast_hash": "5e18c43e2fd044a8a94f55496b0b9c5a",
-    "semantic_hash": ""
+    "semantic_hash": "5e18c43e2fd044a8a94f55496b0b9c5a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Docker_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6683693,
     "ast_hash": "89f69c7b4582752d2e0dd925c21fc00d",
-    "semantic_hash": ""
+    "semantic_hash": "89f69c7b4582752d2e0dd925c21fc00d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\DOM_based_XSS_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.666368,
     "ast_hash": "74f8301ea8cb66500a521ec7bc974de5",
-    "semantic_hash": ""
+    "semantic_hash": "74f8301ea8cb66500a521ec7bc974de5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\DOM_Clobbering_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6653686,
     "ast_hash": "c0a738d65cca843e978937ff9d4f3b64",
-    "semantic_hash": ""
+    "semantic_hash": "c0a738d65cca843e978937ff9d4f3b64"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\DotNet_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6683693,
     "ast_hash": "bd91fca022b0820efa8f806d9eaf5d24",
-    "semantic_hash": ""
+    "semantic_hash": "bd91fca022b0820efa8f806d9eaf5d24"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Drone_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6693685,
     "ast_hash": "58bd6740a64f68b407bc44e8863fcefa",
-    "semantic_hash": ""
+    "semantic_hash": "58bd6740a64f68b407bc44e8863fcefa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Email_Validation_and_Verification_Cheat_Sheet.md": {
     "mtime": 1779140002.6693685,
     "ast_hash": "6530b02358b744de36913957606edd62",
-    "semantic_hash": ""
+    "semantic_hash": "6530b02358b744de36913957606edd62"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Error_Handling_Cheat_Sheet.md": {
     "mtime": 1779140002.6693685,
     "ast_hash": "d9fea97e428296038617a7acacb31879",
-    "semantic_hash": ""
+    "semantic_hash": "d9fea97e428296038617a7acacb31879"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\File_Upload_Cheat_Sheet.md": {
     "mtime": 1779140002.670369,
     "ast_hash": "b9c6685527383215ffaaae58dc61e6f1",
-    "semantic_hash": ""
+    "semantic_hash": "b9c6685527383215ffaaae58dc61e6f1"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\GitHub_Actions_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6713693,
     "ast_hash": "c97d78c713e028ffdcae1b6017605988",
-    "semantic_hash": ""
+    "semantic_hash": "c97d78c713e028ffdcae1b6017605988"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\GraphQL_Cheat_Sheet.md": {
     "mtime": 1779140002.6713693,
     "ast_hash": "4b72069f0e06b994c285202d31bfb98d",
-    "semantic_hash": ""
+    "semantic_hash": "4b72069f0e06b994c285202d31bfb98d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\gRPC_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.699368,
     "ast_hash": "bde4b139d9c0ccbb9c659a3c3fcad3f6",
-    "semantic_hash": ""
+    "semantic_hash": "bde4b139d9c0ccbb9c659a3c3fcad3f6"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\HTML5_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6713693,
     "ast_hash": "0a1db1f184400ba1dad47be22ab34d06",
-    "semantic_hash": ""
+    "semantic_hash": "0a1db1f184400ba1dad47be22ab34d06"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\HTTP_Headers_Cheat_Sheet.md": {
     "mtime": 1779140002.672369,
     "ast_hash": "9425033ba8eba3c2a91a5dfa8e3710b2",
-    "semantic_hash": ""
+    "semantic_hash": "9425033ba8eba3c2a91a5dfa8e3710b2"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\HTTP_Strict_Transport_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.672369,
     "ast_hash": "055ba1a2c58e71f6a143bcd09a928e2a",
-    "semantic_hash": ""
+    "semantic_hash": "055ba1a2c58e71f6a143bcd09a928e2a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Infrastructure_as_Code_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.672369,
     "ast_hash": "1c5918cb48ac1a88f74b3dae04548867",
-    "semantic_hash": ""
+    "semantic_hash": "1c5918cb48ac1a88f74b3dae04548867"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Injection_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.672369,
     "ast_hash": "dd8956ebd4d3b29573e8e97c350b963f",
-    "semantic_hash": ""
+    "semantic_hash": "dd8956ebd4d3b29573e8e97c350b963f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Injection_Prevention_in_Java_Cheat_Sheet.md": {
     "mtime": 1779140002.6733687,
     "ast_hash": "17f3c296bbc2f0404ca0785993e1ddff",
-    "semantic_hash": ""
+    "semantic_hash": "17f3c296bbc2f0404ca0785993e1ddff"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Input_Validation_Cheat_Sheet.md": {
     "mtime": 1779140002.6733687,
     "ast_hash": "ffa22adfd37577e0650293dd81d8d40f",
-    "semantic_hash": ""
+    "semantic_hash": "ffa22adfd37577e0650293dd81d8d40f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6733687,
     "ast_hash": "d3208ab90324fbc01ac92da04586a9dd",
-    "semantic_hash": ""
+    "semantic_hash": "d3208ab90324fbc01ac92da04586a9dd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\JAAS_Cheat_Sheet.md": {
     "mtime": 1779140002.674369,
     "ast_hash": "1d0b660cec55501fc76c00c1e8101283",
-    "semantic_hash": ""
+    "semantic_hash": "1d0b660cec55501fc76c00c1e8101283"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Java_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6753688,
     "ast_hash": "7cba72dd71698d85ea8b38168f876146",
-    "semantic_hash": ""
+    "semantic_hash": "7cba72dd71698d85ea8b38168f876146"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Key_Management_Cheat_Sheet.md": {
     "mtime": 1779140002.6753688,
     "ast_hash": "2cfe04a9998ab1996c1ca1705a5292a2",
-    "semantic_hash": ""
+    "semantic_hash": "2cfe04a9998ab1996c1ca1705a5292a2"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Kubernetes_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6753688,
     "ast_hash": "6a62d92d678378d2bdfe8b6ef8cfa78e",
-    "semantic_hash": ""
+    "semantic_hash": "6a62d92d678378d2bdfe8b6ef8cfa78e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Laravel_Cheat_Sheet.md": {
     "mtime": 1779140002.6773682,
     "ast_hash": "b6dae55e42c547d0e841ed847fcf27cb",
-    "semantic_hash": ""
+    "semantic_hash": "b6dae55e42c547d0e841ed847fcf27cb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\LDAP_Injection_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.676368,
     "ast_hash": "b361cf8d1fd35de1e245b8ca09cdc9c1",
-    "semantic_hash": ""
+    "semantic_hash": "b361cf8d1fd35de1e245b8ca09cdc9c1"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Legacy_Application_Management_Cheat_Sheet.md": {
     "mtime": 1779140002.6773682,
     "ast_hash": "c813bad206e3421208fd3b550cfab98f",
-    "semantic_hash": ""
+    "semantic_hash": "c813bad206e3421208fd3b550cfab98f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\LLM_Prompt_Injection_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.676368,
     "ast_hash": "60c3fec3953714e5464da2d8fc7c41d4",
-    "semantic_hash": ""
+    "semantic_hash": "60c3fec3953714e5464da2d8fc7c41d4"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Logging_Cheat_Sheet.md": {
     "mtime": 1779140002.6773682,
     "ast_hash": "d0f4cea027b46918e4c5e73179157fbc",
-    "semantic_hash": ""
+    "semantic_hash": "d0f4cea027b46918e4c5e73179157fbc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Logging_Vocabulary_Cheat_Sheet.md": {
     "mtime": 1779140002.6783693,
     "ast_hash": "61376dd87d06b0f5d72d56adb28fcc8b",
-    "semantic_hash": ""
+    "semantic_hash": "61376dd87d06b0f5d72d56adb28fcc8b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Mass_Assignment_Cheat_Sheet.md": {
     "mtime": 1779140002.6783693,
     "ast_hash": "b98a8b8b03a1d3dc1734f266a076c43f",
-    "semantic_hash": ""
+    "semantic_hash": "b98a8b8b03a1d3dc1734f266a076c43f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\MCP_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6783693,
     "ast_hash": "4dc3109e5a75742ec68c48c84a720b20",
-    "semantic_hash": ""
+    "semantic_hash": "4dc3109e5a75742ec68c48c84a720b20"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Microservices_based_Security_Arch_Doc_Cheat_Sheet.md": {
     "mtime": 1779140002.6793694,
     "ast_hash": "06dd26ea9369c003521c7b572d33b2fc",
-    "semantic_hash": ""
+    "semantic_hash": "06dd26ea9369c003521c7b572d33b2fc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Microservices_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6793694,
     "ast_hash": "e3678ec9b1d92c1b88323f0857cdd6ca",
-    "semantic_hash": ""
+    "semantic_hash": "e3678ec9b1d92c1b88323f0857cdd6ca"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Mobile_Application_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6803684,
     "ast_hash": "89337da44296d151d41dd516f2b45356",
-    "semantic_hash": ""
+    "semantic_hash": "89337da44296d151d41dd516f2b45356"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Multifactor_Authentication_Cheat_Sheet.md": {
     "mtime": 1779140002.6803684,
     "ast_hash": "a4c5b60762b0427f92dcde265ae31600",
-    "semantic_hash": ""
+    "semantic_hash": "a4c5b60762b0427f92dcde265ae31600"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Multi_Tenant_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6803684,
     "ast_hash": "0d04b73bf803d4aead6becaef3408750",
-    "semantic_hash": ""
+    "semantic_hash": "0d04b73bf803d4aead6becaef3408750"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Network_Segmentation_Cheat_Sheet.md": {
     "mtime": 1779140002.681368,
     "ast_hash": "6afe79b772bf7917bea152f1ea8eea60",
-    "semantic_hash": ""
+    "semantic_hash": "6afe79b772bf7917bea152f1ea8eea60"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\NodeJS_Docker_Cheat_Sheet.md": {
     "mtime": 1779140002.682368,
     "ast_hash": "d2bec1c0b32603b96092144c29ea010c",
-    "semantic_hash": ""
+    "semantic_hash": "d2bec1c0b32603b96092144c29ea010c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Nodejs_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.682368,
     "ast_hash": "7efd1638a1a1689b86a2140cbc1018d9",
-    "semantic_hash": ""
+    "semantic_hash": "7efd1638a1a1689b86a2140cbc1018d9"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\NoSQL_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.681368,
     "ast_hash": "9b0c86d57415b2979d5bf6c6a50dc674",
-    "semantic_hash": ""
+    "semantic_hash": "9b0c86d57415b2979d5bf6c6a50dc674"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\NPM_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.681368,
     "ast_hash": "8fdefb5e3fa675c908ff47adf9120c29",
-    "semantic_hash": ""
+    "semantic_hash": "8fdefb5e3fa675c908ff47adf9120c29"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\OAuth2_Cheat_Sheet.md": {
     "mtime": 1779140002.683368,
     "ast_hash": "3c155460cc4316e84965b64a1bc5e320",
-    "semantic_hash": ""
+    "semantic_hash": "3c155460cc4316e84965b64a1bc5e320"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\OS_Command_Injection_Defense_Cheat_Sheet.md": {
     "mtime": 1779140002.683368,
     "ast_hash": "935ae31bd1b889b52af08f17bf4a1fab",
-    "semantic_hash": ""
+    "semantic_hash": "935ae31bd1b889b52af08f17bf4a1fab"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\PHP_Configuration_Cheat_Sheet.md": {
     "mtime": 1779140002.683368,
     "ast_hash": "20f76ea7c5091d955c261f5a7efa900f",
-    "semantic_hash": ""
+    "semantic_hash": "20f76ea7c5091d955c261f5a7efa900f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Pinning_Cheat_Sheet.md": {
     "mtime": 1779140002.6843681,
     "ast_hash": "591dc468e67fac50a48413339e7798ab",
-    "semantic_hash": ""
+    "semantic_hash": "591dc468e67fac50a48413339e7798ab"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Prototype_Pollution_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6843681,
     "ast_hash": "5f0ab23a5c1fade030184984cf8dd4d2",
-    "semantic_hash": ""
+    "semantic_hash": "5f0ab23a5c1fade030184984cf8dd4d2"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Query_Parameterization_Cheat_Sheet.md": {
     "mtime": 1779140002.6843681,
     "ast_hash": "422587743c04c1bf1bf5b6419b72f9b7",
-    "semantic_hash": ""
+    "semantic_hash": "422587743c04c1bf1bf5b6419b72f9b7"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\RAG_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.685368,
     "ast_hash": "744ec6c792f342efd383085866a00e8e",
-    "semantic_hash": ""
+    "semantic_hash": "744ec6c792f342efd383085866a00e8e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\REST_Assessment_Cheat_Sheet.md": {
     "mtime": 1779140002.685368,
     "ast_hash": "3c0e2fcea6e533ca3ca55e95da6938d4",
-    "semantic_hash": ""
+    "semantic_hash": "3c0e2fcea6e533ca3ca55e95da6938d4"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\REST_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6863701,
     "ast_hash": "0da763a48b2b7588147fab673821e145",
-    "semantic_hash": ""
+    "semantic_hash": "0da763a48b2b7588147fab673821e145"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Ruby_on_Rails_Cheat_Sheet.md": {
     "mtime": 1779140002.6863701,
     "ast_hash": "dff7ffaeec72d94855f5ddcf572bfa4e",
-    "semantic_hash": ""
+    "semantic_hash": "dff7ffaeec72d94855f5ddcf572bfa4e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\SAML_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.687372,
     "ast_hash": "72d49dd43a6409c7539bae3254128ebf",
-    "semantic_hash": ""
+    "semantic_hash": "72d49dd43a6409c7539bae3254128ebf"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Secure_AI_Model_Ops_Cheat_Sheet.md": {
     "mtime": 1779140002.688371,
     "ast_hash": "a904ed448c38a142f786f5ee9a789dfd",
-    "semantic_hash": ""
+    "semantic_hash": "a904ed448c38a142f786f5ee9a789dfd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Secure_Cloud_Architecture_Cheat_Sheet.md": {
     "mtime": 1779140002.688371,
     "ast_hash": "99bd85f4034959455c18359033491130",
-    "semantic_hash": ""
+    "semantic_hash": "99bd85f4034959455c18359033491130"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Secure_Code_Review_Cheat_Sheet.md": {
     "mtime": 1779140002.6893704,
     "ast_hash": "bb3004e0c10e83d58ea18c370485c830",
-    "semantic_hash": ""
+    "semantic_hash": "bb3004e0c10e83d58ea18c370485c830"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Secure_Coding_with_AI_Cheat_Sheet.md": {
     "mtime": 1779140002.6893704,
     "ast_hash": "f141c088db49dc238ab9447308b6a2ed",
-    "semantic_hash": ""
+    "semantic_hash": "f141c088db49dc238ab9447308b6a2ed"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Secure_Product_Design_Cheat_Sheet.md": {
     "mtime": 1779140002.6893704,
     "ast_hash": "31fe7435c9eeef785eb6452bb1b9d7dd",
-    "semantic_hash": ""
+    "semantic_hash": "31fe7435c9eeef785eb6452bb1b9d7dd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Securing_Cascading_Style_Sheets_Cheat_Sheet.md": {
     "mtime": 1779140002.6903696,
     "ast_hash": "81e06b8b911e8eb27b5ee1b6ee23de35",
-    "semantic_hash": ""
+    "semantic_hash": "81e06b8b911e8eb27b5ee1b6ee23de35"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Security_Terminology_Cheat_Sheet.md": {
     "mtime": 1779140002.6903696,
     "ast_hash": "e57644f09dc3feb8a1f28004bfeea227",
-    "semantic_hash": ""
+    "semantic_hash": "e57644f09dc3feb8a1f28004bfeea227"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Serverless_FaaS_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6913733,
     "ast_hash": "ebd9060e4e92f898b7309e0cdf8bd437",
-    "semantic_hash": ""
+    "semantic_hash": "ebd9060e4e92f898b7309e0cdf8bd437"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Server_Side_Request_Forgery_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6903696,
     "ast_hash": "eadbb30e06df34919d204d9c69a76676",
-    "semantic_hash": ""
+    "semantic_hash": "eadbb30e06df34919d204d9c69a76676"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Session_Management_Cheat_Sheet.md": {
     "mtime": 1779140002.6913733,
     "ast_hash": "564655bd0114a14636316bf61fe1734c",
-    "semantic_hash": ""
+    "semantic_hash": "564655bd0114a14636316bf61fe1734c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Software_Supply_Chain_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6923695,
     "ast_hash": "4b6733885a5d1acc635f4448e91eec95",
-    "semantic_hash": ""
+    "semantic_hash": "4b6733885a5d1acc635f4448e91eec95"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\SQL_Injection_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.687372,
     "ast_hash": "f8e5504f9d995c12e50a536e04726b67",
-    "semantic_hash": ""
+    "semantic_hash": "f8e5504f9d995c12e50a536e04726b67"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Subdomain_Takeover_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6923695,
     "ast_hash": "197ec6facbabc9e2a594465191052715",
-    "semantic_hash": ""
+    "semantic_hash": "197ec6facbabc9e2a594465191052715"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Symfony_Cheat_Sheet.md": {
     "mtime": 1779140002.6923695,
     "ast_hash": "366f03c26f50c3017cb3fc05cc68e4ce",
-    "semantic_hash": ""
+    "semantic_hash": "366f03c26f50c3017cb3fc05cc68e4ce"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Third_Party_Javascript_Management_Cheat_Sheet.md": {
     "mtime": 1779140002.693369,
     "ast_hash": "475658d53a711df8efa54ad61d3fcca5",
-    "semantic_hash": ""
+    "semantic_hash": "475658d53a711df8efa54ad61d3fcca5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Third_Party_Payment_Gateway_Integration_Cheat_Sheet.md": {
     "mtime": 1779140002.693369,
     "ast_hash": "4da25308baa75bd78a9804ea9ef7d419",
-    "semantic_hash": ""
+    "semantic_hash": "4da25308baa75bd78a9804ea9ef7d419"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Threat_Modeling_Cheat_Sheet.md": {
     "mtime": 1779140002.694369,
     "ast_hash": "01cd2484d507a6bba1a3f3bb5767b55e",
-    "semantic_hash": ""
+    "semantic_hash": "01cd2484d507a6bba1a3f3bb5767b55e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\TLS_Cipher_String_Cheat_Sheet.md": {
     "mtime": 1779140002.693369,
     "ast_hash": "5c63b26c80d483fd1c8bdec301d01145",
-    "semantic_hash": ""
+    "semantic_hash": "5c63b26c80d483fd1c8bdec301d01145"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Transaction_Authorization_Cheat_Sheet.md": {
     "mtime": 1779140002.694369,
     "ast_hash": "d5db19e933b85be7553f70dc128d7b37",
-    "semantic_hash": ""
+    "semantic_hash": "d5db19e933b85be7553f70dc128d7b37"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Transport_Layer_Protection_Cheat_Sheet.md": {
     "mtime": 1779140002.694369,
     "ast_hash": "2037b32bf342d70d73492272275aacfa",
-    "semantic_hash": ""
+    "semantic_hash": "2037b32bf342d70d73492272275aacfa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Transport_Layer_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.694369,
     "ast_hash": "f13c2632bb469967aa9664505a580226",
-    "semantic_hash": ""
+    "semantic_hash": "f13c2632bb469967aa9664505a580226"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Unvalidated_Redirects_and_Forwards_Cheat_Sheet.md": {
     "mtime": 1779140002.6953688,
     "ast_hash": "deb3c40b600f6ba8cec3227727356fb9",
-    "semantic_hash": ""
+    "semantic_hash": "deb3c40b600f6ba8cec3227727356fb9"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\User_Privacy_Protection_Cheat_Sheet.md": {
     "mtime": 1779140002.6953688,
     "ast_hash": "65bac4c8c9e3e365181b8d011967b481",
-    "semantic_hash": ""
+    "semantic_hash": "65bac4c8c9e3e365181b8d011967b481"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Virtual_Patching_Cheat_Sheet.md": {
     "mtime": 1779140002.6953688,
     "ast_hash": "53523a04d3f2d59f7ac776d4fe698170",
-    "semantic_hash": ""
+    "semantic_hash": "53523a04d3f2d59f7ac776d4fe698170"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Vulnerability_Disclosure_Cheat_Sheet.md": {
     "mtime": 1779140002.6963701,
     "ast_hash": "6cd421adfa7d5759efadeacac84b4d68",
-    "semantic_hash": ""
+    "semantic_hash": "6cd421adfa7d5759efadeacac84b4d68"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Vulnerable_Dependency_Management_Cheat_Sheet.md": {
     "mtime": 1779140002.6963701,
     "ast_hash": "5d1ca2be80c3a423404a6283c40cbed1",
-    "semantic_hash": ""
+    "semantic_hash": "5d1ca2be80c3a423404a6283c40cbed1"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\WebSocket_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6973696,
     "ast_hash": "0bf17e4a4a7df0c565e2f2ef079c4afa",
-    "semantic_hash": ""
+    "semantic_hash": "0bf17e4a4a7df0c565e2f2ef079c4afa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Web_Service_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6973696,
     "ast_hash": "b137a12cdaef1ba31358e566acddad23",
-    "semantic_hash": ""
+    "semantic_hash": "b137a12cdaef1ba31358e566acddad23"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\XML_External_Entity_Prevention_Cheat_Sheet.md": {
     "mtime": 1779140002.6973696,
     "ast_hash": "f88b8c716e7c937d356b7edd8c4d6376",
-    "semantic_hash": ""
+    "semantic_hash": "f88b8c716e7c937d356b7edd8c4d6376"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\XML_Security_Cheat_Sheet.md": {
     "mtime": 1779140002.6983697,
     "ast_hash": "238c7572bb7fa9d66c0af8563c9beab6",
-    "semantic_hash": ""
+    "semantic_hash": "238c7572bb7fa9d66c0af8563c9beab6"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\XSS_Filter_Evasion_Cheat_Sheet.md": {
     "mtime": 1779140002.6983697,
     "ast_hash": "2c46a20b35a7b3ae538715eb918c6262",
-    "semantic_hash": ""
+    "semantic_hash": "2c46a20b35a7b3ae538715eb918c6262"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\XS_Leaks_Cheat_Sheet.md": {
     "mtime": 1779140002.699368,
     "ast_hash": "685b65b616ea4ce2246589841e2d0b6c",
-    "semantic_hash": ""
+    "semantic_hash": "685b65b616ea4ce2246589841e2d0b6c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets\\Zero_Trust_Architecture_Cheat_Sheet.md": {
     "mtime": 1779140002.699368,
     "ast_hash": "18b9ef27469fe45d8e8d3208e4dbac77",
-    "semantic_hash": ""
+    "semantic_hash": "18b9ef27469fe45d8e8d3208e4dbac77"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\Authentication_Patterns_Cheat_Sheet.md": {
     "mtime": 1779140002.7003708,
     "ast_hash": "fa36466e007c7f74bcd1bec2598c7f11",
-    "semantic_hash": ""
+    "semantic_hash": "fa36466e007c7f74bcd1bec2598c7f11"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\Authorization_Data_Dimensions_And_Distribution.md": {
     "mtime": 1779140002.7003708,
     "ast_hash": "e1938839a1850f9b0bb142d6844595f2",
-    "semantic_hash": ""
+    "semantic_hash": "e1938839a1850f9b0bb142d6844595f2"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\Authorization_Decisions_And_Output_Handling.md": {
     "mtime": 1779140002.701368,
     "ast_hash": "14302e7dea7d902ce5b16d30b744c2eb",
-    "semantic_hash": ""
+    "semantic_hash": "14302e7dea7d902ce5b16d30b744c2eb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\Authorization_Patterns_Cheat_Sheet.md": {
     "mtime": 1779140002.701368,
     "ast_hash": "5788c65a90e10649da07c9f78a69aa20",
-    "semantic_hash": ""
+    "semantic_hash": "5788c65a90e10649da07c9f78a69aa20"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\Identity_Propagation_Patterns_Cheat_Sheet.md": {
     "mtime": 1779140002.701368,
     "ast_hash": "faa4a5f61a1e815d65cd0b59273ff282",
-    "semantic_hash": ""
+    "semantic_hash": "faa4a5f61a1e815d65cd0b59273ff282"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\OAuth_Cheat_Sheet.md": {
     "mtime": 1779140002.7023692,
     "ast_hash": "73d16cfb70e1d2462ce057a8783073d6",
-    "semantic_hash": ""
+    "semantic_hash": "73d16cfb70e1d2462ce057a8783073d6"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\cheatsheets_draft\\Webhook_Security_Guidelines_Cheat_Sheet.md": {
     "mtime": 1779140002.7023692,
     "ast_hash": "7fe1941d6a6661555effb40447ef082e",
-    "semantic_hash": ""
+    "semantic_hash": "7fe1941d6a6661555effb40447ef082e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\scripts\\404.html": {
     "mtime": 1779140002.7053692,
     "ast_hash": "171e66bb7f3e3a6c43aed81866e0ed0f",
-    "semantic_hash": ""
+    "semantic_hash": "171e66bb7f3e3a6c43aed81866e0ed0f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\templates\\New_CheatSheet.md": {
     "mtime": 1779140002.707369,
     "ast_hash": "fce18075c09e2ed7d27e1626aef90a52",
-    "semantic_hash": ""
+    "semantic_hash": "fce18075c09e2ed7d27e1626aef90a52"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\LICENSE.md": {
     "mtime": 1779140004.1049976,
     "ast_hash": "c3ee5f330ccff79d477f0125d4d63578",
-    "semantic_hash": ""
+    "semantic_hash": "c3ee5f330ccff79d477f0125d4d63578"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\README.md": {
     "mtime": 1779140004.1069984,
     "ast_hash": "eb5ae0a0ede5069dcdcc844940f5d4da",
-    "semantic_hash": ""
+    "semantic_hash": "eb5ae0a0ede5069dcdcc844940f5d4da"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\.github\\CODE_OF_CONDUCT.md": {
     "mtime": 1779140004.103998,
     "ast_hash": "9f0b37f61571f8ec07860d2669a345a8",
-    "semantic_hash": ""
+    "semantic_hash": "9f0b37f61571f8ec07860d2669a345a8"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\.github\\CONTRIBUTING.md": {
     "mtime": 1779140004.103998,
     "ast_hash": "8f73940313577637dd9f98a84b65e746",
-    "semantic_hash": ""
+    "semantic_hash": "8f73940313577637dd9f98a84b65e746"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\.github\\FUNDING.yml": {
     "mtime": 1779140004.1049976,
     "ast_hash": "0e91e2d16a18cbb5d68723932ccef871",
-    "semantic_hash": ""
+    "semantic_hash": "0e91e2d16a18cbb5d68723932ccef871"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\docs\\index.md": {
     "mtime": 1779140004.1089964,
     "ast_hash": "68df80d07c2901eb821216f23597569a",
-    "semantic_hash": ""
+    "semantic_hash": "68df80d07c2901eb821216f23597569a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\docs\\_config.yml": {
     "mtime": 1779140004.107995,
     "ast_hash": "c8f847d7b17580608b923204c1216d94",
-    "semantic_hash": ""
+    "semantic_hash": "c8f847d7b17580608b923204c1216d94"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\lenis\\SKILL.md": {
     "mtime": 1779137147.5193887,
     "ast_hash": "7ffc1ea9b0fe96f499eac4360376cf48",
-    "semantic_hash": ""
+    "semantic_hash": "7ffc1ea9b0fe96f499eac4360376cf48"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\motion-system\\SKILL.md": {
     "mtime": 1779137019.8464694,
     "ast_hash": "e682ab295870f3db347b445b1ff03eba",
-    "semantic_hash": ""
+    "semantic_hash": "e682ab295870f3db347b445b1ff03eba"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\notebooklm\\SKILL.md": {
     "mtime": 1779109439.6669712,
     "ast_hash": "7a233d0ad802f7b19c4be67721e22ba5",
-    "semantic_hash": ""
+    "semantic_hash": "7a233d0ad802f7b19c4be67721e22ba5"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\premium-layout-system\\SKILL.md": {
     "mtime": 1779136971.668578,
     "ast_hash": "88f897d4bc09b82080fb59d426449c74",
-    "semantic_hash": ""
+    "semantic_hash": "88f897d4bc09b82080fb59d426449c74"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\shadcn-ui\\SKILL.md": {
     "mtime": 1779137187.851137,
     "ast_hash": "a02260c5ba9c4950de078fcfb9946f50",
-    "semantic_hash": ""
+    "semantic_hash": "a02260c5ba9c4950de078fcfb9946f50"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 1 (Problemas)\\FASE_1_PROBLEMAS_DETECTADOS.md": {
     "mtime": 1779203838.4571931,
     "ast_hash": "4aa53bf0834b3983d1b543454efb4d5b",
-    "semantic_hash": ""
+    "semantic_hash": "4aa53bf0834b3983d1b543454efb4d5b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 2 (Valor Agregado)\\FASE_2_VALOR_AGREGADO.md": {
     "mtime": 1779203838.4601908,
     "ast_hash": "7e47566e8a5e209a523d0c56a6fc01de",
-    "semantic_hash": ""
+    "semantic_hash": "7e47566e8a5e209a523d0c56a6fc01de"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 3 (RF -- CU)\\FASE_3_REQUISITOS_CASOS_USO.md": {
     "mtime": 1779203838.462715,
     "ast_hash": "e8709713c55a3a04ba77134ce1d7f0b7",
-    "semantic_hash": ""
+    "semantic_hash": "e8709713c55a3a04ba77134ce1d7f0b7"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 4 (Plan de Negocio)\\FASE_4_PLAN_NEGOCIO.md": {
     "mtime": 1779203838.4667282,
     "ast_hash": "361cfc856a1b5a4a6c30f6cb41aebd1c",
-    "semantic_hash": ""
-  },
-  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 5 (BD)\\BD_Maestra_actualizada_13052026.md.txt": {
-    "mtime": 1778713469.4939423,
-    "ast_hash": "47942f9cda170f02dbb67d8c7646ab75",
-    "semantic_hash": ""
+    "semantic_hash": "361cfc856a1b5a4a6c30f6cb41aebd1c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 5 (BD)\\FASE_5_BASE_DATOS.md": {
     "mtime": 1779203838.4700308,
     "ast_hash": "09461af24bf660b147984c7d1d71f5f0",
-    "semantic_hash": ""
+    "semantic_hash": "09461af24bf660b147984c7d1d71f5f0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 6 (UX - IX)\\FASE_6_DISE\u00d1O_UX_UI.md": {
     "mtime": 1779203838.4735675,
     "ast_hash": "f494a650f2f9d08f2519362b81ad6e9d",
-    "semantic_hash": ""
+    "semantic_hash": "f494a650f2f9d08f2519362b81ad6e9d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 7 (Aplicaci\u00f3n)\\FASE_7_ARQUITECTURA_TECNICA.md": {
     "mtime": 1779203838.475571,
     "ast_hash": "6f6eb62249f58f65abdec5df3b986169",
-    "semantic_hash": ""
+    "semantic_hash": "6f6eb62249f58f65abdec5df3b986169"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Deserialization_Cheat_Sheet_GOD16Deserialization.pdf": {
     "mtime": 1779140002.539371,
     "ast_hash": "bf26751a70c3027e1dc8f28d9f6c2c08",
-    "semantic_hash": ""
+    "semantic_hash": "bf26751a70c3027e1dc8f28d9f6c2c08"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\README_FlagshipCombinedReviews.pdf": {
     "mtime": 1779140002.5893686,
     "ast_hash": "e62b029961e3ceeac0114203ddfe0a87",
-    "semantic_hash": ""
+    "semantic_hash": "e62b029961e3ceeac0114203ddfe0a87"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\REST_Security_Cheat_Sheet_Bypassing_VBAAC_with_HTTP_Verb_Tampering.pdf": {
     "mtime": 1779140002.5923686,
     "ast_hash": "e0b28b8fd26cc5abc41183fb255c1f89",
-    "semantic_hash": ""
+    "semantic_hash": "e0b28b8fd26cc5abc41183fb255c1f89"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Server_Side_Request_Forgery_Prevention_Cheat_Sheet_Orange_Tsai_Talk.pdf": {
     "mtime": 1779140002.6323707,
     "ast_hash": "07e0da1119e2d0b3d4de847238ada337",
-    "semantic_hash": ""
+    "semantic_hash": "07e0da1119e2d0b3d4de847238ada337"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Server_Side_Request_Forgery_Prevention_Cheat_Sheet_SSRF_Bible.pdf": {
     "mtime": 1779140002.6343708,
     "ast_hash": "2f73a4a56fce4711ed5c88aa115222a8",
-    "semantic_hash": ""
+    "semantic_hash": "2f73a4a56fce4711ed5c88aa115222a8"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\exploit-protection-guard.png": {
     "mtime": 1779140002.7023692,
     "ast_hash": "0e4380fc2166dab88242c341490177c9",
-    "semantic_hash": ""
+    "semantic_hash": "0e4380fc2166dab88242c341490177c9"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Abuse_Case_Cheat_Sheet_Overview.png": {
     "mtime": 1779140002.5043697,
     "ast_hash": "a1dbf14d857d147dba287646edd1012d",
-    "semantic_hash": ""
+    "semantic_hash": "a1dbf14d857d147dba287646edd1012d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Authorization_filter.svg": {
     "mtime": 1779140002.5074515,
     "ast_hash": "d221d575f70251cc416f6fcdf95ea19c",
-    "semantic_hash": ""
+    "semantic_hash": "d221d575f70251cc416f6fcdf95ea19c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Authorization_Testing_Automation_AutomationRendering.png": {
     "mtime": 1779140002.50537,
     "ast_hash": "84dea11defaea2b2738a02368da5dc6b",
-    "semantic_hash": ""
+    "semantic_hash": "84dea11defaea2b2738a02368da5dc6b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Authorized_data_set.svg": {
     "mtime": 1779140002.5083704,
     "ast_hash": "bfe895ad1b9988442c4ed96bb9c810a7",
-    "semantic_hash": ""
+    "semantic_hash": "bfe895ad1b9988442c4ed96bb9c810a7"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Bean_Validation_Cheat_Sheet_JSR.png": {
     "mtime": 1779140002.5083704,
     "ast_hash": "626c853027d7bfa22e10a02c694a2fdd",
-    "semantic_hash": ""
+    "semantic_hash": "626c853027d7bfa22e10a02c694a2fdd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Bean_Validation_Cheat_Sheet_Typical.png": {
     "mtime": 1779140002.5093691,
     "ast_hash": "2e358bbdacf9e4c8f6e7c6f6a9123082",
-    "semantic_hash": ""
+    "semantic_hash": "2e358bbdacf9e4c8f6e7c6f6a9123082"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_AdditionalPlatformLibraryMacrosTable.png": {
     "mtime": 1779140002.5093691,
     "ast_hash": "9b87b40c432ef3063605663ed6ffa035",
-    "semantic_hash": ""
+    "semantic_hash": "9b87b40c432ef3063605663ed6ffa035"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_GCCCPPWarningOptionsTable.png": {
     "mtime": 1779140002.5093691,
     "ast_hash": "7bc0103ee72a739ac85c8a6507f2c054",
-    "semantic_hash": ""
+    "semantic_hash": "7bc0103ee72a739ac85c8a6507f2c054"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_GCCCWarningOptionsTable.png": {
     "mtime": 1779140002.5103705,
     "ast_hash": "efb08217ea722b3bb7292f37692cf41c",
-    "semantic_hash": ""
+    "semantic_hash": "efb08217ea722b3bb7292f37692cf41c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_GCCObjectiveCWarningOptionsTable.png": {
     "mtime": 1779140002.5103705,
     "ast_hash": "1d235ed62679fbb09cde9739cf4508dd",
-    "semantic_hash": ""
+    "semantic_hash": "1d235ed62679fbb09cde9739cf4508dd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_VStudioWarningOptionsTable.png": {
     "mtime": 1779140002.5113697,
     "ast_hash": "ef1a3af7d689a9cd8dc27c94bda90107",
-    "semantic_hash": ""
+    "semantic_hash": "ef1a3af7d689a9cd8dc27c94bda90107"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_Windows1.png": {
     "mtime": 1779140002.5113697,
     "ast_hash": "b50851afc06f62cdeebc03429bfe4598",
-    "semantic_hash": ""
+    "semantic_hash": "b50851afc06f62cdeebc03429bfe4598"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_Windows2.png": {
     "mtime": 1779140002.51237,
     "ast_hash": "84cf81f7a568e279ebbab97cdf8ac733",
-    "semantic_hash": ""
+    "semantic_hash": "84cf81f7a568e279ebbab97cdf8ac733"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_XCode1.png": {
     "mtime": 1779140002.5133874,
     "ast_hash": "734e259abd22747d0e75d9f5317e6194",
-    "semantic_hash": ""
+    "semantic_hash": "734e259abd22747d0e75d9f5317e6194"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\C-Based_Toolchain_Hardening_XCode2.png": {
     "mtime": 1779140002.5143704,
     "ast_hash": "1077b4e7096e27865ca82548c1fe6dbe",
-    "semantic_hash": ""
+    "semantic_hash": "1077b4e7096e27865ca82548c1fe6dbe"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Centralized_Service_Level_Authorization.svg": {
     "mtime": 1779140002.516369,
     "ast_hash": "8e7723414230677ecb8f11f00970c5dd",
-    "semantic_hash": ""
+    "semantic_hash": "8e7723414230677ecb8f11f00970c5dd"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Clickjacking_Defense_Cheat_Sheet_NestedFrames.png": {
     "mtime": 1779140002.516369,
     "ast_hash": "7b99b6cbd9015ab35a7ae6d529316811",
-    "semantic_hash": ""
+    "semantic_hash": "7b99b6cbd9015ab35a7ae6d529316811"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\cost-of-breach-2024.png": {
     "mtime": 1779140002.6513686,
     "ast_hash": "217379786fb0c506ce0b881a707bfb2f",
-    "semantic_hash": ""
+    "semantic_hash": "217379786fb0c506ce0b881a707bfb2f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\cost-of-breach-2025.png": {
     "mtime": 1779140002.6513686,
     "ast_hash": "2941cee2e36933c6cc74ab831da87c09",
-    "semantic_hash": ""
+    "semantic_hash": "2941cee2e36933c6cc74ab831da87c09"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Decentralized_Service_Level_Authorization.svg": {
     "mtime": 1779140002.5183694,
     "ast_hash": "67e20bf5ea17d5e3814b7e4db1fc61d1",
-    "semantic_hash": ""
+    "semantic_hash": "67e20bf5ea17d5e3814b7e4db1fc61d1"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Dec_pattern_HLD.png": {
     "mtime": 1779140002.5173697,
     "ast_hash": "a369efa9d3e9b4bcc8b56e16d6eadf26",
-    "semantic_hash": ""
+    "semantic_hash": "a369efa9d3e9b4bcc8b56e16d6eadf26"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Denial_of_Service_Cheat_Sheet_FlowDDOS.png": {
     "mtime": 1779140002.5213685,
     "ast_hash": "7464abff7cf4b3d2537ba79949828622",
-    "semantic_hash": ""
+    "semantic_hash": "7464abff7cf4b3d2537ba79949828622"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Drone_Security_Cheat_Sheet.png": {
     "mtime": 1779140002.54037,
     "ast_hash": "ef2fde8a63b830ab559d7634dbeb782e",
-    "semantic_hash": ""
+    "semantic_hash": "ef2fde8a63b830ab559d7634dbeb782e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Edge_Level_Authentication.svg": {
     "mtime": 1779140002.5424063,
     "ast_hash": "434994ef27cfe1874b6cbd68f026b695",
-    "semantic_hash": ""
+    "semantic_hash": "434994ef27cfe1874b6cbd68f026b695"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Edge_Level_Authorization_Classic.svg": {
     "mtime": 1779140002.54337,
     "ast_hash": "05d427665384728d15c27f3944b3be83",
-    "semantic_hash": ""
+    "semantic_hash": "05d427665384728d15c27f3944b3be83"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Edge_Level_Authorization_Modern.svg": {
     "mtime": 1779140002.54437,
     "ast_hash": "0fc3cd6d93e183c6435c9ac6217baca9",
-    "semantic_hash": ""
+    "semantic_hash": "0fc3cd6d93e183c6435c9ac6217baca9"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Embedded_data.svg": {
     "mtime": 1779140002.54637,
     "ast_hash": "5c03095c946addff513415994f0c9d22",
-    "semantic_hash": ""
+    "semantic_hash": "5c03095c946addff513415994f0c9d22"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Embed_PDP_HLD.png": {
     "mtime": 1779140002.5453696,
     "ast_hash": "6b3d1341a82e500a05e74798d26365c0",
-    "semantic_hash": ""
+    "semantic_hash": "6b3d1341a82e500a05e74798d26365c0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Error_Handling_Cheat_Sheet_Overview.png": {
     "mtime": 1779140002.54737,
     "ast_hash": "c51edb30c4a4d6c43330840bf52fbfe9",
-    "semantic_hash": ""
+    "semantic_hash": "c51edb30c4a4d6c43330840bf52fbfe9"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\External_Identity_Propagation.svg": {
     "mtime": 1779140002.5483696,
     "ast_hash": "40c2d3d4d790d8e0533afef394a69544",
-    "semantic_hash": ""
+    "semantic_hash": "40c2d3d4d790d8e0533afef394a69544"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Help_Nav.png": {
     "mtime": 1779140002.5503683,
     "ast_hash": "6b981d829c05edc270714600aaffa570",
-    "semantic_hash": ""
+    "semantic_hash": "6b981d829c05edc270714600aaffa570"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\ID_propogation.png": {
     "mtime": 1779140002.5503683,
     "ast_hash": "2b21b9527c15da7e933fee1de7b1a8cb",
-    "semantic_hash": ""
+    "semantic_hash": "2b21b9527c15da7e933fee1de7b1a8cb"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Bash.svg": {
     "mtime": 1779140002.5503683,
     "ast_hash": "f3e0eb58f882e8d41348d2f48427fbe1",
-    "semantic_hash": ""
+    "semantic_hash": "f3e0eb58f882e8d41348d2f48427fbe1"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_C.svg": {
     "mtime": 1779140002.55137,
     "ast_hash": "61f523cb7c25fef683e37beea6641993",
-    "semantic_hash": ""
+    "semantic_hash": "61f523cb7c25fef683e37beea6641993"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Coldfusion.svg": {
     "mtime": 1779140002.55137,
     "ast_hash": "5ec762600721f0b1dd9d5e10e8bf53d7",
-    "semantic_hash": ""
+    "semantic_hash": "5ec762600721f0b1dd9d5e10e8bf53d7"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Cpp.svg": {
     "mtime": 1779140002.55137,
     "ast_hash": "0826a8676d7f573ccfc66dc6319ac13a",
-    "semantic_hash": ""
+    "semantic_hash": "0826a8676d7f573ccfc66dc6319ac13a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Csharp.svg": {
     "mtime": 1779140002.552371,
     "ast_hash": "5ff9193a29e5c77d5c22ba1a7f3996da",
-    "semantic_hash": ""
+    "semantic_hash": "5ff9193a29e5c77d5c22ba1a7f3996da"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Html.svg": {
     "mtime": 1779140002.552371,
     "ast_hash": "4030e8ba42ab8d90abc4b8bd89b85fb3",
-    "semantic_hash": ""
+    "semantic_hash": "4030e8ba42ab8d90abc4b8bd89b85fb3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Java.svg": {
     "mtime": 1779140002.552371,
     "ast_hash": "21b74511ecfd538a77fa4980585c5000",
-    "semantic_hash": ""
+    "semantic_hash": "21b74511ecfd538a77fa4980585c5000"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Javascript.svg": {
     "mtime": 1779140002.552371,
     "ast_hash": "83e1b2e57328213c383121789a1837b8",
-    "semantic_hash": ""
+    "semantic_hash": "83e1b2e57328213c383121789a1837b8"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Json.svg": {
     "mtime": 1779140002.55337,
     "ast_hash": "feda80d3787b62acd28570bc742dd8da",
-    "semantic_hash": ""
+    "semantic_hash": "feda80d3787b62acd28570bc742dd8da"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Perl.svg": {
     "mtime": 1779140002.55337,
     "ast_hash": "62d3f86c10f398fb1e277b0da2ac3d6a",
-    "semantic_hash": ""
+    "semantic_hash": "62d3f86c10f398fb1e277b0da2ac3d6a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Php.svg": {
     "mtime": 1779140002.55337,
     "ast_hash": "e03217627ae8d1147a13f4c83c71b002",
-    "semantic_hash": ""
+    "semantic_hash": "e03217627ae8d1147a13f4c83c71b002"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Python.svg": {
     "mtime": 1779140002.55437,
     "ast_hash": "8e41e336ecd4a61da872b6f13b3211cf",
-    "semantic_hash": ""
+    "semantic_hash": "8e41e336ecd4a61da872b6f13b3211cf"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Ruby.svg": {
     "mtime": 1779140002.55437,
     "ast_hash": "6ad1960f2cb8698ae671f25ec6296c34",
-    "semantic_hash": ""
+    "semantic_hash": "6ad1960f2cb8698ae671f25ec6296c34"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Shell.svg": {
     "mtime": 1779140002.55437,
     "ast_hash": "32c8a1f59fcdb5792c52454839a8e1af",
-    "semantic_hash": ""
+    "semantic_hash": "32c8a1f59fcdb5792c52454839a8e1af"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Sql.svg": {
     "mtime": 1779140002.55437,
     "ast_hash": "7f108ec79ed3ad8d68967b891ae8da6b",
-    "semantic_hash": ""
+    "semantic_hash": "7f108ec79ed3ad8d68967b891ae8da6b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Vbnet.svg": {
     "mtime": 1779140002.5553696,
     "ast_hash": "551bb0d39d67c4ce52ae260519a74903",
-    "semantic_hash": ""
+    "semantic_hash": "551bb0d39d67c4ce52ae260519a74903"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Index_Xml.svg": {
     "mtime": 1779140002.5553696,
     "ast_hash": "4a1bae2dacf2f1bfba482ed43592fc7e",
-    "semantic_hash": ""
+    "semantic_hash": "4a1bae2dacf2f1bfba482ed43592fc7e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Kernel_Level_Authentication.svg": {
     "mtime": 1779140002.55637,
     "ast_hash": "b13267b084a8036c3c3eaeee4217e482",
-    "semantic_hash": ""
+    "semantic_hash": "b13267b084a8036c3c3eaeee4217e482"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Kubernetes_Architecture.png": {
     "mtime": 1779140002.5573697,
     "ast_hash": "5d90c7cc344994f705adb06ee113f4c0",
-    "semantic_hash": ""
+    "semantic_hash": "5d90c7cc344994f705adb06ee113f4c0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Logging_Cheat_Sheet.drawio.png": {
     "mtime": 1779140002.5593688,
     "ast_hash": "4f183f63ca38a238caad8bc55095f623",
-    "semantic_hash": ""
+    "semantic_hash": "4f183f63ca38a238caad8bc55095f623"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\ms_logging_pattern.png": {
     "mtime": 1779140002.6533866,
     "ast_hash": "8768617f88dfcfb268ec25a08214b82c",
-    "semantic_hash": ""
+    "semantic_hash": "8768617f88dfcfb268ec25a08214b82c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Netflix_AC.png": {
     "mtime": 1779140002.5623684,
     "ast_hash": "ea5f564ccf9fb753e5cf6a8460b6d8b1",
-    "semantic_hash": ""
+    "semantic_hash": "ea5f564ccf9fb753e5cf6a8460b6d8b1"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Netflix_ID_prop.png": {
     "mtime": 1779140002.564368,
     "ast_hash": "d4d5425938aeebf9c58f14ce7a5a165a",
-    "semantic_hash": ""
+    "semantic_hash": "d4d5425938aeebf9c58f14ce7a5a165a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_BACKEND.drawio.png": {
     "mtime": 1779140002.56537,
     "ast_hash": "15ff83c4a9994f8044da50ae1e8b25b3",
-    "semantic_hash": ""
+    "semantic_hash": "15ff83c4a9994f8044da50ae1e8b25b3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_firewall_1.drawio.png": {
     "mtime": 1779140002.5713685,
     "ast_hash": "3d576d567def892e1ba6bcc7741d982e",
-    "semantic_hash": ""
+    "semantic_hash": "3d576d567def892e1ba6bcc7741d982e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_firewall_2.drawio.png": {
     "mtime": 1779140002.5723689,
     "ast_hash": "6c07e4461d51f34d0a80c2ca18a99d9e",
-    "semantic_hash": ""
+    "semantic_hash": "6c07e4461d51f34d0a80c2ca18a99d9e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_FRONTEND.drawio.png": {
     "mtime": 1779140002.566369,
     "ast_hash": "b4c8c74a0522af6d53cbe3c64deb8b7b",
-    "semantic_hash": ""
+    "semantic_hash": "b4c8c74a0522af6d53cbe3c64deb8b7b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_interservice.drawio.png": {
     "mtime": 1779140002.573368,
     "ast_hash": "b468f8bb3c4493c5d17758bb69300660",
-    "semantic_hash": ""
+    "semantic_hash": "b468f8bb3c4493c5d17758bb69300660"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_interservice_balancer.drawio.png": {
     "mtime": 1779140002.5743687,
     "ast_hash": "cbdeadf287e5a69cfc34f607ab059ede",
-    "semantic_hash": ""
+    "semantic_hash": "cbdeadf287e5a69cfc34f607ab059ede"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_interservice_deny.drawio.png": {
     "mtime": 1779140002.576368,
     "ast_hash": "6daa0e373f4d7d067b1db395a8ec6847",
-    "semantic_hash": ""
+    "semantic_hash": "6daa0e373f4d7d067b1db395a8ec6847"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_logs.drawio.png": {
     "mtime": 1779140002.576368,
     "ast_hash": "9d479e9ef9afd3c6ebeae9cc8d6f7b1f",
-    "semantic_hash": ""
+    "semantic_hash": "9d479e9ef9afd3c6ebeae9cc8d6f7b1f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_MIDDLEWARE.drawio.png": {
     "mtime": 1779140002.5673697,
     "ast_hash": "7394ffc31e67b54c3d16f2f8a0dc505d",
-    "semantic_hash": ""
+    "semantic_hash": "7394ffc31e67b54c3d16f2f8a0dc505d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_Monitoring.drawio.png": {
     "mtime": 1779140002.5684042,
     "ast_hash": "a56fa5d815d394a36b73fc7c2156c215",
-    "semantic_hash": ""
+    "semantic_hash": "a56fa5d815d394a36b73fc7c2156c215"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_repo.drawio.png": {
     "mtime": 1779140002.5783694,
     "ast_hash": "5e1e0ce31b1631fb40d8af830fb45907",
-    "semantic_hash": ""
+    "semantic_hash": "5e1e0ce31b1631fb40d8af830fb45907"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_Schematic_symbols.drawio.png": {
     "mtime": 1779140002.5693707,
     "ast_hash": "a93a9aad4811315d577b9eeb80dccb4d",
-    "semantic_hash": ""
+    "semantic_hash": "a93a9aad4811315d577b9eeb80dccb4d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Network_Segmentation_Cheat_Sheet_TIER_Example.drawio.png": {
     "mtime": 1779140002.5703697,
     "ast_hash": "42137ed4495804676a57c6c7ebaaa69c",
-    "semantic_hash": ""
+    "semantic_hash": "42137ed4495804676a57c6c7ebaaa69c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\NIST_ABAC.png": {
     "mtime": 1779140002.561368,
     "ast_hash": "f0943c9df80abd4893aed972a55c322b",
-    "semantic_hash": ""
+    "semantic_hash": "f0943c9df80abd4893aed972a55c322b"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\On_demand_data_pull.svg": {
     "mtime": 1779140002.5793703,
     "ast_hash": "38e18cdf235783dbbbc50614084896e6",
-    "semantic_hash": ""
+    "semantic_hash": "38e18cdf235783dbbbc50614084896e6"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\OS_Command_Injection_Defense_Cheat_Sheet_CmdInjection.png": {
     "mtime": 1779140002.5783694,
     "ast_hash": "4859f2260d838d66895943105d78fb14",
-    "semantic_hash": ""
+    "semantic_hash": "4859f2260d838d66895943105d78fb14"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Out_of_band_data_push.svg": {
     "mtime": 1779140002.5803695,
     "ast_hash": "84029f22df5d669866575219b4c8f1af",
-    "semantic_hash": ""
+    "semantic_hash": "84029f22df5d669866575219b4c8f1af"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\OWASP_Logo.svg": {
     "mtime": 1779140002.5783694,
     "ast_hash": "dfe467b439f0301f1fb8193b6c0db195",
-    "semantic_hash": ""
+    "semantic_hash": "dfe467b439f0301f1fb8193b6c0db195"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\OWASP_Logo_Transp.png": {
     "mtime": 1779140002.5793703,
     "ast_hash": "5af6597571f9dae42297960706237ce2",
-    "semantic_hash": ""
+    "semantic_hash": "5af6597571f9dae42297960706237ce2"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\PDP_as_filter.svg": {
     "mtime": 1779140002.5813704,
     "ast_hash": "f10685ea079351731b51a17767a2d7cf",
-    "semantic_hash": ""
+    "semantic_hash": "f10685ea079351731b51a17767a2d7cf"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Pinning_Cheat_Sheet_Certificate.png": {
     "mtime": 1779140002.5813704,
     "ast_hash": "3e7d1e8f6ce9a9d290bbcb2bdcb9ddf0",
-    "semantic_hash": ""
+    "semantic_hash": "3e7d1e8f6ce9a9d290bbcb2bdcb9ddf0"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Pinning_Cheat_Sheet_PublicKey.png": {
     "mtime": 1779140002.5823703,
     "ast_hash": "287e43b65da4d36db5e17cb55b514f50",
-    "semantic_hash": ""
+    "semantic_hash": "287e43b65da4d36db5e17cb55b514f50"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Pinning_Cheat_Sheet_RandomOrgDERDump.png": {
     "mtime": 1779140002.5833693,
     "ast_hash": "bba3f2c6a0a1b6f14620afa094b14bfc",
-    "semantic_hash": ""
+    "semantic_hash": "bba3f2c6a0a1b6f14620afa094b14bfc"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Preface_Cheatsheet_Header.png": {
     "mtime": 1779140002.5843701,
     "ast_hash": "10d70a9d78edc4839df4ee49150ef876",
-    "semantic_hash": ""
+    "semantic_hash": "10d70a9d78edc4839df4ee49150ef876"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Preface_Cheatsheet_Logo.png": {
     "mtime": 1779140002.587387,
     "ast_hash": "27c8a5608d810e4b8c4b4bc9f4228426",
-    "semantic_hash": ""
+    "semantic_hash": "27c8a5608d810e4b8c4b4bc9f4228426"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Protocol_Agnostic_Identity_Propagation.svg": {
     "mtime": 1779140002.588369,
     "ast_hash": "9025966c2e8245fd8b305231e9eaac0f",
-    "semantic_hash": ""
+    "semantic_hash": "9025966c2e8245fd8b305231e9eaac0f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\README_PluginWarningUI.png": {
     "mtime": 1779140002.5893686,
     "ast_hash": "3cdff4dd0753eb2808e6ecb446416f7a",
-    "semantic_hash": ""
+    "semantic_hash": "3cdff4dd0753eb2808e6ecb446416f7a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Request_time_data_injection.svg": {
     "mtime": 1779140002.5923686,
     "ast_hash": "b653911a677a15a011510540446b6f3c",
-    "semantic_hash": ""
+    "semantic_hash": "b653911a677a15a011510540446b6f3c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Secure_Cloud_Architecture_Shared_Responsibility_Model.png": {
     "mtime": 1779140002.595369,
     "ast_hash": "059a7f33c59914804ee848509f7d9192",
-    "semantic_hash": ""
+    "semantic_hash": "059a7f33c59914804ee848509f7d9192"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Secure_Cloud_Architecture_Trust_Boundaries_1.png": {
     "mtime": 1779140002.596369,
     "ast_hash": "1b84f8142191f51cc088a46d565e689e",
-    "semantic_hash": ""
+    "semantic_hash": "1b84f8142191f51cc088a46d565e689e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Secure_Cloud_Architecture_Trust_Boundaries_2.png": {
     "mtime": 1779140002.5973713,
     "ast_hash": "0d5960caef7f51bfe7771fb3a99d27ac",
-    "semantic_hash": ""
+    "semantic_hash": "0d5960caef7f51bfe7771fb3a99d27ac"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Secure_Cloud_Architecture_Trust_Boundaries_3.png": {
     "mtime": 1779140002.5984051,
     "ast_hash": "4297f45a225f622b05ff7b4906de1353",
-    "semantic_hash": ""
+    "semantic_hash": "4297f45a225f622b05ff7b4906de1353"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Secure_Cloud_Architecture_Trust_Boundaries_4.png": {
     "mtime": 1779140002.5993695,
     "ast_hash": "f5856158653bb168bb54eab9d7338caa",
-    "semantic_hash": ""
+    "semantic_hash": "f5856158653bb168bb54eab9d7338caa"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Secure_Cloud_Architecture_VPC.png": {
     "mtime": 1779140002.6003685,
     "ast_hash": "676553b4e565cd1abb68a81ff2c6764e",
-    "semantic_hash": ""
+    "semantic_hash": "676553b4e565cd1abb68a81ff2c6764e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Server_Side_Request_Forgery_Prevention_Cheat_Sheet_Case1_NetworkLayer_PreventFlow.png": {
     "mtime": 1779140002.6003685,
     "ast_hash": "17898294df25a129e84911317e211ad3",
-    "semantic_hash": ""
+    "semantic_hash": "17898294df25a129e84911317e211ad3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Server_Side_Request_Forgery_Prevention_Cheat_Sheet_SSRF_Common_Flow.png": {
     "mtime": 1779140002.63537,
     "ast_hash": "2b91b29b753f5062aad5c343977bf893",
-    "semantic_hash": ""
+    "semantic_hash": "2b91b29b753f5062aad5c343977bf893"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Service_Level_Code_Mediated_Authentication.svg": {
     "mtime": 1779140002.636371,
     "ast_hash": "e7cb39f30e23bf755d3b0e75e859853c",
-    "semantic_hash": ""
+    "semantic_hash": "e7cb39f30e23bf755d3b0e75e859853c"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Service_Level_Embedded_Authentication.svg": {
     "mtime": 1779140002.6373696,
     "ast_hash": "b03af7ef19979a75535728eb6190d792",
-    "semantic_hash": ""
+    "semantic_hash": "b03af7ef19979a75535728eb6190d792"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Service_Level_Proxy_Mediated_Authentication.svg": {
     "mtime": 1779140002.6393695,
     "ast_hash": "8566447ee0694e4d9e03061365ee3411",
-    "semantic_hash": ""
+    "semantic_hash": "8566447ee0694e4d9e03061365ee3411"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Session_Management_Cheat_Sheet_Diagram.png": {
     "mtime": 1779140002.6393695,
     "ast_hash": "b6a67bd26a35780e666f280642ae1287",
-    "semantic_hash": ""
+    "semantic_hash": "b6a67bd26a35780e666f280642ae1287"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Signed_ID_propogation.png": {
     "mtime": 1779140002.640369,
     "ast_hash": "7a3dc6ef4c7201a23270637b1686615e",
-    "semantic_hash": ""
+    "semantic_hash": "7a3dc6ef4c7201a23270637b1686615e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Simple_Service_Level_Identity_Forwarding.svg": {
     "mtime": 1779140002.6413696,
     "ast_hash": "2cc6defcfd4198689c35b231068fc177",
-    "semantic_hash": ""
+    "semantic_hash": "2cc6defcfd4198689c35b231068fc177"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Single_PDP_HLD.png": {
     "mtime": 1779140002.6433883,
     "ast_hash": "848c62a0f3c9871a4e2b336d3997439d",
-    "semantic_hash": ""
+    "semantic_hash": "848c62a0f3c9871a4e2b336d3997439d"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\third_party_integration_workflow.png": {
     "mtime": 1779140002.6563685,
     "ast_hash": "aa667549a2935c26734c2d82c90f8035",
-    "semantic_hash": ""
+    "semantic_hash": "aa667549a2935c26734c2d82c90f8035"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\Threat_Modeling_Cheat_Sheet_dfd.png": {
     "mtime": 1779140002.6453702,
     "ast_hash": "571e4ae89959182dbb438085bea0bb76",
-    "semantic_hash": ""
+    "semantic_hash": "571e4ae89959182dbb438085bea0bb76"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\TLS_Cipher_String_Cheat_Sheet_CipherTable01.png": {
     "mtime": 1779140002.6443696,
     "ast_hash": "397765cb76706562a3f33983f4450398",
-    "semantic_hash": ""
+    "semantic_hash": "397765cb76706562a3f33983f4450398"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\TLS_Cipher_String_Cheat_Sheet_CipherTable02.png": {
     "mtime": 1779140002.6443696,
     "ast_hash": "bc16c50e50eeb0d169e86a3a5e7a2dc3",
-    "semantic_hash": ""
+    "semantic_hash": "bc16c50e50eeb0d169e86a3a5e7a2dc3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\WebSite_Favicon.png": {
     "mtime": 1779140002.64737,
     "ast_hash": "f6c189fe99e5351b8222ec9d0e6a9295",
-    "semantic_hash": ""
+    "semantic_hash": "f6c189fe99e5351b8222ec9d0e6a9295"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\XS_Attack_Vector.png": {
     "mtime": 1779140002.6483698,
     "ast_hash": "64a92ad5bce0c42c603d89d2d6a5ddef",
-    "semantic_hash": ""
+    "semantic_hash": "64a92ad5bce0c42c603d89d2d6a5ddef"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\XS_Leaks_Cache_Attack.png": {
     "mtime": 1779140002.6483698,
     "ast_hash": "f26d69ddbaf3fc94ec29da3ff72fea0a",
-    "semantic_hash": ""
+    "semantic_hash": "f26d69ddbaf3fc94ec29da3ff72fea0a"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\XS_Leaks_eTLD.png": {
     "mtime": 1779140002.6503692,
     "ast_hash": "fe09cb7beea466bff300645ab921cae9",
-    "semantic_hash": ""
+    "semantic_hash": "fe09cb7beea466bff300645ab921cae9"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\XS_Leaks_Frame_Counting.png": {
     "mtime": 1779140002.6493685,
     "ast_hash": "f8a39ff4b4c895f8bf3994a9962321da",
-    "semantic_hash": ""
+    "semantic_hash": "f8a39ff4b4c895f8bf3994a9962321da"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\XS_Leaks_ID.png": {
     "mtime": 1779140002.6493685,
     "ast_hash": "b667c10802623936418d259585dc271f",
-    "semantic_hash": ""
+    "semantic_hash": "b667c10802623936418d259585dc271f"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\CheatSheetSeries\\assets\\XS_Leaks_Sec_Fetch_Dest.png": {
     "mtime": 1779140002.6503692,
     "ast_hash": "885ff6df2c7cee0d6e363497148b7bf3",
-    "semantic_hash": ""
+    "semantic_hash": "885ff6df2c7cee0d6e363497148b7bf3"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\docs\\assets\\img\\logo.png": {
     "mtime": 1779140004.1089964,
     "ast_hash": "8dfe1c4b71dadc161d0066bab714701e",
-    "semantic_hash": ""
+    "semantic_hash": "8dfe1c4b71dadc161d0066bab714701e"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\static\\img\\main_preview.jpg": {
     "mtime": 1779140004.1099958,
     "ast_hash": "48f0dabae266a04d072bf6e3b469d536",
-    "semantic_hash": ""
+    "semantic_hash": "48f0dabae266a04d072bf6e3b469d536"
   },
   "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\skills\\hardening_guides\\the-practical-linux-hardening-guide\\static\\img\\meme_01.png": {
     "mtime": 1779140004.1119943,
     "ast_hash": "b1f80265665f6c3d7c86c3f9414c7870",
-    "semantic_hash": ""
+    "semantic_hash": "b1f80265665f6c3d7c86c3f9414c7870"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\.claude\\settings.json": {
+    "mtime": 1779785575.3824725,
+    "ast_hash": "5d6ecd96cf065b16e8bb9fbf5d7d8f0d",
+    "semantic_hash": "5d6ecd96cf065b16e8bb9fbf5d7d8f0d"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\jest.config.js": {
+    "mtime": 1779793763.946524,
+    "ast_hash": "38362214c38834b6da700db99472cddb",
+    "semantic_hash": "38362214c38834b6da700db99472cddb"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\jest.setup.ts": {
+    "mtime": 1779789003.8638132,
+    "ast_hash": "68ba935884d6542fcf401db37bfb3880",
+    "semantic_hash": "68ba935884d6542fcf401db37bfb3880"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\seed-datos-demo.sql": {
+    "mtime": 1779793123.453953,
+    "ast_hash": "d551132cf975990333ea83add2e923cf",
+    "semantic_hash": "d551132cf975990333ea83add2e923cf"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\seed-mi-cuenta.sql": {
+    "mtime": 1779792663.474551,
+    "ast_hash": "33302cc41a2d4029c21537c0709c575f",
+    "semantic_hash": "33302cc41a2d4029c21537c0709c575f"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\seed-nuevos-roles.sql": {
+    "mtime": 1779805805.0919979,
+    "ast_hash": "67bee142077437847e758e3ab41737b1",
+    "semantic_hash": "67bee142077437847e758e3ab41737b1"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\migrations\\001_fix_roles_rls_atomic.sql": {
+    "mtime": 1780065584.6682076,
+    "ast_hash": "6454199cc92f75a2eafcfbacff4ebfba",
+    "semantic_hash": "6454199cc92f75a2eafcfbacff4ebfba"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\cliente\\page.tsx": {
+    "mtime": 1779805684.1896865,
+    "ast_hash": "3dc3764a7e853a7f6ee33c01b0332454",
+    "semantic_hash": "3dc3764a7e853a7f6ee33c01b0332454"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\cliente\\clases\\page.tsx": {
+    "mtime": 1779795492.3222592,
+    "ast_hash": "a8559b1a9fbdb5c0d002e0144d25dccf",
+    "semantic_hash": "a8559b1a9fbdb5c0d002e0144d25dccf"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\cliente\\membresia\\page.tsx": {
+    "mtime": 1779795492.325265,
+    "ast_hash": "e77514f425459d903db8c7cdfedb165b",
+    "semantic_hash": "e77514f425459d903db8c7cdfedb165b"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\cliente\\progreso\\page.tsx": {
+    "mtime": 1779795492.3282654,
+    "ast_hash": "63880b2becaab1cd54e75eb146dac46f",
+    "semantic_hash": "63880b2becaab1cd54e75eb146dac46f"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\cliente\\qr\\page.tsx": {
+    "mtime": 1779795492.3332627,
+    "ast_hash": "a6d9f1118e2754bccc08bf48f4aff4d5",
+    "semantic_hash": "a6d9f1118e2754bccc08bf48f4aff4d5"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\cliente\\soporte\\page.tsx": {
+    "mtime": 1779805731.7878504,
+    "ast_hash": "b4eda3446324e1f2318aa23d8c7a9dab",
+    "semantic_hash": "b4eda3446324e1f2318aa23d8c7a9dab"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\miembro\\soporte\\page.tsx": {
+    "mtime": 1779805723.881869,
+    "ast_hash": "55d265a0d2b218f662bdb7fb08f65ea2",
+    "semantic_hash": "55d265a0d2b218f662bdb7fb08f65ea2"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\nutricionista\\page.tsx": {
+    "mtime": 1779805474.025923,
+    "ast_hash": "e8d87093480efdd707d1d9e10c37f45b",
+    "semantic_hash": "e8d87093480efdd707d1d9e10c37f45b"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\nutricionista\\evaluaciones\\page.tsx": {
+    "mtime": 1779805604.391308,
+    "ast_hash": "8eed33f556b4eb2d2ed464c44966fc14",
+    "semantic_hash": "8eed33f556b4eb2d2ed464c44966fc14"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\nutricionista\\miembros\\page.tsx": {
+    "mtime": 1779805514.8836243,
+    "ast_hash": "5224235ba55132fa13f8e6133ed21eec",
+    "semantic_hash": "5224235ba55132fa13f8e6133ed21eec"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\nutricionista\\planes-nutricion\\page.tsx": {
+    "mtime": 1779805561.3968112,
+    "ast_hash": "c2f09dc9b2295e17ef1095a103274f5e",
+    "semantic_hash": "c2f09dc9b2295e17ef1095a103274f5e"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\dashboard\\nutricionista\\recetas\\page.tsx": {
+    "mtime": 1779805647.9827228,
+    "ast_hash": "bc9e2b6186ac878210d612f833d8be6c",
+    "semantic_hash": "bc9e2b6186ac878210d612f833d8be6c"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\useAccesos.ts": {
+    "mtime": 1779787370.1534994,
+    "ast_hash": "8a19405c1ccb3a99eb3878fea5d50150",
+    "semantic_hash": "8a19405c1ccb3a99eb3878fea5d50150"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\useAsync.ts": {
+    "mtime": 1780143978.4929583,
+    "ast_hash": "d40eb7bca39f85b27f9aec0172ccd02b",
+    "semantic_hash": "d40eb7bca39f85b27f9aec0172ccd02b"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\useClases.ts": {
+    "mtime": 1779788505.7760754,
+    "ast_hash": "5e54556f6017a731c0decc7be6ecc962",
+    "semantic_hash": "5e54556f6017a731c0decc7be6ecc962"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\useKPIsGerente.ts": {
+    "mtime": 1780073040.6605196,
+    "ast_hash": "d5e0d0be00cee8f79a38864057ae43c8",
+    "semantic_hash": "d5e0d0be00cee8f79a38864057ae43c8"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\useMiembros.ts": {
+    "mtime": 1780144001.538893,
+    "ast_hash": "aed3dd3666a639502a095a33c94bbe34",
+    "semantic_hash": "aed3dd3666a639502a095a33c94bbe34"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\usePlanes.ts": {
+    "mtime": 1779788520.11099,
+    "ast_hash": "a479516ddbe881969bc44ac460241521",
+    "semantic_hash": "a479516ddbe881969bc44ac460241521"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\accesos.service.ts": {
+    "mtime": 1779799414.044365,
+    "ast_hash": "f5dd5f6809bf825440afd9848edc1639",
+    "semantic_hash": "f5dd5f6809bf825440afd9848edc1639"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\base.ts": {
+    "mtime": 1779787133.8890035,
+    "ast_hash": "570962d5189735c0b99635e62d8ed146",
+    "semantic_hash": "570962d5189735c0b99635e62d8ed146"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\clases.service.ts": {
+    "mtime": 1779799586.8500729,
+    "ast_hash": "03724ce2d0e4903a8e3582af1a5a52c3",
+    "semantic_hash": "03724ce2d0e4903a8e3582af1a5a52c3"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\dashboard.service.ts": {
+    "mtime": 1780144044.5785954,
+    "ast_hash": "16752e8873edd0d8ab4a2abba220b9e5",
+    "semantic_hash": "16752e8873edd0d8ab4a2abba220b9e5"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\index.ts": {
+    "mtime": 1780144063.7809055,
+    "ast_hash": "99e291e845d4b37f07a70150b237926b",
+    "semantic_hash": "99e291e845d4b37f07a70150b237926b"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\membresias.service.ts": {
+    "mtime": 1779799855.3642702,
+    "ast_hash": "8dee0a29040c2639cca0fcbc5c854b68",
+    "semantic_hash": "8dee0a29040c2639cca0fcbc5c854b68"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\pagos.service.ts": {
+    "mtime": 1779787261.865927,
+    "ast_hash": "291a25f09e8de55056e37a4be258d55d",
+    "semantic_hash": "291a25f09e8de55056e37a4be258d55d"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\planes.service.ts": {
+    "mtime": 1780066354.3944955,
+    "ast_hash": "d18ec9b988bbaea720cd0063e5e44229",
+    "semantic_hash": "d18ec9b988bbaea720cd0063e5e44229"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\usuarios.service.ts": {
+    "mtime": 1779799078.2314227,
+    "ast_hash": "97fdff053e712d75e1587679b30fd0bf",
+    "semantic_hash": "97fdff053e712d75e1587679b30fd0bf"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\auth\\auth.test.ts": {
+    "mtime": 1779789045.7067835,
+    "ast_hash": "faef915fe2a40cd04c281b4fb45f7a89",
+    "semantic_hash": "faef915fe2a40cd04c281b4fb45f7a89"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\hooks\\useAccesos.test.ts": {
+    "mtime": 1779789235.3689108,
+    "ast_hash": "ec75e51ac4911b7c49ad45cecfa50ed8",
+    "semantic_hash": "ec75e51ac4911b7c49ad45cecfa50ed8"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\hooks\\useAsync.test.ts": {
+    "mtime": 1779790362.6132946,
+    "ast_hash": "1d0edd6e81d266fd971e9014137e9d01",
+    "semantic_hash": "1d0edd6e81d266fd971e9014137e9d01"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\hooks\\useClases.test.ts": {
+    "mtime": 1779789215.3696942,
+    "ast_hash": "bdb17d33cabee5cdac9dfa40e65a95fd",
+    "semantic_hash": "bdb17d33cabee5cdac9dfa40e65a95fd"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\hooks\\useKPIsGerente.test.ts": {
+    "mtime": 1779790440.6050878,
+    "ast_hash": "81ba2d6992d4366cdaed6da669e5dc47",
+    "semantic_hash": "81ba2d6992d4366cdaed6da669e5dc47"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\hooks\\useMiembros.test.ts": {
+    "mtime": 1779789196.999724,
+    "ast_hash": "c52e31f6e6f4b14e545a4e4d39491921",
+    "semantic_hash": "c52e31f6e6f4b14e545a4e4d39491921"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\hooks\\usePlanes.test.ts": {
+    "mtime": 1779789252.3713994,
+    "ast_hash": "698b2977f39ffda71010942c01d49ae7",
+    "semantic_hash": "698b2977f39ffda71010942c01d49ae7"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\accesos.service.test.ts": {
+    "mtime": 1779789151.737456,
+    "ast_hash": "c5a432063143dcbc2a4ffb249befad94",
+    "semantic_hash": "c5a432063143dcbc2a4ffb249befad94"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\clases.service.test.ts": {
+    "mtime": 1779789111.0974402,
+    "ast_hash": "fa159bfc31e56e91f3b683fa1b819a88",
+    "semantic_hash": "fa159bfc31e56e91f3b683fa1b819a88"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\dashboard.service.test.ts": {
+    "mtime": 1779790346.461596,
+    "ast_hash": "e91d7365783b12d44526596463bacbca",
+    "semantic_hash": "e91d7365783b12d44526596463bacbca"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\membresias.service.test.ts": {
+    "mtime": 1779790478.9325044,
+    "ast_hash": "5484f81cb93c7e672e273ffb223b0f06",
+    "semantic_hash": "5484f81cb93c7e672e273ffb223b0f06"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\pagos.service.test.ts": {
+    "mtime": 1779789131.8307176,
+    "ast_hash": "93bab2fe27fa3021ddbbd3498f80690b",
+    "semantic_hash": "93bab2fe27fa3021ddbbd3498f80690b"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\planes.service.test.ts": {
+    "mtime": 1779790460.1631627,
+    "ast_hash": "d0e0882b89a2d3c8a2426b0eac261ef9",
+    "semantic_hash": "d0e0882b89a2d3c8a2426b0eac261ef9"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\__tests__\\services\\usuarios.service.test.ts": {
+    "mtime": 1779790750.8321495,
+    "ast_hash": "f67600327c5bdfee0e0d8ffc651ebdb7",
+    "semantic_hash": "f67600327c5bdfee0e0d8ffc651ebdb7"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\CLAUDE.md": {
+    "mtime": 1779785575.3814695,
+    "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
+    "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\docs-ai\\ACID_RULES.md": {
+    "mtime": 1779785952.5343924,
+    "ast_hash": "7adfa59c529a5016d6bae3d2e1245744",
+    "semantic_hash": "7adfa59c529a5016d6bae3d2e1245744"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\docs-ai\\ARCHITECTURE.md": {
+    "mtime": 1779785911.3643427,
+    "ast_hash": "5c3ac6fecbde7fb41a2623d94513e646",
+    "semantic_hash": "5c3ac6fecbde7fb41a2623d94513e646"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\docs-ai\\DIAGNOSTICO.md": {
+    "mtime": 1779785833.849322,
+    "ast_hash": "90c7f177c8f183ed173b2b7b0ad79995",
+    "semantic_hash": "90c7f177c8f183ed173b2b7b0ad79995"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\docs-ai\\DOMAIN.md": {
+    "mtime": 1779785872.4758484,
+    "ast_hash": "0af2a99b6f0204ae8f9df6c5747035d2",
+    "semantic_hash": "0af2a99b6f0204ae8f9df6c5747035d2"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\docs-ai\\INDEX.md": {
+    "mtime": 1779786020.5656345,
+    "ast_hash": "979443a526fbf9d6318c0f6554fa65d1",
+    "semantic_hash": "979443a526fbf9d6318c0f6554fa65d1"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\docs-ai\\TASKS.md": {
+    "mtime": 1779785992.8919508,
+    "ast_hash": "a54dd2728a3e60e5086df9da63a93852",
+    "semantic_hash": "a54dd2728a3e60e5086df9da63a93852"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\Fase 5 (BD)\\BD_Maestra_actualizada_13052026.md": {
+    "mtime": 1778713469.4939423,
+    "ast_hash": "47942f9cda170f02dbb67d8c7646ab75",
+    "semantic_hash": "47942f9cda170f02dbb67d8c7646ab75"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\ARQUITECTURA_DOMINIO.md": {
+    "mtime": 1780065125.7019062,
+    "ast_hash": "b5b3bcefdcf730e831452e77f697fd02",
+    "semantic_hash": "b5b3bcefdcf730e831452e77f697fd02"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\migrations\\002_rls_full_matrix_audit.sql": {
+    "mtime": 1780068782.2549376,
+    "ast_hash": "862ca3ea05f6fbb72a3643513d0a23c6",
+    "semantic_hash": "862ca3ea05f6fbb72a3643513d0a23c6"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\roles.ts": {
+    "mtime": 1780066140.9170544,
+    "ast_hash": "a6e41f8962b336ef7b76d17fb171dc63",
+    "semantic_hash": "a6e41f8962b336ef7b76d17fb171dc63"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\migrations\\003_orphan_tables_decision.sql": {
+    "mtime": 1780072939.2106392,
+    "ast_hash": "8374f8560ee8a93c50a8f82002844428",
+    "semantic_hash": "8374f8560ee8a93c50a8f82002844428"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\hooks\\useGamificacion.ts": {
+    "mtime": 1780072814.3879912,
+    "ast_hash": "1a737a2ace44009888be49179248eaa7",
+    "semantic_hash": "1a737a2ace44009888be49179248eaa7"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\alerts.service.ts": {
+    "mtime": 1780072795.6423879,
+    "ast_hash": "0e0319388bee41ff7195e8d174511583",
+    "semantic_hash": "0e0319388bee41ff7195e8d174511583"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\gamification.service.ts": {
+    "mtime": 1780072772.0610154,
+    "ast_hash": "248d20642875e0c33dae75e2b23bc463",
+    "semantic_hash": "248d20642875e0c33dae75e2b23bc463"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\HOJA_DE_RUTA.md": {
+    "mtime": 1780073105.1698253,
+    "ast_hash": "5986ee873e54bba37dc98edee21fb77c",
+    "semantic_hash": "5986ee873e54bba37dc98edee21fb77c"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\api\\ai\\route.ts": {
+    "mtime": 1780143270.9328232,
+    "ast_hash": "ea2adf403c069a6376f10a683c68a195",
+    "semantic_hash": "ea2adf403c069a6376f10a683c68a195"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\lib\\services\\ai.service.ts": {
+    "mtime": 1780142261.1026108,
+    "ast_hash": "704470183d42851a165cd41c13febe78",
+    "semantic_hash": "704470183d42851a165cd41c13febe78"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\CONFIGURACION_APIS.md": {
+    "mtime": 1780142300.4390616,
+    "ast_hash": "6bc33c69e7c6ee6a342abc11dea73b05",
+    "semantic_hash": "6bc33c69e7c6ee6a342abc11dea73b05"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\migrations\\004_bootstrap_verificacion.sql": {
+    "mtime": 1780147463.4628246,
+    "ast_hash": "84e10d6bc1ad62023fb47fbe7995dea4",
+    "semantic_hash": "84e10d6bc1ad62023fb47fbe7995dea4"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\migrations\\005_signup_support.sql": {
+    "mtime": 1780148806.0226572,
+    "ast_hash": "ba24e4be5b5f65346096509aa56ff602",
+    "semantic_hash": "ba24e4be5b5f65346096509aa56ff602"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\migrations\\006_move_to_gym_schema.sql": {
+    "mtime": 1780156177.9995325,
+    "ast_hash": "d06b396d542ed2ab3cf125471b688ee8",
+    "semantic_hash": "d06b396d542ed2ab3cf125471b688ee8"
+  },
+  "C:\\botas\\IA\\Documentaci\u00f3n__\\GIMNASIO\\gymsos-frontend\\src\\app\\signup\\page.tsx": {
+    "mtime": 1780148925.3479278,
+    "ast_hash": "f944a003e179131655071f76a4b81ef4",
+    "semantic_hash": "f944a003e179131655071f76a4b81ef4"
   }
 }

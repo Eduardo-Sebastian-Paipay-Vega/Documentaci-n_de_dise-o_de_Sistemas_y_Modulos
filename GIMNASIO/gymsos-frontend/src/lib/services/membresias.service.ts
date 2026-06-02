@@ -48,10 +48,26 @@ export async function getMembresiasPorGimnasio(
   return (data ?? []).map((m) => ({
     ...m,
     estado: m.estado as MembresiaDetalle["estado"],
-    nombre_usuario: (m.usuarios as { nombre: string } | null)?.nombre,
-    email_usuario:  (m.usuarios as { email: string } | null)?.email,
-    plan_nombre:    (m.planes as { nombre: string } | null)?.nombre,
-    precio_mensual: (m.planes as { precio_mensual: number } | null)?.precio_mensual,
+    nombre_usuario: (() => {
+      const uRaw = (m as unknown as { usuarios?: unknown }).usuarios
+      const u = Array.isArray(uRaw) ? uRaw[0] : uRaw
+      return (u as { nombre?: string } | undefined)?.nombre
+    })(),
+    email_usuario: (() => {
+      const uRaw = (m as unknown as { usuarios?: unknown }).usuarios
+      const u = Array.isArray(uRaw) ? uRaw[0] : uRaw
+      return (u as { email?: string } | undefined)?.email
+    })(),
+    plan_nombre: (() => {
+      const pRaw = (m as unknown as { planes?: unknown }).planes
+      const p = Array.isArray(pRaw) ? pRaw[0] : pRaw
+      return (p as { nombre?: string } | undefined)?.nombre
+    })(),
+    precio_mensual: (() => {
+      const pRaw = (m as unknown as { planes?: unknown }).planes
+      const p = Array.isArray(pRaw) ? pRaw[0] : pRaw
+      return (p as { precio_mensual?: number } | undefined)?.precio_mensual
+    })(),
   }))
 }
 
@@ -79,8 +95,16 @@ export async function getMembresiaActiva(userId: string): Promise<MembresiaDetal
   return {
     ...data,
     estado: data.estado as MembresiaDetalle["estado"],
-    plan_nombre:    (data.planes as { nombre: string } | null)?.nombre,
-    precio_mensual: (data.planes as { precio_mensual: number } | null)?.precio_mensual,
+    plan_nombre: (() => {
+      const pRaw = (data as unknown as { planes?: unknown }).planes
+      const p = Array.isArray(pRaw) ? pRaw[0] : pRaw
+      return (p as { nombre?: string } | undefined)?.nombre
+    })(),
+    precio_mensual: (() => {
+      const pRaw = (data as unknown as { planes?: unknown }).planes
+      const p = Array.isArray(pRaw) ? pRaw[0] : pRaw
+      return (p as { precio_mensual?: number } | undefined)?.precio_mensual
+    })(),
   }
 }
 

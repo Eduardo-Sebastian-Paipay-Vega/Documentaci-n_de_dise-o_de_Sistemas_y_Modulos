@@ -13,7 +13,7 @@ import {
   Dumbbell, ClipboardCheck, ClipboardList,
   UserPlus, Banknote, DoorOpen, Headphones,
   Apple, UtensilsCrossed, Microscope,
-  LogOut, PanelLeft, ChevronRight,
+  LogOut, PanelLeft, ChevronRight, UserCog,
   type LucideIcon
 } from "lucide-react"
 
@@ -31,6 +31,7 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { href: "/dashboard/gerente/reportes",      icon: BarChart3,       label: "Reportes" },
     { href: "/dashboard/gerente/clases",        icon: CalendarDays,    label: "Clases" },
     { href: "/dashboard/gerente/promociones",   icon: Tag,             label: "Promociones" },
+    { href: "/dashboard/gerente/staff",         icon: UserCog,         label: "Staff" },
     { href: "/dashboard/gerente/configuracion", icon: Settings,        label: "Configuración" },
   ],
   miembro: [

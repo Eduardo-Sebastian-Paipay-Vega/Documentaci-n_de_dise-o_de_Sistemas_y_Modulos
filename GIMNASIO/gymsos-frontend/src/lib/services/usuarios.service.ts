@@ -1,4 +1,4 @@
-import { supabase, handleSupabaseError, type PaginatedResult, type QueryOptions } from "./base"
+﻿import { supabase, handleSupabaseError, type PaginatedResult, type QueryOptions } from "./base"
 import type { DbUsuario } from "@/lib/supabase"
 
 export type UsuarioConMembresia = DbUsuario & {
@@ -30,19 +30,14 @@ export async function getUsuariosPorGimnasio(
   gymId: string,
   opts: QueryOptions & { rol?: string; estado?: string; busqueda?: string } = {},
 ): Promise<PaginatedResult<UsuarioConMembresia>> {
+  // Evita joins fatales: si una tabla relacionada no tiene policy RLS de SELECT,
+  // PostgREST puede fallar toda la respuesta. Hacemos queries separadas.
   let q = supabase
     .from("usuarios")
     .select(
       `
       id_usuario, email, nombre, telefono, fecha_nacimiento, documento,
-      genero, id_gimnasio, rol, estado, created_at, updated_at,
-      membresias (
-        id_membresia, estado, fecha_inicio, fecha_vencimiento,
-        planes ( nombre, precio_mensual )
-      ),
-      churn_predictions (
-        score_riesgo
-      )
+      genero, id_gimnasio, rol, estado, created_at, updated_at
     `,
       { count: "exact" },
     )
@@ -63,37 +58,77 @@ export async function getUsuariosPorGimnasio(
 
   if (error) handleSupabaseError(error)
 
-  const usuarios: UsuarioConMembresia[] = (data ?? []).map((u) => {
-    const memActiva = Array.isArray(u.membresias)
-      ? u.membresias.find((m: { estado: string }) => m.estado === "activa")
-      : null
-    const churnLatest = Array.isArray(u.churn_predictions) && u.churn_predictions.length > 0
-      ? u.churn_predictions[0]
-      : null
+  const baseUsuarios = (data ?? []) as unknown as DbUsuario[]
+  const userIds = baseUsuarios.map((u) => u.id_usuario)
 
-    return {
-      ...u,
-      genero: u.genero as "M" | "F" | "Otro" | null,
-      rol: u.rol as DbUsuario["rol"],
-      estado: u.estado as DbUsuario["estado"],
-      membresia: memActiva
-        ? {
-            id_membresia:      memActiva.id_membresia,
-            estado:            memActiva.estado,
-            fecha_inicio:      memActiva.fecha_inicio,
-            fecha_vencimiento: memActiva.fecha_vencimiento,
-            plan_nombre:       (memActiva.planes as { nombre: string; precio_mensual: number } | null)?.nombre ?? "—",
-            precio_mensual:    (memActiva.planes as { nombre: string; precio_mensual: number } | null)?.precio_mensual ?? 0,
-          }
-        : null,
-      score_churn: churnLatest?.score_riesgo ?? 0,
+  const membresiaPorUsuario = new Map<string, UsuarioConMembresia["membresia"]>()
+  if (userIds.length > 0) {
+    try {
+      const { data: memData, error: memError } = await supabase
+        .from("membresias")
+        .select(
+          `
+          id_membresia, id_usuario, estado, fecha_inicio, fecha_vencimiento,
+          planes ( nombre, precio_mensual )
+        `,
+        )
+        .in("id_usuario", userIds)
+        .order("fecha_inicio", { ascending: false })
+
+      if (memError) throw memError
+
+      for (const row of memData ?? []) {
+        const estado = (row as { estado: string }).estado
+        if (estado !== "activa") continue
+        const uid = (row as { id_usuario: string }).id_usuario
+        if (membresiaPorUsuario.has(uid)) continue
+        const plan = (row as { planes: { nombre: string; precio_mensual: number } | null }).planes
+        membresiaPorUsuario.set(uid, {
+          id_membresia: (row as { id_membresia: string }).id_membresia,
+          estado,
+          fecha_inicio: (row as { fecha_inicio: string }).fecha_inicio,
+          fecha_vencimiento: (row as { fecha_vencimiento: string }).fecha_vencimiento,
+          plan_nombre: plan?.nombre ?? "—",
+          precio_mensual: plan?.precio_mensual ?? 0,
+        })
+      }
+    } catch {
+      // Si falla por RLS, seguimos mostrando usuarios.
     }
-  })
+  }
+
+  const churnPorUsuario = new Map<string, number>()
+  if (userIds.length > 0) {
+    try {
+      const { data: churnData, error: churnError } = await supabase
+        .from("churn_predictions")
+        .select("id_usuario, score_riesgo, created_at")
+        .in("id_usuario", userIds)
+        .order("created_at", { ascending: false })
+
+      if (churnError) throw churnError
+
+      for (const row of churnData ?? []) {
+        const uid = (row as { id_usuario: string }).id_usuario
+        if (churnPorUsuario.has(uid)) continue
+        churnPorUsuario.set(uid, (row as { score_riesgo: number }).score_riesgo ?? 0)
+      }
+    } catch {
+      // opcional
+    }
+  }
+
+  const usuarios: UsuarioConMembresia[] = baseUsuarios.map((u) => ({
+    ...(u as unknown as UsuarioConMembresia),
+    genero: u.genero as "M" | "F" | "Otro" | null,
+    rol: u.rol as DbUsuario["rol"],
+    estado: u.estado as DbUsuario["estado"],
+    membresia: membresiaPorUsuario.get(u.id_usuario) ?? null,
+    score_churn: churnPorUsuario.get(u.id_usuario) ?? 0,
+  }))
 
   return { data: usuarios, count: count ?? 0 }
-}
-
-export async function getUsuarioById(id: string): Promise<UsuarioConMembresia | null> {
+}export async function getUsuarioById(id: string): Promise<UsuarioConMembresia | null> {
   const { data, error } = await supabase
     .from("usuarios")
     .select(
@@ -130,7 +165,7 @@ export async function getUsuarioById(id: string): Promise<UsuarioConMembresia | 
           estado:            memActiva.estado,
           fecha_inicio:      memActiva.fecha_inicio,
           fecha_vencimiento: memActiva.fecha_vencimiento,
-          plan_nombre:       (memActiva.planes as { nombre: string; precio_mensual: number } | null)?.nombre ?? "—",
+          plan_nombre:       (memActiva.planes as { nombre: string; precio_mensual: number } | null)?.nombre ?? "â€”",
           precio_mensual:    (memActiva.planes as { nombre: string; precio_mensual: number } | null)?.precio_mensual ?? 0,
         }
       : null,
@@ -258,3 +293,4 @@ export async function contarMiembrosPorEstado(gymId: string): Promise<{
     suspendidos: todos.filter((u) => u.estado === "suspendido").length,
   }
 }
+

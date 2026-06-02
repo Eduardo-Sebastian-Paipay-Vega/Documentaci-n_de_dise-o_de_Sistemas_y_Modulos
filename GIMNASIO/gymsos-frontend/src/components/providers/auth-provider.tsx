@@ -65,8 +65,13 @@ export interface LoginResult {
 }
 
 interface AuthContextValue {
-  user:    GymProfile | null
-  loading: boolean
+  user:              GymProfile | null
+  loading:           boolean
+  // ── RBAC (migración 016) ──────────────────────────────────────────────────
+  permissions:       string[]       // lista de permission IDs cacheada para la sesión
+  hasPermission:     (p: string) => boolean  // verificación instantánea sin RPC
+  reloadPermissions: () => Promise<void>     // fuerza recarga desde Supabase
+  // ─────────────────────────────────────────────────────────────────────────
   login:   (email: string, password: string) => Promise<LoginResult>
   logout:  () => void
 }
@@ -129,9 +134,24 @@ function isValidRol(value: string): boolean {
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<GymProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router                = useRouter()
+  const [user,        setUser]        = useState<GymProfile | null>(null)
+  const [loading,     setLoading]     = useState(true)
+  const [permissions, setPermissions] = useState<string[]>([])
+  const router                        = useRouter()
+
+  // Carga los permisos del usuario autenticado via fn_my_permissions()
+  // Extrae solo el string de permission_id para verificación instantánea.
+  const loadPermissions = useCallback(async () => {
+    const { data } = await supabasePublic.rpc("fn_my_permissions")
+    if (data) {
+      setPermissions(data.map((p: { permission: string }) => p.permission))
+    }
+  }, [])
+
+  const hasPermission = useCallback(
+    (p: string) => permissions.includes(p),
+    [permissions],
+  )
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
@@ -139,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: bd } = await supabasePublic.rpc("fn_get_my_profile")
         const profile = await fetchProfile(data.session.user.id, data.session.user.email ?? "", bd?.avatar_url)
         setUser(profile)
+        if (profile) await loadPermissions()
       }
       setLoading(false)
     })
@@ -148,13 +169,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: bd } = await supabasePublic.rpc("fn_get_my_profile")
         const profile = await fetchProfile(session.user.id, session.user.email ?? "", bd?.avatar_url)
         setUser(profile)
+        if (profile) {
+          await loadPermissions()
+        }
       } else {
         setUser(null)
+        setPermissions([])
       }
     })
 
     return () => listener.subscription.unsubscribe()
-  }, [])
+  }, [loadPermissions])
 
   const login = useCallback(
     async (email: string, password: string): Promise<LoginResult> => {
@@ -232,6 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(profile)
+      // Los permisos se cargan vía onAuthStateChange que dispara signInWithPassword
       document.cookie = `gymsos_rol=${profile.rol}; path=/; max-age=86400; SameSite=Lax`
       router.push(ROL_ROUTES[profile.rol])
       return { ok: true }
@@ -241,13 +267,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     setUser(null)
+    setPermissions([])
     document.cookie = "gymsos_rol=; path=/; max-age=0"
     await supabase.auth.signOut()
     router.push("/login")
   }, [router])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{
+      user, loading,
+      permissions, hasPermission, reloadPermissions: loadPermissions,
+      login, logout,
+    }}>
       {children}
     </AuthContext.Provider>
   )
