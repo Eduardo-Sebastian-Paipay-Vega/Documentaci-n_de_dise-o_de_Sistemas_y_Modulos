@@ -175,7 +175,10 @@ export default function SignupPage() {
     }
 
     if (!tenantId) {
-      setStaffCodeError("Valida primero el código de tu gimnasio.")
+      // Error de configuración del sistema — el gym no está vinculado a un tenant.
+      // No es un error del usuario: indica que migration 015b no fue ejecutada para este gym.
+      console.error("[GYMsos] staff_code validation aborted: gym.gimnasios.tenant_id is null. Run migration 015b.")
+      setStaffCodeError("El gimnasio no está correctamente configurado. Contacta al administrador.")
       setStaffCodeValid(false)
       return false
     }
@@ -303,8 +306,10 @@ export default function SignupPage() {
 
   // ── Derivados para el submit button ──────────────────────────────────────
   const staffCodeInvalid = showStaff && !!staffCode.trim() && staffCodeValid === false
-  const submitDisabled   = submitting || !gym || !nombre || !email || !password ||
-                           !confirmPassword || staffCodeInvalid
+  // checkingStaff bloquea el submit mientras la RPC está en vuelo —
+  // evita que el usuario envíe antes de conocer el resultado.
+  const submitDisabled   = submitting || checkingStaff || !gym || !nombre || !email ||
+                           !password || !confirmPassword || staffCodeInvalid
 
   // ── Pantalla de éxito ──────────────────────────────────────────────────────
   if (success) {
@@ -889,6 +894,8 @@ export default function SignupPage() {
             >
               {submitting
                 ? <Loader2 size={15} className="animate-spin" />
+                : checkingStaff
+                ? <><Loader2 size={15} className="animate-spin" /> Verificando código…</>
                 : <>{showStaff && staffCode ? "Unirme al staff" : "Crear cuenta"} <ArrowRight size={14} /></>
               }
             </motion.button>
