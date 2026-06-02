@@ -62,8 +62,10 @@ export default function StaffPage() {
   const { user } = useAuth()
   const canCreate = usePermission("gym.codigos.crear")
 
+  // bd_tenant_id viene de GymProfile (cargado en login, cero RPCs adicionales)
+  const bdTenantId = user?.bd_tenant_id ?? null
+
   // Data
-  const [bdTenantId,    setBdTenantId]    = useState<string | null>(null)
   const [gymAccessCode, setGymAccessCode] = useState<string | null>(null)
   const [roles,         setRoles]         = useState<Role[]>([])
   const [dataLoading,   setDataLoading]   = useState(true)
@@ -92,6 +94,8 @@ export default function StaffPage() {
   }, [gymAccessCode])
 
   // ── Load data when permission is confirmed ───────────────────────────────
+  // bd_tenant_id ya viene del contexto (gym.gimnasios.tenant_id → public.tenants.id)
+  // No se necesita llamar fn_current_tenant_id() aquí.
   useEffect(() => {
     if (canCreate !== true) return
 
@@ -99,16 +103,13 @@ export default function StaffPage() {
       setDataLoading(true)
       setDataError("")
       try {
-        // BD Maestra tenant ID (public.profiles.tenant_id, NO gym.id_gimnasio)
-        const { data: tenantId, error: tenantErr } = await supabasePublic.rpc("fn_current_tenant_id")
-        if (tenantErr || !tenantId) throw new Error("No se pudo identificar el tenant en BD Maestra")
-        setBdTenantId(tenantId)
+        if (!bdTenantId) throw new Error("El gimnasio no está vinculado a un tenant. Ejecuta la migración 015b.")
 
         // Roles del sistema para este tenant
         const { data: roleData, error: rolesErr } = await supabasePublic
           .from("roles")
           .select("id, name, hierarchy_level")
-          .eq("tenant_id", tenantId)
+          .eq("tenant_id", bdTenantId)
           .order("hierarchy_level")
         if (rolesErr) throw new Error("No se pudieron cargar los roles: " + rolesErr.message)
         setRoles(roleData ?? [])
@@ -132,7 +133,7 @@ export default function StaffPage() {
     }
 
     loadData()
-  }, [canCreate, user?.tenant_id])
+  }, [canCreate, bdTenantId, user?.tenant_id])
 
   // ── Generate staff code ──────────────────────────────────────────────────
   async function handleGenerate(e: React.FormEvent) {

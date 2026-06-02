@@ -28,22 +28,23 @@ export type Rol =
 
 export interface GymProfile {
   // Identidad (auth.users)
-  id:           string        // = auth.users.id
-  email:        string
+  id:            string        // = auth.users.id
+  email:         string
 
   // Perfil (gym.usuarios)
-  full_name:    string | null // = gym.usuarios.nombre
-  tenant_id:    string | null // = gym.usuarios.id_gimnasio (renombrado para compat.)
-  foto_url:     string | null
-  cargo:        string | null
-  telefono:     string | null
-  documento:    string | null
-  genero:       string | null
-  rol:          Rol
+  full_name:     string | null // = gym.usuarios.nombre
+  tenant_id:     string | null // = gym.gimnasios.id_gimnasio  — gym UUID (para queries gym schema)
+  bd_tenant_id:  string | null // = public.tenants.id          — BD Maestra UUID (para RPCs RBAC)
+  foto_url:      string | null
+  cargo:         string | null
+  telefono:      string | null
+  documento:     string | null
+  genero:        string | null
+  rol:           Rol
 
   // Gym info (gym.gimnasios join)
-  tenant_name?: string        // = gym.gimnasios.nombre
-  tenant_plan?: string        // = gym.gimnasios.plan_suscripcion
+  tenant_name?:  string        // = gym.gimnasios.nombre
+  tenant_plan?:  string        // = gym.gimnasios.plan_suscripcion
 }
 
 const ROL_ROUTES: Record<Rol, string> = {
@@ -95,32 +96,35 @@ async function fetchProfile(
 
   if (!usuario) return null
 
-  let tenant_name: string | undefined
-  let tenant_plan: string | undefined
+  let tenant_name:  string | undefined
+  let tenant_plan:  string | undefined
+  let bd_tenant_id: string | null = null
 
   if (usuario.id_gimnasio) {
     const { data: gym } = await supabase
       .from("gimnasios")
-      .select("nombre, plan_suscripcion")
+      .select("nombre, plan_suscripcion, tenant_id")
       .eq("id_gimnasio", usuario.id_gimnasio)
       .single()
-    tenant_name = gym?.nombre
-    tenant_plan = gym?.plan_suscripcion
+    tenant_name  = gym?.nombre
+    tenant_plan  = gym?.plan_suscripcion
+    bd_tenant_id = gym?.tenant_id ?? null   // public.tenants.id — FK confirmada en 015b
   }
 
   const rol: Rol = isValidRol(usuario.rol) ? (usuario.rol as Rol) : "miembro"
 
   return {
-    id:          usuario.id_usuario,
+    id:           usuario.id_usuario,
     email,
-    full_name:   usuario.nombre       ?? null,
-    tenant_id:   usuario.id_gimnasio  ?? null,
+    full_name:    usuario.nombre       ?? null,
+    tenant_id:    usuario.id_gimnasio  ?? null,
+    bd_tenant_id,
     // gym.usuarios.foto_url tiene prioridad; si es null usar avatar universal de public.profiles
-    foto_url:    usuario.foto_url     ?? bdAvatarUrl ?? null,
-    cargo:       usuario.cargo        ?? null,
-    telefono:    usuario.telefono     ?? null,
-    documento:   usuario.documento    ?? null,
-    genero:      usuario.genero       ?? null,
+    foto_url:     usuario.foto_url     ?? bdAvatarUrl ?? null,
+    cargo:        usuario.cargo        ?? null,
+    telefono:     usuario.telefono     ?? null,
+    documento:    usuario.documento    ?? null,
+    genero:       usuario.genero       ?? null,
     rol,
     tenant_name,
     tenant_plan,
