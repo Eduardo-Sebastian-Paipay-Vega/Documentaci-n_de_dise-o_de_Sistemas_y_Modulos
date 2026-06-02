@@ -167,12 +167,14 @@ export default function SignupPage() {
   }
 
   // ── Validar staff_code contra fn_validate_code() ─────────────────────────
-  // Acepta parámetros explícitos para evitar stale closures en llamadas async.
-  // Retorna true si el código es válido (para uso en handleSubmit).
+  // Retorna:
+  //   true  → código válido
+  //   false → código inválido (estado UI actualizado)
+  //   null  → respuesta descartada (otra validación más reciente está en vuelo)
   async function validateStaffCodeValue(
     code:     string,
     tenantId: string | null,
-  ): Promise<boolean> {
+  ): Promise<boolean | null> {
     if (!code) {
       setStaffCodeValid(null)
       setStaffCodeError("")
@@ -194,43 +196,49 @@ export default function SignupPage() {
     setStaffCodeError("")
     setStaffCodeValid(null)
 
-    const { data, error: rpcErr } = await supabasePublic.rpc("fn_validate_code", {
-      p_code:      code,
-      p_type_id:   "USER_INVITE",
-      p_tenant_id: tenantId,
-    })
+    try {
+      const { data, error: rpcErr } = await supabasePublic.rpc("fn_validate_code", {
+        p_code:      code,
+        p_type_id:   "USER_INVITE",
+        p_tenant_id: tenantId,
+      })
 
-    // Si el usuario cambió el código mientras esta RPC estaba en vuelo,
-    // descartar la respuesta sin tocar estado.
-    // (no llamar setCheckingStaff(false) — la validación más nueva lo hará)
-    if (validationId !== validationIdRef.current) {
-      return false
-    }
-
-    setCheckingStaff(false)
-
-    if (rpcErr || data === null) {
-      setStaffCodeError("No se pudo verificar el código. Intenta de nuevo.")
-      setStaffCodeValid(false)
-      return false
-    }
-
-    if (!data.valid) {
-      const reason: string = data.reason ?? ""
-      let msg: string
-      if (reason.includes("Límite") || reason.includes("usos")) {
-        msg = "Este código ya fue utilizado. Solicita uno nuevo a tu administrador."
-      } else {
-        // "Código inválido, expirado o inactivo" — incluye expirado, revocado, tenant incorrecto
-        msg = "Código de staff inválido o expirado. Verifica con tu administrador."
+      // Respuesta stale — una validación más nueva inició después de esta.
+      // Devolver null sin tocar estado: la validación activa actualizará la UI.
+      if (validationId !== validationIdRef.current) {
+        return null
       }
-      setStaffCodeError(msg)
-      setStaffCodeValid(false)
-      return false
-    }
 
-    setStaffCodeValid(true)
-    return true
+      if (rpcErr || data === null) {
+        setStaffCodeError("No se pudo verificar el código. Intenta de nuevo.")
+        setStaffCodeValid(false)
+        return false
+      }
+
+      if (!data.valid) {
+        const reason: string = data.reason ?? ""
+        let msg: string
+        if (reason.includes("Límite") || reason.includes("usos")) {
+          msg = "Este código ya fue utilizado. Solicita uno nuevo a tu administrador."
+        } else {
+          msg = "Código de staff inválido o expirado. Verifica con tu administrador."
+        }
+        setStaffCodeError(msg)
+        setStaffCodeValid(false)
+        return false
+      }
+
+      setStaffCodeValid(true)
+      return true
+
+    } finally {
+      // Solo la validación más reciente limpia el spinner.
+      // Las respuestas stale no tocan checkingStaff — la validación activa lo hará.
+      // El finally garantiza que checkingStaff no quede true ante excepciones de red.
+      if (validationId === validationIdRef.current) {
+        setCheckingStaff(false)
+      }
+    }
   }
 
   // onBlur del input de staff_code — lee estado actual
@@ -264,7 +272,8 @@ export default function SignupPage() {
     // validar ahora antes de proceder. Previene silent failure en el trigger.
     if (showStaff && trimmedStaffCode && staffCodeValid !== true) {
       const isValid = await validateStaffCodeValue(trimmedStaffCode, gym.tenant_id)
-      if (!isValid) return
+      // false = inválido, null = stale (respuesta descartada) — ambos bloquean el submit.
+      if (isValid !== true) return
     }
 
     setSubmitting(true)
