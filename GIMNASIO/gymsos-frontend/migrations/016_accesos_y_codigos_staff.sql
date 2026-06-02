@@ -195,7 +195,7 @@ AS $$
   SELECT tenant_id FROM public.profiles WHERE id = auth.uid()
 $$;
 
-GRANT EXECUTE ON FUNCTION public.fn_current_tenant_id TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.fn_current_tenant_id() TO authenticated, anon;
 
 DO $$ BEGIN RAISE NOTICE '✅ PASO 5: fn_current_tenant_id() recreada'; END $$;
 
@@ -406,7 +406,7 @@ AS $$
   )
 $$;
 
-GRANT EXECUTE ON FUNCTION public.fn_has_permission TO authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_has_permission(TEXT) TO authenticated;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- PASO 9 — RPC: fn_my_permissions()
@@ -430,7 +430,7 @@ AS $$
   ORDER BY rp.permission
 $$;
 
-GRANT EXECUTE ON FUNCTION public.fn_my_permissions TO authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_my_permissions() TO authenticated;
 
 DO $$ BEGIN RAISE NOTICE '✅ PASO 8-9: fn_has_permission() y fn_my_permissions() creadas'; END $$;
 
@@ -503,7 +503,7 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.fn_create_staff_code TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.fn_create_staff_code(UUID, UUID, TEXT, INT, TIMESTAMPTZ, TEXT) TO authenticated, service_role;
 
 DO $$ BEGIN RAISE NOTICE '✅ PASO 10: fn_create_staff_code() creada'; END $$;
 
