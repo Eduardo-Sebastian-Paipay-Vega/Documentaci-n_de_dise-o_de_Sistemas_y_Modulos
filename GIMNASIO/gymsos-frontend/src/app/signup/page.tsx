@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
-  Eye, EyeOff, ArrowRight, Loader2, AlertCircle, CheckCircle2, Building2,
-  UserCog, ChevronDown,
+  Eye, EyeOff, ArrowRight, Loader2, AlertCircle, CheckCircle2,
+  Building2, UserCog, ChevronDown, Check,
 } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { supabase, supabasePublic } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 import { fadeIn, staggerContainer, easings } from "@/lib/motion"
 
@@ -22,10 +22,10 @@ import { fadeIn, staggerContainer, easings } from "@/lib/motion"
 //
 // Campos opcionales para staff (migración 016):
 //   staff_code → trigger handle_new_user CASO B asigna rol RBAC automáticamente
+//   La validación frontend usa fn_validate_code() para feedback inmediato (V2 fix).
 
 type Genero = "M" | "F" | "Otro"
 
-// Roles disponibles para usuarios con staff_code
 const STAFF_ROLES = [
   { value: "recepcionista",  label: "Recepcionista" },
   { value: "entrenador",     label: "Entrenador" },
@@ -39,6 +39,7 @@ interface GymInfo {
   id_gimnasio: string
   nombre:      string
   ciudad:      string | null
+  tenant_id:   string | null  // public.tenants.id — necesario para fn_validate_code
 }
 
 export default function SignupPage() {
@@ -54,9 +55,13 @@ export default function SignupPage() {
   const [genero,          setGenero]          = useState<Genero | "">("")
 
   // Staff code
-  const [staffCode,     setStaffCode]     = useState("")
-  const [showStaff,     setShowStaff]     = useState(false)
-  const [staffRol,      setStaffRol]      = useState<StaffRol>("recepcionista")
+  const [staffCode,       setStaffCode]       = useState("")
+  const [showStaff,       setShowStaff]       = useState(false)
+  const [staffRol,        setStaffRol]        = useState<StaffRol>("recepcionista")
+  // null = sin verificar · true = válido · false = inválido
+  const [staffCodeValid,  setStaffCodeValid]  = useState<boolean | null>(null)
+  const [staffCodeError,  setStaffCodeError]  = useState("")
+  const [checkingStaff,   setCheckingStaff]   = useState(false)
 
   // Estado del gym validado
   const [gym,           setGym]           = useState<GymInfo | null>(null)
@@ -71,11 +76,17 @@ export default function SignupPage() {
   const [success,       setSuccess]       = useState(false)
   const [needsConfirm,  setNeedsConfirm]  = useState(false)
 
+  // Refs para leer valores actuales en funciones asíncronas sin stale closure
+  const staffCodeRef  = useRef(staffCode)
+  const showStaffRef  = useRef(showStaff)
+  staffCodeRef.current = staffCode
+  showStaffRef.current = showStaff
+
   // ── Leer URL params al montar ─────────────────────────────────────────────
   useEffect(() => {
-    const params       = new URLSearchParams(window.location.search)
-    const gymParam     = params.get("gym")
-    const codeParam    = params.get("staff_code")
+    const params    = new URLSearchParams(window.location.search)
+    const gymParam  = params.get("gym")
+    const codeParam = params.get("staff_code")
 
     if (codeParam) {
       setStaffCode(codeParam.toUpperCase())
@@ -84,47 +95,132 @@ export default function SignupPage() {
     if (gymParam) {
       const code = gymParam.toUpperCase()
       setCodigoGim(code)
-      // Auto-validar el código del gym desde la URL
-      validateCodeByValue(code)
+      // Pasar el staff code explícitamente para auto-validar después de resolver el gym.
+      // No se puede leer desde estado (closure stale en este punto del ciclo de render).
+      validateCodeByValue(code, codeParam?.toUpperCase() ?? null)
     }
   // Ejecutar solo una vez al montar
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Validar código de gimnasio por valor ─────────────────────────────────
-  // Separado del handler de blur para poder llamarlo con un valor directo (URL params)
-  async function validateCodeByValue(code: string) {
-    if (!code) { setGym(null); setCodeError(""); return }
+  // ── Validar código de gimnasio ────────────────────────────────────────────
+  // staffCodeOverride: valor del staff code a auto-validar una vez resuelto el gym.
+  // Usado solo en el caso URL pre-fill para evitar leer estado stale.
+  async function validateCodeByValue(code: string, staffCodeOverride?: string | null) {
+    if (!code) {
+      setGym(null)
+      setCodeError("")
+      setStaffCodeValid(null)
+      setStaffCodeError("")
+      return
+    }
 
     setCheckingCode(true)
     setCodeError("")
     setGym(null)
+    setStaffCodeValid(null)
+    setStaffCodeError("")
 
     const { data: codeRow, error: err } = await supabase
       .from("codigos_acceso")
-      .select("id_gimnasio, gimnasios(nombre, ciudad, estado)")
+      .select("id_gimnasio, gimnasios(nombre, ciudad, estado, tenant_id)")
       .eq("codigo", code)
       .eq("activo", true)
       .single()
 
     setCheckingCode(false)
 
-    const gymData = codeRow?.gimnasios as { nombre: string; ciudad: string; estado: string } | undefined
+    const gymData = codeRow?.gimnasios as {
+      nombre:    string
+      ciudad:    string
+      estado:    string
+      tenant_id: string | null
+    } | undefined
 
     if (err || !codeRow || gymData?.estado !== "activo") {
       setCodeError("Código inválido. Solicita el código a tu gimnasio.")
-    } else {
-      setGym({
-        id_gimnasio: codeRow.id_gimnasio,
-        nombre:      gymData?.nombre ?? "",
-        ciudad:      gymData?.ciudad ?? null,
-      })
+      return
+    }
+
+    const resolvedGym: GymInfo = {
+      id_gimnasio: codeRow.id_gimnasio,
+      nombre:      gymData?.nombre    ?? "",
+      ciudad:      gymData?.ciudad    ?? null,
+      tenant_id:   gymData?.tenant_id ?? null,
+    }
+    setGym(resolvedGym)
+
+    // Auto-validar el staff_code pre-llenado desde URL si corresponde
+    const codeToCheck = staffCodeOverride ?? null
+    if (codeToCheck && (staffCodeOverride !== undefined ? true : showStaffRef.current)) {
+      await validateStaffCodeValue(codeToCheck, resolvedGym.tenant_id)
     }
   }
 
-  // ── Validar código de gimnasio (on blur) ─────────────────────────────────
   async function validateCode() {
     await validateCodeByValue(codigoGim.trim().toUpperCase())
+  }
+
+  // ── Validar staff_code contra fn_validate_code() ─────────────────────────
+  // Acepta parámetros explícitos para evitar stale closures en llamadas async.
+  // Retorna true si el código es válido (para uso en handleSubmit).
+  async function validateStaffCodeValue(
+    code:     string,
+    tenantId: string | null,
+  ): Promise<boolean> {
+    if (!code) {
+      setStaffCodeValid(null)
+      setStaffCodeError("")
+      return true
+    }
+
+    if (!tenantId) {
+      setStaffCodeError("Valida primero el código de tu gimnasio.")
+      setStaffCodeValid(false)
+      return false
+    }
+
+    setCheckingStaff(true)
+    setStaffCodeError("")
+    setStaffCodeValid(null)
+
+    const { data, error: rpcErr } = await supabasePublic.rpc("fn_validate_code", {
+      p_code:      code,
+      p_type_id:   "USER_INVITE",
+      p_tenant_id: tenantId,
+    })
+
+    setCheckingStaff(false)
+
+    if (rpcErr || data === null) {
+      setStaffCodeError("No se pudo verificar el código. Intenta de nuevo.")
+      setStaffCodeValid(false)
+      return false
+    }
+
+    if (!data.valid) {
+      const reason: string = data.reason ?? ""
+      let msg: string
+      if (reason.includes("Límite") || reason.includes("usos")) {
+        msg = "Este código ya fue utilizado. Solicita uno nuevo a tu administrador."
+      } else {
+        // "Código inválido, expirado o inactivo" — incluye expirado, revocado, tenant incorrecto
+        msg = "Código de staff inválido o expirado. Verifica con tu administrador."
+      }
+      setStaffCodeError(msg)
+      setStaffCodeValid(false)
+      return false
+    }
+
+    setStaffCodeValid(true)
+    return true
+  }
+
+  // onBlur del input de staff_code — lee estado actual
+  async function validateStaffCode() {
+    const code     = staffCodeRef.current.trim().toUpperCase()
+    const tenantId = gym?.tenant_id ?? null
+    await validateStaffCodeValue(code, tenantId)
   }
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -144,29 +240,30 @@ export default function SignupPage() {
       setError("La contraseña debe tener mínimo 8 caracteres.")
       return
     }
-    if (showStaff && staffCode && staffCode.length < 4) {
-      setError("El código de staff no parece válido. Verifica con tu administrador.")
-      return
+
+    const trimmedStaffCode = staffCode.trim().toUpperCase()
+
+    // Si hay staff_code y aún no fue validado (o fue modificado sin blur),
+    // validar ahora antes de proceder. Previene silent failure en el trigger.
+    if (showStaff && trimmedStaffCode && staffCodeValid !== true) {
+      const isValid = await validateStaffCodeValue(trimmedStaffCode, gym.tenant_id)
+      if (!isValid) return
     }
 
     setSubmitting(true)
 
     try {
-      const trimmedStaffCode = staffCode.trim().toUpperCase()
-
       const { data, error: authError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
-          // Estos metadatos los procesa el trigger handle_new_user (migración 005 / 016)
-          // creando automáticamente la fila en `usuarios` y asignando roles RBAC si hay staff_code.
+          // Metadatos procesados por handle_new_user (migración 005 / 016 / 017)
           data: {
             nombre:      nombre.trim(),
             id_gimnasio: gym.id_gimnasio,
             rol:         showStaff && trimmedStaffCode ? staffRol : "miembro",
             telefono:    telefono.trim() || null,
             genero:      genero || null,
-            // Solo se incluye si el usuario activó el campo de staff
             ...(showStaff && trimmedStaffCode
               ? { staff_code: trimmedStaffCode }
               : {}),
@@ -203,6 +300,11 @@ export default function SignupPage() {
       setSubmitting(false)
     }
   }
+
+  // ── Derivados para el submit button ──────────────────────────────────────
+  const staffCodeInvalid = showStaff && !!staffCode.trim() && staffCodeValid === false
+  const submitDisabled   = submitting || !gym || !nombre || !email || !password ||
+                           !confirmPassword || staffCodeInvalid
 
   // ── Pantalla de éxito ──────────────────────────────────────────────────────
   if (success) {
@@ -270,7 +372,6 @@ export default function SignupPage() {
           style={{ background: "radial-gradient(circle, rgba(0,208,132,0.06) 0%, transparent 70%)" }}
         />
 
-        {/* Logo */}
         <div className="relative z-10 flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-md flex items-center justify-center"
@@ -283,7 +384,6 @@ export default function SignupPage() {
           </span>
         </div>
 
-        {/* Headline */}
         <motion.div
           className="relative z-10 max-w-md"
           variants={staggerContainer}
@@ -391,6 +491,9 @@ export default function SignupPage() {
                     setCodigoGim(e.target.value.toUpperCase())
                     setGym(null)
                     setCodeError("")
+                    // Si el tenant cambia, el staff code previo ya no es válido
+                    setStaffCodeValid(null)
+                    setStaffCodeError("")
                   }}
                   onBlur={validateCode}
                   placeholder="Ej: GYMFIT"
@@ -418,10 +521,7 @@ export default function SignupPage() {
                   >
                     <div
                       className="flex items-center gap-2 px-3 py-2 rounded-lg"
-                      style={{
-                        background: "rgba(0,208,132,0.06)",
-                        border:     "1px solid rgba(0,208,132,0.18)",
-                      }}
+                      style={{ background: "rgba(0,208,132,0.06)", border: "1px solid rgba(0,208,132,0.18)" }}
                     >
                       <Building2 size={12} style={{ color: "var(--accent)" }} />
                       <p className="text-xs" style={{ color: "var(--accent)" }}>
@@ -580,7 +680,7 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* ── Staff code section ── */}
+            {/* ── Sección de staff ── */}
             <div>
               <button
                 type="button"
@@ -614,23 +714,110 @@ export default function SignupPage() {
                     className="overflow-hidden"
                   >
                     <div className="pt-3 space-y-3">
+
                       {/* Staff code input */}
                       <div>
                         <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
                           Código de staff
                         </label>
-                        <input
-                          type="text"
-                          value={staffCode}
-                          onChange={(e) => setStaffCode(e.target.value.toUpperCase())}
-                          placeholder="Ej: ABX-7K2M"
-                          maxLength={24}
-                          className="input-base uppercase tracking-widest"
-                          autoComplete="off"
-                        />
-                        <p className="text-[11px] mt-1" style={{ color: "var(--text-disabled)" }}>
-                          El administrador te envió este código de invitación.
-                        </p>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={staffCode}
+                            onChange={(e) => {
+                              setStaffCode(e.target.value.toUpperCase())
+                              // Resetear validación al modificar el código
+                              setStaffCodeValid(null)
+                              setStaffCodeError("")
+                            }}
+                            onBlur={validateStaffCode}
+                            placeholder="Ej: ABX-7K2M"
+                            maxLength={24}
+                            className={cn(
+                              "input-base uppercase tracking-widest",
+                              staffCodeValid === false ? "border-red-500/40" : "",
+                              staffCodeValid === true  ? "border-green-500/40" : "",
+                            )}
+                            autoComplete="off"
+                          />
+                          {/* Indicadores de estado */}
+                          {checkingStaff && (
+                            <Loader2
+                              size={13}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin"
+                              style={{ color: "var(--text-tertiary)" }}
+                            />
+                          )}
+                          {!checkingStaff && staffCodeValid === true && (
+                            <Check
+                              size={13}
+                              className="absolute right-3 top-1/2 -translate-y-1/2"
+                              style={{ color: "var(--accent)" }}
+                              strokeWidth={2.5}
+                            />
+                          )}
+                        </div>
+
+                        {/* Feedback de validación */}
+                        <AnimatePresence>
+                          {staffCodeValid === true && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden mt-1.5"
+                            >
+                              <div
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                                style={{ background: "rgba(0,208,132,0.06)", border: "1px solid rgba(0,208,132,0.18)" }}
+                              >
+                                <Check size={11} strokeWidth={2.5} style={{ color: "var(--accent)" }} />
+                                <p className="text-xs" style={{ color: "var(--accent)" }}>
+                                  Código válido
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                          {staffCodeError && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden mt-1.5"
+                            >
+                              <div
+                                className="flex items-start gap-2 px-3 py-1.5 rounded-lg"
+                                style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.18)" }}
+                              >
+                                <AlertCircle size={11} className="shrink-0 mt-0.5" style={{ color: "var(--red)" }} />
+                                <p className="text-xs" style={{ color: "var(--red)" }}>{staffCodeError}</p>
+                              </div>
+                            </motion.div>
+                          )}
+                          {!staffCodeError && staffCodeValid === null && !checkingStaff && staffCode && (
+                            <motion.p
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="text-[11px] mt-1"
+                              style={{ color: "var(--text-disabled)" }}
+                            >
+                              El administrador te envió este código de invitación.
+                            </motion.p>
+                          )}
+                          {!staffCode && (
+                            <motion.p
+                              key="placeholder-hint"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="text-[11px] mt-1"
+                              style={{ color: "var(--text-disabled)" }}
+                            >
+                              El administrador te envió este código de invitación.
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
                       </div>
 
                       {/* Staff role */}
@@ -659,6 +846,7 @@ export default function SignupPage() {
                           Debe coincidir con el cargo que el administrador te asignó.
                         </p>
                       </div>
+
                     </div>
                   </motion.div>
                 )}
@@ -677,10 +865,7 @@ export default function SignupPage() {
                 >
                   <div
                     className="flex items-start gap-2 px-3.5 py-2.5 rounded-lg"
-                    style={{
-                      background: "rgba(239,68,68,0.06)",
-                      border:     "1px solid rgba(239,68,68,0.18)",
-                    }}
+                    style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.18)" }}
                   >
                     <AlertCircle size={14} className="shrink-0 mt-0.5" style={{ color: "var(--red)" }} />
                     <p className="text-xs" style={{ color: "var(--red)" }}>{error}</p>
@@ -692,15 +877,14 @@ export default function SignupPage() {
             {/* ── Submit ── */}
             <motion.button
               type="submit"
-              disabled={submitting || !gym || !nombre || !email || !password || !confirmPassword}
-              whileTap={!submitting ? { scale: 0.98 } : {}}
+              disabled={submitDisabled}
+              whileTap={!submitDisabled ? { scale: 0.98 } : {}}
               className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all"
               style={{
                 background: "var(--accent)",
                 color:      "#09090B",
-                opacity:    (submitting || !gym || !nombre || !email || !password || !confirmPassword) ? 0.5 : 1,
-                cursor:     (submitting || !gym || !nombre || !email || !password || !confirmPassword)
-                  ? "not-allowed" : "pointer",
+                opacity:    submitDisabled ? 0.5 : 1,
+                cursor:     submitDisabled ? "not-allowed" : "pointer",
               }}
             >
               {submitting
