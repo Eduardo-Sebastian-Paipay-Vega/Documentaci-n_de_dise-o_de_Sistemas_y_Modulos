@@ -111,7 +111,9 @@ CREATE INDEX IF NOT EXISTS idx_user_roles_tenant  ON public.user_roles(tenant_id
 CREATE INDEX IF NOT EXISTS idx_user_roles_user    ON public.user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_role    ON public.user_roles(role_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_active  ON public.user_roles(user_id, tenant_id)
-  WHERE expires_at IS NULL OR expires_at > now();
+  WHERE expires_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_user_roles_expires ON public.user_roles(expires_at)
+  WHERE expires_at IS NOT NULL;
 
 DO $$ BEGIN RAISE NOTICE '✅ PASO 2: public.user_roles creada'; END $$;
 
