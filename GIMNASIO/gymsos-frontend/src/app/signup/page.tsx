@@ -77,10 +77,15 @@ export default function SignupPage() {
   const [needsConfirm,  setNeedsConfirm]  = useState(false)
 
   // Refs para leer valores actuales en funciones asíncronas sin stale closure
-  const staffCodeRef  = useRef(staffCode)
-  const showStaffRef  = useRef(showStaff)
-  staffCodeRef.current = staffCode
-  showStaffRef.current = showStaff
+  const staffCodeRef     = useRef(staffCode)
+  const showStaffRef     = useRef(showStaff)
+  staffCodeRef.current   = staffCode
+  showStaffRef.current   = showStaff
+
+  // Contador de validaciones — permite descartar respuestas out-of-order.
+  // Si el usuario cambia el código mientras una RPC está en vuelo, la
+  // respuesta de la primera validación se descarta sin tocar el estado.
+  const validationIdRef  = useRef(0)
 
   // ── Leer URL params al montar ─────────────────────────────────────────────
   useEffect(() => {
@@ -183,6 +188,8 @@ export default function SignupPage() {
       return false
     }
 
+    const validationId = ++validationIdRef.current
+
     setCheckingStaff(true)
     setStaffCodeError("")
     setStaffCodeValid(null)
@@ -192,6 +199,13 @@ export default function SignupPage() {
       p_type_id:   "USER_INVITE",
       p_tenant_id: tenantId,
     })
+
+    // Si el usuario cambió el código mientras esta RPC estaba en vuelo,
+    // descartar la respuesta sin tocar estado.
+    // (no llamar setCheckingStaff(false) — la validación más nueva lo hará)
+    if (validationId !== validationIdRef.current) {
+      return false
+    }
 
     setCheckingStaff(false)
 
