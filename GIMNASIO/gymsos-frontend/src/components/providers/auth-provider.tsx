@@ -23,7 +23,8 @@ import { supabase, supabasePublic } from "@/lib/supabase"
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type Rol =
-  | "gerente" | "recepcionista" | "entrenador"
+  | "gerente" | "supervisor" | "cajero"
+  | "recepcionista" | "entrenador"
   | "nutricionista" | "miembro" | "cliente" | "admin"
 
 export interface GymProfile {
@@ -49,11 +50,13 @@ export interface GymProfile {
 
 const ROL_ROUTES: Record<Rol, string> = {
   gerente:       "/dashboard/gerente",
+  supervisor:    "/dashboard/supervisor",
+  cajero:        "/dashboard/cajero",
   recepcionista: "/dashboard/recepcionista",
   entrenador:    "/dashboard/entrenador",
   nutricionista: "/dashboard/nutricionista",
   miembro:       "/dashboard/miembro",
-  cliente:       "/dashboard/cliente",
+  cliente:       "/dashboard/miembro",
   admin:         "/dashboard/gerente",
 }
 
@@ -92,7 +95,7 @@ async function fetchProfile(
     .from("usuarios")
     .select("id_usuario, nombre, id_gimnasio, rol, estado, foto_url, cargo, telefono, documento, genero")
     .eq("id_usuario", authUserId)
-    .single()
+    .maybeSingle()
 
   if (!usuario) return null
 
@@ -132,7 +135,7 @@ async function fetchProfile(
 }
 
 function isValidRol(value: string): boolean {
-  return ["gerente","recepcionista","entrenador","nutricionista","miembro","cliente","admin"].includes(value)
+  return ["gerente","supervisor","cajero","recepcionista","entrenador","nutricionista","miembro","cliente","admin"].includes(value)
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -225,18 +228,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // 3. Verificar acceso al módulo gym
-      const { data: gymUser } = await supabase
+      // .maybeSingle() devuelve { data: null, error: null } cuando hay 0 filas.
+      // .single() devolvería HTTP 406 (Not Acceptable) que el cliente silencia
+      // dejando data=null sin poder distinguir "no encontrado" de "error real".
+      const { data: gymUser, error: gymUserError } = await supabase
         .from("usuarios")
         .select("id_usuario")
         .eq("id_usuario", data.user.id)
-        .single()
+        .maybeSingle()
+
+      if (gymUserError) {
+        console.error("gym.usuarios check error:", gymUserError.message)
+        await supabase.auth.signOut()
+        return { ok: false, error: "Error al verificar acceso al módulo gym. Intenta de nuevo." }
+      }
 
       if (!gymUser) {
-        // Tiene cuenta BD Maestra pero no acceso gym
+        // Tiene cuenta BD Maestra pero no perfil gym.
         await supabase.auth.signOut()
 
-        if (bdResult.tenant_id) {
-          // Pertenece a otro sistema (ONG, RRHH, etc.) — tenant_id apunta a ese sistema
+        // "wrong_system" solo si el tenant apunta a otra industria distinta de gym.
+        // industry_type viene de fn_get_my_profile (migr-018).
+        // Para usuarios gym: tenant_id existe pero industry_type = 'gym' → choose_path.
+        // Para usuarios ONG/RRHH: industry_type = 'ong' / otro → wrong_system.
+        if (bdResult.tenant_id && bdResult.industry_type && bdResult.industry_type !== "gym") {
           return {
             ok:     false,
             error:  "Esta cuenta pertenece a otro sistema de la plataforma (como ONG u otro módulo). Accede desde el sistema correspondiente.",
@@ -244,7 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Sin sistema asignado → mostrar modal para elegir camino
+        // Sin gym.usuarios → mostrar modal para elegir camino (dueño / miembro)
         return {
           ok:     false,
           error:  "Tu cuenta existe pero aún no está vinculada a un gimnasio.",
@@ -262,7 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(profile)
       // Los permisos se cargan vía onAuthStateChange que dispara signInWithPassword
-      document.cookie = `gymsos_rol=${profile.rol}; path=/; max-age=86400; SameSite=Lax`
+      // Nota: gymsos_rol cookie eliminada — el middleware leerá el rol desde JWT (app_metadata.role)
       router.push(ROL_ROUTES[profile.rol])
       return { ok: true }
     },
@@ -272,7 +287,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     setUser(null)
     setPermissions([])
-    document.cookie = "gymsos_rol=; path=/; max-age=0"
     await supabase.auth.signOut()
     router.push("/login")
   }, [router])

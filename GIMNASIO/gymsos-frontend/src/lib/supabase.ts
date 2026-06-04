@@ -7,15 +7,22 @@ if (!supabaseUrl || !supabaseAnon) {
   throw new Error("Supabase no configurado. Agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local")
 }
 
+// Ambos clientes comparten el mismo storageKey para evitar la advertencia
+// "Multiple GoTrueClient instances detected" — dos instancias con claves distintas
+// compiten por localStorage y pueden producir estados de sesión inconsistentes.
+const AUTH_STORAGE_KEY = "sb-gymsos-auth"
+
 // Cliente para tablas de dominio GYMsos (gym schema)
 export const supabase = createClient(supabaseUrl, supabaseAnon, {
-  db: { schema: "gym" },
+  db:   { schema: "gym" },
+  auth: { storageKey: AUTH_STORAGE_KEY },
 })
 
 // Cliente para infraestructura compartida BD Maestra (public schema)
 // Usar para: tenants, profiles, sedes, roles, subscriptions
 export const supabasePublic = createClient(supabaseUrl, supabaseAnon, {
-  db: { schema: "public" },
+  db:   { schema: "public" },
+  auth: { storageKey: AUTH_STORAGE_KEY },
 })
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
