@@ -1,20 +1,20 @@
--- Migración 019b: Fix fn_create_staff_code — llamada explícita con 2 args a fn_has_permission
+-- Migración 019c: Fix fn_create_staff_code — consulta directa a user_roles
 --
--- PROBLEMA: fn_has_permission tiene 2 overloads que ambos aceptan una llamada de 1 arg:
---   oid 47643  fn_has_permission(text, uuid DEFAULT NULL)  ← usan ~20 políticas RLS en pg_policies
---   oid 100353 fn_has_permission(text)                    ← versión simplificada
--- fn_create_staff_code llamaba fn_has_permission('gym.codigos.crear'::text) con 1 arg
--- → PostgreSQL no puede resolver el overload → "is not unique".
+-- HISTORIAL DE INTENTOS:
+-- [019]  DROP fn_has_permission(text,uuid)  → DESCARTADO: ~20 políticas RLS dependen de ese overload.
+-- [019b] fn_has_permission(text, NULL::uuid) → DESCARTADO: apunta a user_roles_sedes (stack incorrecto
+--        para el rol gym del dueño, que vive en user_roles, no en user_roles_sedes).
+-- [019c] Consulta directa a user_roles + role_permissions → CORRECTO y aplicado en producción.
 --
--- NOTA CRÍTICA: NO dropear el overload (text, uuid). Verificado en pg_policies:
--- access_links, memberships, roles, profiles, user_roles_sedes y ~20 policies más
--- lo llaman con NULL::uuid explícito. Dropearlo cae todo el sistema de RLS.
+-- POR QUÉ la consulta directa:
+--   fn_has_permission(text, uuid) busca permisos en user_roles_sedes (multi-sede / stack ONG).
+--   El dueño de gym tiene su rol en public.user_roles (asignado por handle_new_user CASO A).
+--   Consultar user_roles directamente evita toda ambigüedad de overload y de stack.
 --
--- FIX: pasar 2 args explícitos en fn_create_staff_code →
--- fn_has_permission('gym.codigos.crear'::text, NULL::uuid)
--- Esto resuelve inequívocamente al overload (text, uuid) sin ambigüedad, sin DROP.
+-- APLICADO: ejecutado en Supabase SQL Editor y confirmado funcionando (fn_create_staff_code
+-- devuelve ok:true para dueños con rol Administrador General en public.user_roles).
 
-DO $$ BEGIN RAISE NOTICE '019 [1/1] CREATE OR REPLACE fn_create_staff_code con llamada 2-args a fn_has_permission...'; END $$;
+DO $$ BEGIN RAISE NOTICE '019c [1/1] CREATE OR REPLACE fn_create_staff_code con consulta directa a user_roles...'; END $$;
 
 CREATE OR REPLACE FUNCTION public.fn_create_staff_code(
   p_tenant_id   uuid,
@@ -34,9 +34,16 @@ DECLARE
   v_code_id UUID;
   v_code    TEXT;
 BEGIN
-  -- [019b] Dos argumentos explícitos → resuelve sin ambigüedad al overload (text, uuid).
-  --        NO se dropea ningún overload: oid 47643 lo usan decenas de políticas RLS.
-  IF NOT public.fn_has_permission('gym.codigos.crear'::text, NULL::uuid) THEN
+  -- [019c] Consulta directa a user_roles + role_permissions (stack gym).
+  --        No llama a fn_has_permission para evitar ambigüedad de overload y stack incorrecto.
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.user_roles ur
+    JOIN public.role_permissions rp ON rp.role_id = ur.role_id
+    WHERE ur.user_id   = auth.uid()
+      AND ur.tenant_id = p_tenant_id
+      AND rp.permission = 'gym.codigos.crear'
+  ) THEN
     RETURN jsonb_build_object('ok', false, 'error', 'Sin permiso: gym.codigos.crear requerido');
   END IF;
 
@@ -67,14 +74,14 @@ BEGIN
   VALUES (v_code_id, p_role_id);
 
   RETURN jsonb_build_object(
-    'ok',       true,
-    'code_id',  v_code_id,
-    'code',     v_code,
-    'role_id',  p_role_id,
-    'max_uses', p_max_uses,
+    'ok',         true,
+    'code_id',    v_code_id,
+    'code',       v_code,
+    'role_id',    p_role_id,
+    'max_uses',   p_max_uses,
     'expires_at', p_expires_at
   );
 END;
 $function$;
 
-DO $$ BEGIN RAISE NOTICE '019 [1/1] OK — fn_create_staff_code actualizada. Ambigüedad resuelta sin DROP.'; END $$;
+DO $$ BEGIN RAISE NOTICE '019c [1/1] OK — fn_create_staff_code actualizada. Consulta directa a user_roles activa.'; END $$;
