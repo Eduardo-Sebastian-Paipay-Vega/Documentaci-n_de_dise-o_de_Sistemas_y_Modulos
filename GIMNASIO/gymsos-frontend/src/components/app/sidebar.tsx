@@ -12,8 +12,8 @@ import {
   Home, CreditCard, QrCode, TrendingUp, MessageCircle,
   Dumbbell, ClipboardCheck, ClipboardList,
   UserPlus, Banknote, DoorOpen, Headphones,
-  Apple, UtensilsCrossed, Microscope,
-  LogOut, PanelLeft, ChevronRight, UserCog,
+  Apple, UtensilsCrossed, Microscope, Monitor, Receipt,
+  LogOut, PanelLeft, ChevronRight, UserCog, ShieldCheck,
   type LucideIcon
 } from "lucide-react"
 
@@ -32,6 +32,7 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { href: "/dashboard/gerente/clases",        icon: CalendarDays,    label: "Clases" },
     { href: "/dashboard/gerente/promociones",   icon: Tag,             label: "Promociones" },
     { href: "/dashboard/gerente/staff",         icon: UserCog,         label: "Staff" },
+    { href: "/dashboard/gerente/permisos",      icon: ShieldCheck,     label: "Permisos" },
     { href: "/dashboard/gerente/configuracion", icon: Settings,        label: "Configuración" },
   ],
   miembro: [
@@ -43,12 +44,30 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { href: "/dashboard/miembro/soporte",       icon: MessageCircle,   label: "Soporte" },
   ],
   cliente: [
-    { href: "/dashboard/cliente",               icon: Home,            label: "Inicio" },
-    { href: "/dashboard/cliente/membresia",     icon: CreditCard,      label: "Mi Membresía" },
-    { href: "/dashboard/cliente/clases",        icon: CalendarDays,    label: "Clases" },
-    { href: "/dashboard/cliente/qr",            icon: QrCode,          label: "Acceso QR" },
-    { href: "/dashboard/cliente/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
-    { href: "/dashboard/cliente/soporte",       icon: MessageCircle,   label: "Soporte" },
+    { href: "/dashboard/miembro",               icon: Home,            label: "Inicio" },
+    { href: "/dashboard/miembro/membresia",     icon: CreditCard,      label: "Mi Membresía" },
+    { href: "/dashboard/miembro/clases",        icon: CalendarDays,    label: "Clases" },
+    { href: "/dashboard/miembro/qr",            icon: QrCode,          label: "Acceso QR" },
+    { href: "/dashboard/miembro/progreso",      icon: TrendingUp,      label: "Mi Progreso" },
+    { href: "/dashboard/miembro/soporte",       icon: MessageCircle,   label: "Soporte" },
+  ],
+  supervisor: [
+    { href: "/dashboard/supervisor",             icon: Monitor,        label: "Mi Turno" },
+    { href: "/dashboard/supervisor/operaciones", icon: BarChart3,      label: "Operaciones" },
+  ],
+  cajero: [
+    { href: "/dashboard/cajero",                icon: Banknote,       label: "Mi Caja" },
+    { href: "/dashboard/cajero/pendientes",     icon: Receipt,        label: "Pendientes" },
+  ],
+  admin: [
+    { href: "/dashboard/gerente",               icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/dashboard/gerente/miembros",      icon: Users,           label: "Miembros" },
+    { href: "/dashboard/gerente/reportes",      icon: BarChart3,       label: "Reportes" },
+    { href: "/dashboard/gerente/clases",        icon: CalendarDays,    label: "Clases" },
+    { href: "/dashboard/gerente/promociones",   icon: Tag,             label: "Promociones" },
+    { href: "/dashboard/gerente/staff",         icon: UserCog,         label: "Staff" },
+    { href: "/dashboard/gerente/permisos",      icon: ShieldCheck,     label: "Permisos" },
+    { href: "/dashboard/gerente/configuracion", icon: Settings,        label: "Configuración" },
   ],
   entrenador: [
     { href: "/dashboard/entrenador",            icon: Dumbbell,        label: "Dashboard" },
@@ -75,20 +94,26 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
 
 const ROL_ACCENT: Record<Rol, string> = {
   gerente:        "var(--accent)",
+  supervisor:     "#d97706",
+  cajero:         "#059669",
   miembro:        "var(--accent)",
   cliente:        "#22C55E",
   entrenador:     "#F97316",
   recepcionista:  "#3B82F6",
   nutricionista:  "#10B981",
+  admin:          "#8B5CF6",
 }
 
 const ROL_LABEL: Record<Rol, string> = {
   gerente:        "Gerente",
+  supervisor:     "Supervisor",
+  cajero:         "Cajero",
   miembro:        "Miembro",
-  cliente:        "Cliente",
+  cliente:        "Miembro",
   entrenador:     "Entrenador",
   recepcionista:  "Recepcionista",
   nutricionista:  "Nutricionista",
+  admin:          "Administrador",
 }
 
 export function Sidebar() {
