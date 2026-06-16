@@ -6,6 +6,8 @@ export const ROLES = [
   "cliente",
   "entrenador",
   "recepcionista",
+  "cajero",
+  "supervisor",
   "gerente",
   "nutricionista",
   "admin",
@@ -15,8 +17,10 @@ export type Rol = (typeof ROLES)[number]
 
 export const ROL_ROUTES: Record<Rol, string> = {
   gerente:       "/dashboard/gerente",
+  supervisor:    "/dashboard/supervisor",
+  cajero:        "/dashboard/cajero",
   miembro:       "/dashboard/miembro",
-  cliente:       "/dashboard/cliente",
+  cliente:       "/dashboard/miembro",
   entrenador:    "/dashboard/entrenador",
   recepcionista: "/dashboard/recepcionista",
   nutricionista: "/dashboard/nutricionista",
@@ -27,11 +31,12 @@ export const ROL_ROUTES: Record<Rol, string> = {
 // Used by middleware for server-side route protection.
 export const ROUTE_ALLOWED_ROLES: Record<string, Rol[]> = {
   "/dashboard/gerente":       ["gerente", "admin"],
-  "/dashboard/recepcionista": ["recepcionista", "admin"],
+  "/dashboard/supervisor":    ["supervisor", "admin"],
+  "/dashboard/cajero":        ["cajero", "admin"],
+  "/dashboard/recepcionista": ["recepcionista", "supervisor", "admin"],
   "/dashboard/entrenador":    ["entrenador", "admin"],
   "/dashboard/nutricionista": ["nutricionista", "admin"],
-  "/dashboard/miembro":       ["miembro", "admin"],
-  "/dashboard/cliente":       ["cliente", "admin"],
+  "/dashboard/miembro":       ["miembro", "cliente", "admin"],
 }
 
 export function isValidRol(value: unknown): value is Rol {
