@@ -279,7 +279,7 @@ export function Sidebar() {
               border: `1px solid ${accent}30`,
             }}
           >
-            {user.nombre[0].toUpperCase()}
+            {(user.full_name?.[0] ?? "?").toUpperCase()}
           </div>
 
           <AnimatePresence>
@@ -292,7 +292,7 @@ export function Sidebar() {
                 className="flex-1 min-w-0"
               >
                 <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>
-                  {user.nombre}
+                  {user.full_name}
                 </p>
                 <p className="text-[10px] truncate" style={{ color: "var(--text-tertiary)" }}>
                   {ROL_LABEL[user.rol]}

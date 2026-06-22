@@ -15,8 +15,8 @@ export default function MiembroDashboard() {
   const router     = useRouter()
   const chartRef   = useRef<HTMLDivElement>(null)
   const inView     = useInView(chartRef, { once: true })
-  const userId     = user?.id_usuario
-  const gymId      = user?.id_gimnasio
+  const userId     = user?.id
+  const gymId      = user?.tenant_id ?? undefined
 
   const clasesState        = useClasesHoy(gymId)
   const inscripcionesState = useInscripcionesDelMiembro(userId)
@@ -74,7 +74,7 @@ export default function MiembroDashboard() {
               {new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
             </p>
             <h1 className="text-xl font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
-              {user?.nombre}
+              {user?.full_name}
             </h1>
             {user?.membresia && (
               <div className="mt-2 inline-flex items-center gap-1.5">
@@ -177,7 +177,7 @@ export default function MiembroDashboard() {
               <p className="text-lg font-bold tracking-tight" style={{ color: "#003C23" }}>
                 {user?.membresia?.plan ?? "Sin plan"}
               </p>
-              <p className="text-sm font-medium mt-0.5" style={{ color: "rgba(0,60,35,0.7)" }}>{user?.nombre}</p>
+              <p className="text-sm font-medium mt-0.5" style={{ color: "rgba(0,60,35,0.7)" }}>{user?.full_name}</p>
             </div>
             <div className="flex items-end justify-between">
               <div>

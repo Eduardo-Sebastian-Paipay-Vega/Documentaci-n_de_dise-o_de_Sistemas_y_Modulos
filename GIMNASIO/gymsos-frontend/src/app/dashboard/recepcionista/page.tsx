@@ -37,7 +37,7 @@ function formatHora(iso: string): string {
 export default function RecepcionistaDashboard() {
   const { user } = useAuth()
   const router   = useRouter()
-  const gymId    = user?.id_gimnasio
+  const gymId    = user?.tenant_id ?? undefined
 
   const accesosState = useAccesosRecientes(gymId, 10)
   const conteoState  = useConteoAccesos(gymId)
@@ -60,10 +60,10 @@ export default function RecepcionistaDashboard() {
           <div>
             <p className="text-xs capitalize mb-1" style={{ color: "var(--text-tertiary)" }}>{now}</p>
             <h1 className="text-xl font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
-              {user?.nombre}
+              {user?.full_name}
             </h1>
             <p className="text-sm mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-              Recepción · {user?.nombre_gimnasio ?? "GymFit Lima"} ·{" "}
+              Recepción · {user?.tenant_name ?? "GymFit Lima"} ·{" "}
               <span style={{ color: "var(--blue)" }}>Turno mañana</span>
             </p>
           </div>

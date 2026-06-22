@@ -39,10 +39,10 @@ export default function ClienteDashboard() {
             {new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}
           </p>
           <h1 className="text-xl font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
-            Hola, {user?.nombre?.split(" ")[0]} 👋
+            Hola, {user?.full_name?.split(" ")[0]} 👋
           </h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-            {user?.nombre_gimnasio ?? "GymFit Lima"} · {mem?.plan ?? "Sin plan activo"}
+            {user?.tenant_name ?? "GymFit Lima"} · {mem?.plan ?? "Sin plan activo"}
           </p>
         </motion.div>
       </motion.div>

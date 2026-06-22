@@ -71,7 +71,7 @@ export default function MembresiaPage() {
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-[#070D18]/60 text-xs">Titular</p>
-                <p className="text-[#070D18] font-bold text-lg">{user?.nombre}</p>
+                <p className="text-[#070D18] font-bold text-lg">{user?.full_name}</p>
                 <p className="text-[#070D18]/50 text-xs mt-0.5">{user?.email}</p>
               </div>
               <div className="text-right">

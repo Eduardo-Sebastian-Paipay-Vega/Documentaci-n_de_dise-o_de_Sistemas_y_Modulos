@@ -29,7 +29,7 @@ type FormData = {
 
 export default function RegistroPage() {
   const { user } = useAuth()
-  const gymId    = user?.id_gimnasio
+  const gymId    = user?.tenant_id ?? undefined
 
   const planesState  = usePlanes(gymId)
   const pagosHoyState = usePagosHoy(gymId)

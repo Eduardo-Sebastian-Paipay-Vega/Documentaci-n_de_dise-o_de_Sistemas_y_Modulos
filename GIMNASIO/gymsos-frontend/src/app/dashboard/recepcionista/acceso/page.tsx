@@ -18,7 +18,7 @@ function formatHora(iso: string) {
 
 export default function AccesoPage() {
   const { user } = useAuth()
-  const gymId    = user?.id_gimnasio
+  const gymId    = user?.tenant_id ?? undefined
 
   const accesosState = useAccesosRecientes(gymId, 30)
   const conteoState  = useConteoAccesos(gymId)

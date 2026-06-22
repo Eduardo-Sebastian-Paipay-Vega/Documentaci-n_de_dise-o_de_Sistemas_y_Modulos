@@ -277,7 +277,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(profile)
       // Los permisos se cargan vía onAuthStateChange que dispara signInWithPassword
-      // Nota: gymsos_rol cookie eliminada — el middleware leerá el rol desde JWT (app_metadata.role)
       router.push(ROL_ROUTES[profile.rol])
       return { ok: true }
     },

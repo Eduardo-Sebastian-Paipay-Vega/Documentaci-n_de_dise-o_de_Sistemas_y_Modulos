@@ -62,10 +62,10 @@ export default function NutricionistaDashboard() {
           <div>
             <p className="text-xs capitalize mb-1" style={{ color: "var(--text-tertiary)" }}>{now}</p>
             <h1 className="text-xl font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
-              {user?.nombre}
+              {user?.full_name}
             </h1>
             <p className="text-sm mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-              Nutricionista · {user?.nombre_gimnasio ?? "GymFit Lima"} ·{" "}
+              Nutricionista · {user?.tenant_name ?? "GymFit Lima"} ·{" "}
               <span style={{ color: "#10B981" }}>Consultorio activo</span>
             </p>
           </div>

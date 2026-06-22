@@ -23,7 +23,7 @@ type MiembroResult = { id_usuario: string; nombre: string; email: string; docume
 
 export default function PagosPage() {
   const { user } = useAuth()
-  const gymId    = user?.id_gimnasio
+  const gymId    = user?.tenant_id ?? undefined
 
   const planesState  = usePlanes(gymId)
   const pagosState   = usePagosHoy(gymId)

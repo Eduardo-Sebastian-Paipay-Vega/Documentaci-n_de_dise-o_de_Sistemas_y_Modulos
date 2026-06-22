@@ -56,7 +56,7 @@ type NuevaClaseForm = {
 
 export default function ClasesPage() {
   const { user } = useAuth()
-  const gymId    = user?.id_gimnasio
+  const gymId    = user?.tenant_id ?? undefined
 
   const { data: clases, loading, refetch } = useClasesGerente(gymId)
 

@@ -1,19 +1,29 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useAuth } from "@/components/providers/auth-provider"
 import { Sidebar } from "@/components/app/sidebar"
 import { motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
+import { ROUTE_ALLOWED_ROLES, ROL_ROUTES } from "@/lib/roles"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
-    if (!loading && !user) router.replace("/login")
-  }, [user, loading, router])
+    if (loading) return
+    if (!user) { router.replace("/login"); return }
+
+    const matchedPrefix = Object.keys(ROUTE_ALLOWED_ROLES).find((prefix) =>
+      pathname.startsWith(prefix),
+    )
+    if (matchedPrefix && !ROUTE_ALLOWED_ROLES[matchedPrefix].includes(user.rol)) {
+      router.replace(ROL_ROUTES[user.rol])
+    }
+  }, [user, loading, router, pathname])
 
   if (loading || !user) {
     return (

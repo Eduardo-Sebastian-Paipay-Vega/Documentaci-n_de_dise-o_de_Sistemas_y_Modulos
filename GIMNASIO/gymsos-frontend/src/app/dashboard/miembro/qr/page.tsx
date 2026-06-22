@@ -36,7 +36,7 @@ export default function QRPage() {
   const { user } = useAuth()
   const [brillo, setBrillo] = useState(false)
   const [tiempo, setTiempo] = useState(new Date())
-  const historialState = useHistorialMiembro(user?.id_usuario)
+  const historialState = useHistorialMiembro(user?.id)
 
   useEffect(() => {
     const timer = setInterval(() => setTiempo(new Date()), 1000)
@@ -93,11 +93,11 @@ export default function QRPage() {
                 setTimeout(() => setBrillo(false), 800)
               }}
             >
-              <QRCode userId={user?.id_usuario ?? "demo-user"} />
+              <QRCode userId={user?.id ?? "demo-user"} />
             </div>
 
             <p className="text-white font-mono text-sm mt-4">
-              {(user?.nombre ?? "usuario").toUpperCase().replace(/ /g, "-")}
+              {(user?.full_name ?? "usuario").toUpperCase().replace(/ /g, "-")}
             </p>
             <p className="text-neutral-600 text-xs mt-1">{tiempo.toLocaleTimeString("es-PE")}</p>
           </>
@@ -131,7 +131,7 @@ export default function QRPage() {
                       minute: "2-digit",
                     })}
                   </p>
-                  <p className="text-neutral-600 text-xs">{user?.nombre_gimnasio ?? "Gym"} · {h.tipo_acceso}</p>
+                  <p className="text-neutral-600 text-xs">{user?.tenant_name ?? "Gym"} · {h.tipo_acceso}</p>
                 </div>
                 <span className="text-[#00D084] text-xs font-bold bg-[#00D084]/10 px-2 py-0.5 rounded-full">
                   {h.estado_acceso}

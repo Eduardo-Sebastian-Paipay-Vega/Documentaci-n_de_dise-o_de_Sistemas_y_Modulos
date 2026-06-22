@@ -54,7 +54,7 @@ export default function EntrenadorClasesPage() {
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <div>
             <h1 className="text-white font-black text-2xl">Mis Clases</h1>
-            <p className="text-neutral-500 text-sm mt-0.5">RF-004 · {MIS_CLASES.length} clases semanales · {user?.nombre}</p>
+            <p className="text-neutral-500 text-sm mt-0.5">RF-004 · {MIS_CLASES.length} clases semanales · {user?.full_name}</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => setVista("lista")}

@@ -20,7 +20,7 @@ const PLAN_COLOR: Record<string, string> = {
 
 export default function MiembrosPage() {
   const { user }  = useAuth()
-  const gymId     = user?.id_gimnasio
+  const gymId     = user?.tenant_id ?? undefined
 
   const [busqueda, setBusqueda]  = useState("")
   const [filtro, setFiltro]      = useState<FiltroEstado>("todos")

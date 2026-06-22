@@ -34,7 +34,7 @@ export default function GerenteDashboard() {
   const router    = useRouter()
   const chartRef  = useRef<HTMLDivElement>(null)
   const inView    = useInView(chartRef, { once: true, margin: "-60px" })
-  const gymId     = user?.id_gimnasio
+  const gymId     = user?.tenant_id ?? undefined
 
   const kpisState     = useKPIsGerente(gymId)
   const churnState    = useChurnAtRisk(gymId)
@@ -90,10 +90,10 @@ export default function GerenteDashboard() {
           <div>
             <p className="text-xs capitalize mb-1" style={{ color: "var(--text-tertiary)" }}>{now}</p>
             <h1 className="text-xl font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
-              {user?.nombre}
+              {user?.full_name}
             </h1>
             <p className="text-sm mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-              {user?.nombre_gimnasio ?? "GymFit Lima"} · Panel de gerencia
+              {user?.tenant_name ?? "GymFit Lima"} · Panel de gerencia
             </p>
           </div>
 

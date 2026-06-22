@@ -36,7 +36,7 @@ export default function ProgresoPage() {
   const { user }   = useAuth()
   const chartRef   = useRef<HTMLDivElement>(null)
   const inView     = useInView(chartRef, { once: true })
-  const userId     = user?.id_usuario
+  const userId     = user?.id
 
   const nivelState    = useGamificationLevel(userId)
   const xpState       = useXPHistorial(userId)

@@ -28,7 +28,7 @@ export default function EntrenadorDashboard() {
   const clientesRef    = useRef<HTMLDivElement>(null)
   const inView         = useInView(clientesRef, { once: true })
 
-  const entrenadorId = user?.id_usuario
+  const entrenadorId = user?.id
   const clasesState  = useClasesEntrenador(entrenadorId)
   const clases       = clasesState.data ?? []
   const [activeCliente, setActiveCliente] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export default function EntrenadorDashboard() {
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <div>
             <p className="text-neutral-500 text-sm">Panel de Entrenador</p>
-            <h1 className="text-white font-black text-2xl">{user?.nombre} 🏋️</h1>
+            <h1 className="text-white font-black text-2xl">{user?.full_name} 🏋️</h1>
             <p className="text-neutral-600 text-sm mt-0.5">GymFit Lima · Hoy {new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}</p>
           </div>
           <div className="flex items-center gap-3">
