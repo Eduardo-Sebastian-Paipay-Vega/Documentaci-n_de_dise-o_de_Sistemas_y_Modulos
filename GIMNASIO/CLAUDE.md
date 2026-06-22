@@ -1,18 +1,68 @@
 # userEmail
 The user's email address is eduardo.paipay.27@unsch.edu.pe.
 # currentDate
-Today's date is 2026-06-01.
+Today's date is 2026-06-21.
 
-## REGLA: Documentación obligatoria de cambios en BD
+# 🔒 REGLA PRIMORDIAL — MIGRACIONES Y MODIFICACIONES DE BASE DE DATOS
 
-**Cualquier cambio en la base de datos — tablas, triggers, funciones, RLS, seeds, backfills, fixes puntuales — debe quedar registrado en un archivo `.sql` de migración antes de ejecutarse.**
+**TODA** modificación a la base de datos debe seguir este flujo obligatorio. Sin excepción.
 
-- Ubicación: `gymsos-frontend/migrations/`
-- Nombre: `NNN_descripcion_corta.sql` donde NNN es el número secuencial siguiente (ej: `012_...`)
-- Formato: seguir el estilo de `009_gym_as_bd_maestra_module.sql` — encabezado con contexto, pasos numerados, RAISE NOTICE en cada paso, verificación final
-- Todo cambio ejecutado en Supabase SQL Editor sin migración previa se considera deuda técnica y debe retroactivamente documentarse
+## FLUJO OBLIGATORIO (5 pasos)
 
-**Si el usuario pide ejecutar SQL directamente**, Claude primero crea el archivo `.sql` en migrations/, luego da el SQL para ejecutar, nunca al revés.
+### 1️⃣ DOCUMENTAR
+- Crear archivo en `gymsos-frontend/migrations/` con nombre: `YYYY-MM-DD_HHMM_descripcion.sql`
+- Incluir: descripción, impacto esperado, dependencias afectadas, plan de rollback
+
+### 2️⃣ ANALIZAR
+- Revisar qué tablas/campos se modifican
+- Identificar impacto en queries existentes
+- Verificar integridad referencial
+- Definir rollback strategy completo
+
+### 3️⃣ SOLICITAR APROBACIÓN
+- Presentar el SQL documentado al usuario
+- Explicar el impacto claramente
+- **ESPERAR CONFIRMACIÓN EXPLÍCITA — NO EJECUTAR SIN APROBACIÓN**
+
+### 4️⃣ VALIDAR EN STAGING (si aplica)
+- Ejecutar primero en ambiente de desarrollo/staging si existe
+- Verificar que funciona correctamente
+
+### 5️⃣ EJECUTAR EN SUPABASE
+- Solo después de aprobación y validación
+- Usando `mcp__supabase__apply_migration` o `execute_sql` según el tipo de cambio
+- Guardar registro de auditoría
+
+## PLANTILLA DE MIGRACIÓN
+
+```sql
+-- gymsos-frontend/migrations/YYYY-MM-DD_HHMM_descripcion_clara.sql
+/*
+  DESCRIPCIÓN: [Qué hace esta migración]
+  IMPACTO:     [Qué se modifica, crea o elimina]
+  ROLLBACK:    [Script para revertir]
+  DEPENDENCIAS:[Tablas/funciones afectadas]
+  VALIDACIÓN:  [Cómo verificar que funciona]
+*/
+-- SQL aquí
+```
+
+## RESTRICCIONES DURAS
+
+**NUNCA ejecutar sin seguir el flujo:**
+- `CREATE TABLE` sin documentación
+- `ALTER TABLE` (DROP/MODIFY columnas) sin análisis de impacto
+- `DELETE/UPDATE` masivos sin backup verificado
+- Cambios de schema sin registro en `/migrations/`
+- Cualquier DDL/DML en producción sin aprobación explícita del usuario
+
+## INSTRUCCIÓN PARA CLAUDE
+
+Si Eduardo propone o Claude genera código que altere la BD sin seguir este flujo:
+**DETENTE. Crea el archivo de migración primero. Luego solicita aprobación. Nunca al revés.**
+
+El acceso directo vía MCP (`mcp__supabase__execute_sql`) NO exime de este flujo —
+tener acceso técnico no significa ejecutar sin aprobación.
 
 ## graphify
 
