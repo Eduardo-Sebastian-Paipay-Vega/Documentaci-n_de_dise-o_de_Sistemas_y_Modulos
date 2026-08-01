@@ -145,8 +145,8 @@ Después de cada push exitoso, mostrar al final de la respuesta:
 | **Email** | eduardo.paipay.27@unsch.edu.pe |
 | **Universidad** | UNSCH (Universidad Nacional de San Cristóbal de Huamanga) — Huancavelica, Perú |
 | **Ambición** | Crear el GYMsos: el sistema operativo inteligente de fitness para Latinoamérica y el mundo |
-| **Repositorio** | `31072026_Democra_school` |
-| **URL GitHub** | https://github.com/Eduardo-Sebastian-Paipay-Vega/31072026_Democra_school |
+| **Repositorio** | `Documentaci-n_de_dise-o_de_Sistemas_y_Modulos` |
+| **URL GitHub** | https://github.com/Eduardo-Sebastian-Paipay-Vega/Documentaci-n_de_dise-o_de_Sistemas_y_Modulos |
 | **Branch principal** | `main` — La fuente de verdad |
 | **Idioma del proyecto** | Español (porque la innovación no tiene idioma, pero la documentación sí debe ser clara para tu equipo) |
 | **Path Windows** | `C:\botas\Documentación__` |
