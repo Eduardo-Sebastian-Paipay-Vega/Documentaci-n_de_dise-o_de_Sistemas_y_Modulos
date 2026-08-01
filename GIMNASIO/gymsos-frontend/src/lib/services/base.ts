@@ -1,4 +1,6 @@
-import { supabase } from "@/lib/supabase"
+// `supabase` (compat) ahora apunta al esquema gym vía el cliente unificado.
+// Los servicios que hacen `.from("<tabla gym>")` siguen funcionando sin cambios.
+import { gymDb as supabase } from "@/lib/supabase.unified"
 
 export { supabase }
 

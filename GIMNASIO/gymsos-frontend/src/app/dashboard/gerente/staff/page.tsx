@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/components/providers/auth-provider"
 import { usePermission } from "@/hooks/usePermissions"
-import { supabase, supabasePublic } from "@/lib/supabase"
+import { gymDb, publicDb } from "@/lib/supabase.unified"
 import { cn } from "@/lib/utils"
 import { fadeIn, staggerContainer, scaleIn } from "@/lib/motion"
 
@@ -106,7 +106,7 @@ export default function StaffPage() {
         if (!bdTenantId) throw new Error("El gimnasio no está vinculado a un tenant. Ejecuta la migración 015b.")
 
         // Roles del sistema para este tenant
-        const { data: roleData, error: rolesErr } = await supabasePublic
+        const { data: roleData, error: rolesErr } = await publicDb
           .from("roles")
           .select("id, name, hierarchy_level")
           .eq("tenant_id", bdTenantId)
@@ -116,7 +116,7 @@ export default function StaffPage() {
         if (roleData?.length) setRoleId(roleData[0].id)
 
         // Código de acceso principal del gym (para el link de invitación)
-        const { data: codeRow } = await supabase
+        const { data: codeRow } = await gymDb
           .from("codigos_acceso")
           .select("codigo")
           .eq("id_gimnasio", user?.tenant_id ?? "")
@@ -144,7 +144,7 @@ export default function StaffPage() {
     setGenError("")
     setResult(null)
 
-    const { data, error } = await supabasePublic.rpc("fn_create_staff_code", {
+    const { data, error } = await publicDb.rpc("fn_create_staff_code", {
       p_tenant_id:   bdTenantId,
       p_role_id:     roleId,
       p_max_uses:    parseInt(maxUses, 10) || 1,

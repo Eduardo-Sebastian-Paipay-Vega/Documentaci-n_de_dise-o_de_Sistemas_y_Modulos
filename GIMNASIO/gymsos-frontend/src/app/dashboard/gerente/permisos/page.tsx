@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/components/providers/auth-provider"
-import { supabasePublic } from "@/lib/supabase"
+import { publicDb } from "@/lib/supabase.unified"
 import { fadeIn, staggerContainer } from "@/lib/motion"
 import {
   ShieldCheck, ShieldX, Shield, Search, ChevronRight, Loader2,
@@ -97,7 +97,7 @@ export default function PermisosPage() {
   // ── Access check ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!user) return
-    supabasePublic.rpc("fn_check_permission", { p_permission: "ace.perms.manage" })
+    publicDb.rpc("fn_check_permission", { p_permission: "ace.perms.manage" })
       .then(({ data }) => {
         setHasAccess(data === true)
         setAccessChecked(true)
@@ -111,17 +111,17 @@ export default function PermisosPage() {
 
     Promise.all([
       // user_roles with nested roles
-      supabasePublic
+      publicDb
         .from("user_roles")
         .select("user_id, role_id, roles(id, name, hierarchy_level)")
         .eq("tenant_id", bdTenant),
       // profiles for names
-      supabasePublic
+      publicDb
         .from("profiles")
         .select("id, full_name")
         .eq("tenant_id", bdTenant),
       // all cat_permissions
-      supabasePublic
+      publicDb
         .from("cat_permissions")
         .select("id, description, module")
         .order("module")
@@ -156,11 +156,11 @@ export default function PermisosPage() {
     setOverrides([])
 
     const [rpRes, ovRes] = await Promise.all([
-      supabasePublic
+      publicDb
         .from("role_permissions")
         .select("permission")
         .eq("role_id", person.role_id),
-      supabasePublic
+      publicDb
         .from("user_permission_overrides")
         .select("id, permission, effect, expires_at")
         .eq("user_id", person.id)
@@ -181,7 +181,7 @@ export default function PermisosPage() {
   async function addOverride(permission: string, effect: "grant" | "deny") {
     if (!selectedPerson || !bdTenant) return
     setMutating(permission)
-    const { data, error } = await supabasePublic
+    const { data, error } = await publicDb
       .from("user_permission_overrides")
       .insert({ tenant_id: bdTenant, user_id: selectedPerson.id, permission, effect })
       .select()
@@ -192,7 +192,7 @@ export default function PermisosPage() {
 
   async function removeOverride(overrideId: string, permission: string) {
     setMutating(permission)
-    const { error } = await supabasePublic
+    const { error } = await publicDb
       .from("user_permission_overrides")
       .delete()
       .eq("id", overrideId)

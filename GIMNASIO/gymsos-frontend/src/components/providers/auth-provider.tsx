@@ -4,7 +4,7 @@ import {
   createContext, useContext, useState, useEffect, useCallback, type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
-import { supabase, supabasePublic } from "@/lib/supabase"
+import { auth, publicDb, gymDb } from "@/lib/supabase.unified"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Arquitectura BD Maestra (multi-sistema, multi-tenant):
@@ -46,6 +46,14 @@ export interface GymProfile {
   // Gym info (gym.gimnasios join)
   tenant_name?:  string        // = gym.gimnasios.nombre
   tenant_plan?:  string        // = gym.gimnasios.plan_suscripcion
+
+  // Membresía activa del usuario (opcional). Hoy fetchProfile NO la puebla;
+  // se declara para el contrato de la UI (cliente/miembro).
+  membresia?: {
+    plan:              string
+    fecha_vencimiento: string
+    estado:            string
+  } | null
 }
 
 const ROL_ROUTES: Record<Rol, string> = {
@@ -91,7 +99,7 @@ async function fetchProfile(
   email: string,
   bdAvatarUrl?: string | null,
 ): Promise<GymProfile | null> {
-  const { data: usuario } = await supabase
+  const { data: usuario } = await gymDb
     .from("usuarios")
     .select("id_usuario, nombre, id_gimnasio, rol, estado, foto_url, cargo, telefono, documento, genero")
     .eq("id_usuario", authUserId)
@@ -104,7 +112,7 @@ async function fetchProfile(
   let bd_tenant_id: string | null = null
 
   if (usuario.id_gimnasio) {
-    const { data: gym } = await supabase
+    const { data: gym } = await gymDb
       .from("gimnasios")
       .select("nombre, plan_suscripcion, tenant_id")
       .eq("id_gimnasio", usuario.id_gimnasio)
@@ -149,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Carga los permisos del usuario autenticado via fn_my_permissions()
   // Extrae solo el string de permission_id para verificación instantánea.
   const loadPermissions = useCallback(async () => {
-    const { data } = await supabasePublic.rpc("fn_my_permissions")
+    const { data } = await publicDb.rpc("fn_my_permissions")
     if (data) {
       setPermissions(data.map((p: { permission: string }) => p.permission))
     }
@@ -161,9 +169,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
+    auth.getSession().then(async ({ data }) => {
       if (data.session?.user) {
-        const { data: bd } = await supabasePublic.rpc("fn_get_my_profile")
+        const { data: bd } = await publicDb.rpc("fn_get_my_profile")
         const profile = await fetchProfile(data.session.user.id, data.session.user.email ?? "", bd?.avatar_url)
         setUser(profile)
         if (profile) await loadPermissions()
@@ -171,9 +179,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const { data: bd } = await supabasePublic.rpc("fn_get_my_profile")
+        const { data: bd } = await publicDb.rpc("fn_get_my_profile")
         const profile = await fetchProfile(session.user.id, session.user.email ?? "", bd?.avatar_url)
         setUser(profile)
         if (profile) {
@@ -191,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string): Promise<LoginResult> => {
       // 1. Autenticación Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await auth.signInWithPassword({ email, password })
 
       if (error) {
         return {
@@ -205,12 +213,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!data.user) return { ok: false, error: "Error al iniciar sesión." }
 
       // 2. Verificar BD Maestra vía RPC (SECURITY DEFINER — bypasea RLS y sesión compartida)
-      const { data: bdResult, error: rpcError } = await supabasePublic.rpc("fn_get_my_profile")
+      const { data: bdResult, error: rpcError } = await publicDb.rpc("fn_get_my_profile")
 
       if (rpcError) {
         // El RPC no existe o falló — probablemente migración 012 no ejecutada aún
         console.error("fn_get_my_profile RPC error:", rpcError.message)
-        await supabase.auth.signOut()
+        await auth.signOut()
         return {
           ok:    false,
           error: "Error de configuración del sistema. Asegúrate de haber ejecutado la migración 012 en Supabase.",
@@ -219,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!bdResult?.found) {
         // No existe en BD Maestra — cuenta creada antes de las migraciones 011/012
-        await supabase.auth.signOut()
+        await auth.signOut()
         return {
           ok:     false,
           error:  "Tu cuenta existe pero aún no está vinculada a un gimnasio.",
@@ -231,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // .maybeSingle() devuelve { data: null, error: null } cuando hay 0 filas.
       // .single() devolvería HTTP 406 (Not Acceptable) que el cliente silencia
       // dejando data=null sin poder distinguir "no encontrado" de "error real".
-      const { data: gymUser, error: gymUserError } = await supabase
+      const { data: gymUser, error: gymUserError } = await gymDb
         .from("usuarios")
         .select("id_usuario")
         .eq("id_usuario", data.user.id)
@@ -239,13 +247,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (gymUserError) {
         console.error("gym.usuarios check error:", gymUserError.message)
-        await supabase.auth.signOut()
+        await auth.signOut()
         return { ok: false, error: "Error al verificar acceso al módulo gym. Intenta de nuevo." }
       }
 
       if (!gymUser) {
         // Tiene cuenta BD Maestra pero no perfil gym.
-        await supabase.auth.signOut()
+        await auth.signOut()
 
         // "wrong_system" solo si el tenant apunta a otra industria distinta de gym.
         // industry_type viene de fn_get_my_profile (migr-018).
@@ -271,7 +279,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await fetchProfile(data.user.id, data.user.email ?? "", bdResult.avatar_url)
 
       if (!profile) {
-        await supabase.auth.signOut()
+        await auth.signOut()
         return { ok: false, error: "Error al cargar el perfil. Intenta de nuevo." }
       }
 
@@ -286,7 +294,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     setUser(null)
     setPermissions([])
-    await supabase.auth.signOut()
+    await auth.signOut()
     router.push("/login")
   }, [router])
 

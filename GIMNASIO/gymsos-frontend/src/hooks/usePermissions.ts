@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { supabasePublic } from "@/lib/supabase"
+import { publicDb } from "@/lib/supabase.unified"
 
 export interface Permission {
   permission: string
@@ -14,8 +14,8 @@ export function usePermission(permission: string): boolean | null {
   const [allowed, setAllowed] = useState<boolean | null>(null)
 
   useEffect(() => {
-    supabasePublic
-      .rpc("fn_has_permission", { p_permission: permission })
+    publicDb
+      .rpc("fn_check_permission", { p_permission: permission })
       .then(({ data }) => setAllowed(data ?? false))
   }, [permission])
 
@@ -27,7 +27,7 @@ export function useMyPermissions(): Permission[] {
   const [permisos, setPermisos] = useState<Permission[]>([])
 
   useEffect(() => {
-    supabasePublic
+    publicDb
       .rpc("fn_my_permissions")
       .then(({ data }) => setPermisos(data ?? []))
   }, [])

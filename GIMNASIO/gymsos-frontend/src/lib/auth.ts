@@ -33,6 +33,8 @@ export const ROL_LABELS: Record<Rol, string> = {
   recepcionista: "Recepcionista",
   nutricionista: "Nutricionista",
   admin:         "Admin",
+  cajero:        "Cajero",
+  supervisor:    "Supervisor",
 }
 
 export const ROL_ICONS: Record<Rol, string> = {
@@ -43,6 +45,8 @@ export const ROL_ICONS: Record<Rol, string> = {
   recepcionista: "R",
   nutricionista: "N",
   admin:         "A",
+  cajero:        "Cj",
+  supervisor:    "Sv",
 }
 
 export const ROL_COLOR: Record<Rol, string> = {
@@ -53,6 +57,8 @@ export const ROL_COLOR: Record<Rol, string> = {
   recepcionista: "#3B82F6",
   nutricionista: "#10B981",
   admin:         "#8B5CF6",
+  cajero:        "#F59E0B",
+  supervisor:    "#6366F1",
 }
 
 const STORAGE_KEY = "gymsos_session"

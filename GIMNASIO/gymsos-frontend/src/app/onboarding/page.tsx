@@ -8,7 +8,7 @@ import {
   Eye, EyeOff, ArrowRight, ArrowLeft, Loader2, AlertCircle,
   CheckCircle2, Building2, User, Upload, X,
 } from "lucide-react"
-import { supabase, supabasePublic } from "@/lib/supabase"
+import { gymDb, publicDb, auth, storage } from "@/lib/supabase.unified"
 import { cn } from "@/lib/utils"
 import { easings } from "@/lib/motion"
 
@@ -156,11 +156,11 @@ export default function OnboardingPage() {
     try {
       const ext  = fotoFile.name.split(".").pop() ?? "jpg"
       const path = `${userId}/avatar.${ext}`
-      const { error: upErr } = await supabase.storage
+      const { error: upErr } = await storage
         .from("avatars")
         .upload(path, fotoFile, { upsert: true })
       if (upErr) return null
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path)
+      const { data } = storage.from("avatars").getPublicUrl(path)
       return data.publicUrl
     } catch {
       return null
@@ -174,7 +174,7 @@ export default function OnboardingPage() {
     await new Promise(r => setTimeout(r, 800))
     try {
       // 1. Obtener id_gimnasio del usuario recién creado
-      const { data: usuario } = await supabase
+      const { data: usuario } = await gymDb
         .from("usuarios")
         .select("id_gimnasio")
         .eq("id_usuario", userId)
@@ -183,7 +183,7 @@ export default function OnboardingPage() {
       if (!usuario?.id_gimnasio) { setGymCode("—"); return }
 
       // 2. Buscar código activo del gimnasio
-      const { data: code } = await supabase
+      const { data: code } = await gymDb
         .from("codigos_acceso")
         .select("codigo")
         .eq("id_gimnasio", usuario.id_gimnasio)
@@ -200,7 +200,7 @@ export default function OnboardingPage() {
 
   // ── Submit final ──────────────────────────────────────────────────────────
   // Flujo:
-  //   1. supabase.auth.signUp() con metadata → trigger handle_new_user (CASO A)
+  //   1. auth.signUp() con metadata → trigger handle_new_user (CASO A)
   //      crea gym.gimnasios + gym.codigos_acceso + gym.usuarios automáticamente
   //   2. Si sesión activa: fetchGymCode() para mostrar el código al dueño
   //   3. Si confirmar email: mostrar mensaje de espera
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
     setError("")
 
     try {
-      const { data, error: authErr } = await supabase.auth.signUp({
+      const { data, error: authErr } = await auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {
@@ -259,7 +259,7 @@ export default function OnboardingPage() {
         const fotoUrl = await uploadFoto(data.user.id)
         if (fotoUrl) {
           // fn_update_my_avatar actualiza public.profiles.avatar_url + gym.usuarios.foto_url
-          await supabasePublic.rpc("fn_update_my_avatar", { p_url: fotoUrl })
+          await publicDb.rpc("fn_update_my_avatar", { p_url: fotoUrl })
         }
 
         // Obtener el código de acceso del gym recién creado.

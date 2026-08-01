@@ -1,33 +1,16 @@
-import { createClient } from "@supabase/supabase-js"
-
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL  ?? ""
-const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
-
-if (!supabaseUrl || !supabaseAnon) {
-  throw new Error("Supabase no configurado. Agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local")
-}
-
-// Ambos clientes comparten el mismo storageKey para evitar la advertencia
-// "Multiple GoTrueClient instances detected" — dos instancias con claves distintas
-// compiten por localStorage y pueden producir estados de sesión inconsistentes.
-const AUTH_STORAGE_KEY = "sb-gymsos-auth"
-
-// Cliente para tablas de dominio GYMsos (gym schema)
-export const supabase = createClient(supabaseUrl, supabaseAnon, {
-  db:   { schema: "gym" },
-  auth: { storageKey: AUTH_STORAGE_KEY },
-})
-
-// Cliente para infraestructura compartida BD Maestra (public schema)
-// Usar para: tenants, profiles, sedes, roles, subscriptions
-export const supabasePublic = createClient(supabaseUrl, supabaseAnon, {
-  db:   { schema: "public" },
-  auth: { storageKey: AUTH_STORAGE_KEY },
-})
+// ─────────────────────────────────────────────────────────────────────────────
+// Fase 5: los CLIENTES se movieron a `supabase.unified.ts` (una sola instancia +
+// selección de esquema con .schema()). Este módulo conserva SOLO los tipos de dominio.
+// Re-export de conveniencia para no romper imports existentes durante la transición.
+// ─────────────────────────────────────────────────────────────────────────────
+export { db, auth, storage, gymDb, publicDb, ongDb, dbFor } from "./supabase.unified"
 
 // ─── DB types that mirror Fase 5 schema exactly ───────────────────────────────
 
-export type { Rol as DbRol } from "./roles"
+// import type crea el binding LOCAL (usable en `rol: DbRol`); el re-export lo mantiene
+// disponible para quienes hacen `import { DbRol } from "@/lib/supabase"`.
+import type { Rol as DbRol } from "./roles"
+export type { DbRol }
 export type DbEstado = "activo" | "inactivo" | "suspendido"
 
 export interface DbUsuario {
@@ -85,8 +68,8 @@ export interface DbPlan {
 export interface DbClase {
   id_clase: string
   id_gimnasio: string
-  id_entrenador: string
-  id_espacio: string
+  id_entrenador: string | null   // P11: la BD permite NULL
+  id_espacio: string | null      // P11: la BD permite NULL
   nombre: string
   descripcion: string | null
   capacidad_maxima: number

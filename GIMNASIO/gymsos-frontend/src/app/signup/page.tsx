@@ -8,7 +8,7 @@ import {
   Eye, EyeOff, ArrowRight, Loader2, AlertCircle, CheckCircle2,
   Building2, UserCog, ChevronDown, Check,
 } from "lucide-react"
-import { supabase, supabasePublic } from "@/lib/supabase"
+import { publicDb, auth } from "@/lib/supabase.unified"
 import { cn } from "@/lib/utils"
 import { fadeIn, staggerContainer, easings } from "@/lib/motion"
 
@@ -126,32 +126,34 @@ export default function SignupPage() {
     setStaffCodeValid(null)
     setStaffCodeError("")
 
-    const { data: codeRow, error: err } = await supabase
-      .from("codigos_acceso")
-      .select("id_gimnasio, gimnasios(nombre, ciudad, estado, tenant_id)")
-      .eq("codigo", code)
-      .eq("activo", true)
-      .single()
+    // Fase 5.1: la Fase 3 revocó el SELECT de `anon` sobre gym.codigos_acceso.
+    // Validamos vía RPC SECURITY DEFINER, que bypassa RLS de forma controlada y
+    // devuelve solo la metadata pública del gimnasio (sin exponer la tabla).
+    const { data: rpcData, error: err } = await publicDb.rpc("fn_lookup_gym_access", {
+      p_codigo: code,
+    })
 
     setCheckingCode(false)
 
-    const gymData = codeRow?.gimnasios as {
-      nombre:    string
-      ciudad:    string
-      estado:    string
-      tenant_id: string | null
-    } | undefined
+    const lookup = rpcData as {
+      found:       boolean
+      id_gimnasio?: string
+      nombre?:      string
+      ciudad?:      string | null
+      estado?:      string
+      tenant_id?:   string | null
+    } | null
 
-    if (err || !codeRow || gymData?.estado !== "activo") {
+    if (err || !lookup?.found || lookup.estado !== "activo" || !lookup.id_gimnasio) {
       setCodeError("Código inválido. Solicita el código a tu gimnasio.")
       return
     }
 
     const resolvedGym: GymInfo = {
-      id_gimnasio: codeRow.id_gimnasio,
-      nombre:      gymData?.nombre    ?? "",
-      ciudad:      gymData?.ciudad    ?? null,
-      tenant_id:   gymData?.tenant_id ?? null,
+      id_gimnasio: lookup.id_gimnasio,
+      nombre:      lookup.nombre    ?? "",
+      ciudad:      lookup.ciudad    ?? null,
+      tenant_id:   lookup.tenant_id ?? null,
     }
     setGym(resolvedGym)
 
@@ -197,7 +199,7 @@ export default function SignupPage() {
     setStaffCodeValid(null)
 
     try {
-      const { data, error: rpcErr } = await supabasePublic.rpc("fn_validate_code", {
+      const { data, error: rpcErr } = await publicDb.rpc("fn_validate_code", {
         p_code:      code,
         p_type_id:   "USER_INVITE",
         p_tenant_id: tenantId,
@@ -279,7 +281,7 @@ export default function SignupPage() {
     setSubmitting(true)
 
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await auth.signUp({
         email: email.trim().toLowerCase(),
         password,
         options: {

@@ -1,0 +1,64 @@
+# supabase/config.toml — Sistema 2 (GYMsos)
+# Inicializa el entorno local: `supabase start` levanta Postgres + API + Studio y
+# aplica supabase/migrations/* en orden, luego supabase/seed.sql.
+
+project_id = "gymsos"
+
+[api]
+enabled = true
+port = 54321
+# CRÍTICO: exponer el esquema `gym` (y `ong`) además de `public` para que PostgREST
+# sirva las tablas de dominio. Sin esto, el frontend NO puede consultar gym.* vía API.
+schemas = ["public", "gym", "ong", "graphql_public"]
+# search_path que usa PostgREST al resolver objetos no calificados.
+extra_search_path = ["public", "gym", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+# Igualar a la versión de producción (auditoría: PostgreSQL 16).
+major_version = 16
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+[inbucket]           # captura de correos de Auth en local
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false   # en local, sin confirmación por correo (probar el trigger handle_new_user)
+
+# Nota: el trigger on_auth_user_created (handle_new_user) se dispara en signups locales,
+# por lo que Auth debe estar habilitado para reproducir el flujo completo.
+
+[edge_runtime]
+enabled = true
+
+[analytics]
+enabled = false

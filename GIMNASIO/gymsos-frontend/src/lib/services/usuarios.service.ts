@@ -1,5 +1,6 @@
 ﻿import { supabase, handleSupabaseError, type PaginatedResult, type QueryOptions } from "./base"
 import type { DbUsuario } from "@/lib/supabase"
+import { auth } from "@/lib/supabase.unified"
 
 export type UsuarioConMembresia = DbUsuario & {
   nombre_gimnasio?: string
@@ -216,7 +217,7 @@ export async function registrarNuevoMiembro(datos: {
 }): Promise<{ id_usuario: string; id_membresia: string; id_pago: string }> {
   const tempPassword = Math.random().toString(36).slice(2, 10) + "Gym2026!"
 
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  const { data: authData, error: authError } = await auth.signUp({
     email: datos.email,
     password: tempPassword,
   })
