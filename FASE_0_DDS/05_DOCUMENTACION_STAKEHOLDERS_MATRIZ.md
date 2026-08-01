@@ -1,32 +1,33 @@
-# FASE 0 — Metodología DDS: Etapa 5 — Matriz Maestra de Trazabilidad Completa (42 RFs)
+# FASE 0 — Metodología DDS: Etapa 5 — Matriz Maestra de Trazabilidad Unificada (113 RFs)
 
-> **Proyecto**: Ecosistema Inteligente GYMsos / EDUCACION OS
+> **Proyecto**: GYMsos Ecosystem (Gimnasios, Educación OS, Comerci OS)
 > **Fase**: Fase 0 — Metodología DDS (Desarrollo Dirigido por Sistemas)
-> **Etapa**: Etapa 5 — Stakeholders & Matriz de Trazabilidad (42 RFs)
-> **Versión**: 2.0
+> **Etapa**: Etapa 5 — Stakeholders & Matriz de Trazabilidad Unificada (113 RFs)
+> **Versión**: 3.0
 > **Fecha**: 2026-08-01
 > **Autor**: Eduardo Sebastian Paipay Vega
 
 ---
 
-## 📊 Matriz Maestra de Trazabilidad Total (42 RFs)
+## 📊 Matriz Maestra de Trazabilidad Unificada (113 RFs)
 
 ```
-Stakeholder → RFs Asociados → Casos de Uso (CU) → Permisos → Procesos del Negocio
+Stakeholder → RFs Asociados por Vertical → Casos de Uso (CU) → Permisos → Procesos del Negocio
 ```
 
-| Stakeholder / Actor | Requerimientos Funcionales (RF) | Casos de Uso (CU) | Permisos Requeridos | Proceso de Negocio Integrado |
-|---------------------|--------------------------------|-------------------|---------------------|------------------------------|
-| **`STUDENT_USER`** | `RF-002`, `RF-003`, `RF-004`, `RF-005`, `RF-006`, `RF-007`, `RF-011`, `RF-015`, `RF-022`, `RF-024`, `RF-028`, `RF-031`, `RF-032`, `RF-036`, `RF-039`, `RF-041`, `RF-042` | `CU-002`, `CU-003`, `CU-004`, `CU-005`, `CU-006`, `CU-011`, `CU-015`, `CU-022`, `CU-028`, `CU-031`, `CU-036`, `CU-039`, `CU-041`, `CU-042` | `learning:adaptive_access`, `content:view`, `assignment:submit`, `gamification:earn`, `chat:send`, `credentials:verify`, `tokens:earn`, `record:transfer` | Aprendizaje Adaptativo, Gamificación, Entrega de Tareas, Autonomía de Identidad y Aprendizaje Contextual |
-| **`TEACHER_USER`** | `RF-001`, `RF-004`, `RF-007`, `RF-011`, `RF-014`, `RF-023`, `RF-029`, `RF-033`, `RF-038` | `CU-001`, `CU-004`, `CU-011`, `CU-014`, `CU-023`, `CU-029`, `CU-033`, `CU-038` | `course:create`, `assignment:grade`, `copilot:access_teacher`, `resources:share`, `digital_twin:simulate` | Creación Curricular, Calificación Asistida por IA, Simulación de Exámenes y Publicación de Contenidos |
-| **`PARENT_USER`** | `RF-011`, `RF-015`, `RF-017`, `RF-033` | `CU-011`, `CU-015`, `CU-017`, `CU-033` | `dashboard:view_student_360`, `documents:sign`, `parent:view_feed` | Acompañamiento Familiar, Live Stream de Progreso y Firma de Contrato Educativo |
-| **`ACADEMIC_ADMIN`**| `RF-001`, `RF-013`, `RF-014`, `RF-016`, `RF-017`, `RF-019`, `RF-021`, `RF-030`, `RF-034` | `CU-001`, `CU-013`, `CU-014`, `CU-016`, `CU-017`, `CU-019`, `CU-021`, `CU-030`, `CU-034` | `course:publish`, `announcement:broadcast`, `reports:generate`, `ews:view_alerts`, `analytics:view_benchmark`, `store:install_plugin` | Gestión Académica, Alertas EWS, Emisión de Actas, Benchmarking Sectorial y Expansión de Plugins |
-| **`FINANCE_ADMIN`** | `RF-008`, `RF-009`, `RF-010`, `RF-018` | `CU-008`, `CU-009`, `CU-010`, `CU-018` | `payments:process`, `invoices:issue`, `notifications:send_financial`, `integration:manage_erp` | Gestión de Cobros, Facturación Electrónica Tributaria y Sincronización ERP |
-| **`RECRUITER_USER`**| `RF-031`, `RF-035`, `RF-039` | `CU-031`, `CU-035`, `CU-039` | `recruitment:search_talent`, `proof_of_skill:verify` | Reclutamiento por Habilidades Verificadas y Proof of Skill |
-| **`DEVELOPER_USER`**| `RF-034` | `CU-034` | `developers:manage_apps` | Desarrollo de Plugins y Monetización 70/30 |
-| **`AI_SWARM` / `AI_ENGINE`** | `RF-002`, `RF-016`, `RF-021`, `RF-022`, `RF-023`, `RF-024`, `RF-025`, `RF-026`, `RF-027`, `RF-037`, `RF-038`, `RF-040` | `CU-002`, `CU-016`, `CU-021`, `CU-022`, `CU-023`, `CU-024`, `CU-025`, `CU-026`, `CU-027`, `CU-037`, `CU-038`, `CU-040` | `ai:prescribe`, `learning:dynamic_path`, `copilot:access_teacher`, `ai_swarm:interact`, `emotion:track_ethics` | Motor Autónomo Educativo, Swarm de Agentes 24/7 y Gemelo Digital |
-| **`SUPER_ADMIN`** | `RF-001` a `RF-042` | Todos los CU | `*` (Control Maestro) | Gobernanza Global del Sistema Operativo EDUCACION OS |
+| Stakeholder / Actor | Vertical / Módulo | RFs Asociados | Casos de Uso (CU) | Permisos Requeridos | Proceso de Negocio Integrado |
+|---------------------|-------------------|---------------|-------------------|---------------------|------------------------------|
+| **`GYM_MEMBER`** | GIMNASIO OS | `RF-GIM-001` a `RF-GIM-007`, `RF-GIM-019` a `RF-GIM-030` | `CU-GIM-001` a `CU-GIM-007` | `access:checkin`, `workout:log`, `gamification:xp` | Membresía, Control Acceso QR, Batallas de Clanes, Dynamic Workouts y Wearables |
+| **`GYM_ADMIN` / Owner**| GIMNASIO OS | `RF-GIM-008` a `RF-GIM-018`, `RF-GIM-035`, `RF-GIM-043` a `RF-GIM-045` | `CU-GIM-008` a `CU-GIM-015` | `tenant:manage`, `finance:admin`, `ai:upsell` | Gestión de Sede, Churn Predictivo, Precios Dinámicos y Corporate Wellness |
+| **`STUDENT_USER`** | EDUCACION OS | `RF-EDU-002` a `RF-EDU-007`, `RF-EDU-022`, `RF-EDU-031`, `RF-EDU-036`, `RF-EDU-041`, `RF-EDU-042` | `CU-EDU-002` a `CU-EDU-006`, `CU-EDU-031`, `CU-EDU-042` | `learning:adaptive`, `credentials:verify`, `tokens:earn` | Aprendizaje Adaptativo, Blockchain Identidad Soberana, Tokens y Invisible UI |
+| **`TEACHER_USER`** | EDUCACION OS | `RF-EDU-001`, `RF-EDU-004`, `RF-EDU-014`, `RF-EDU-023`, `RF-EDU-029`, `RF-EDU-038` | `CU-EDU-001`, `CU-EDU-004`, `CU-EDU-023`, `CU-EDU-038` | `course:create`, `copilot:teacher`, `digital_twin:simulate` | Creación Curricular, Copiloto Docente IA y Simulación con Gemelos Digitales |
+| **`ACADEMIC_ADMIN`**| EDUCACION OS | `RF-EDU-013`, `RF-EDU-016`, `RF-EDU-021`, `RF-EDU-030`, `RF-EDU-034`, `RF-EDU-035` | `CU-EDU-013`, `CU-EDU-016`, `CU-EDU-021`, `CU-EDU-030` | `ews:view_alerts`, `analytics:benchmark`, `store:install` | Gestión Académica, Alertas EWS, Benchmarking B2B e Integración de Plugins |
+| **`COMERCIANTE_USER`**| COMERCI OS | `RF-COM-001` a `RF-COM-020`, `RF-COM-021` a `RF-COM-023` | `CU-COM-001` a `CU-COM-003` | `finance:bank_sync`, `cashflow:predict`, `pos:manage` | Unificación Bancaria/Yape, Predicción de Punto de Quiebra (Días a $0) y Asistente de Compras |
+| **`ACCOUNTANT_USER`** | COMERCI OS | `RF-COM-006`, `RF-COM-008`, `RF-COM-018` a `RF-COM-020`, `RF-COM-025` | `CU-COM-006`, `CU-COM-019` | `finance:read_only`, `reports:export` | Clasificación NLP de Gastos, Reconciliación y Reportes Ejecutivos |
+| **`RECRUITER_USER`**| ECOSISTEMA | `RF-EDU-031`, `RF-EDU-035`, `RF-EDU-039` | `CU-EDU-035`, `CU-EDU-039` | `recruitment:search`, `proof_of_skill:verify` | Headhunting Algorítmico y Reclutamiento por Proof of Skill |
+| **`AI_SWARM` / Engine**| ECOSISTEMA | `RF-GIM-019`, `RF-GIM-043`, `RF-EDU-021`, `RF-EDU-037`, `RF-COM-010` a `RF-COM-015` | Todos los CU de IA | `ai:prescribe`, `ai_swarm:interact`, `risk:predict` | Motor Autónomo del Ecosistema ("Tesla Moment") y Alertas Predictivas |
+| **`SUPER_ADMIN`** | ECOSISTEMA | `RF-GIM-001` a `RF-GIM-045`, `RF-EDU-001` a `RF-EDU-042`, `RF-COM-001` a `RF-COM-026` | Todos los CU (113 RFs) | `*` (Control Maestro) | Gobernanza Global Multi-Tenant del Ecosistema GYMsos |
 
 ---
 
-*Fin de la Etapa 5 — Matriz Maestra de Trazabilidad 42 RFs Metodología DDS v2.0.*
+*Fin de la Matriz Maestra de Trazabilidad 113 RFs — Metodología DDS v3.0.*
